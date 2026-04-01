@@ -1,71 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-<body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
-
 <head>
-  <meta charset="UTF-8">
-  <title>Word Puzzle Generator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 50px;
-      background-color: #f9f9f9;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin: 15px 0 5px;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-    }
-    .button-group {
-      margin-top: 20px;
-      text-align: center;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      border: none;
-      background-color: #007BFF;
-      color: white;
-      border-radius: 5px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Puzzle Generator</title>
 </head>
 <body>
-
-  <div class="container">
     <h1>Word Puzzle Generator</h1>
-    <form id="puzzleForm" action="/generate" method="POST">
-      <label for="topic">Enter a topic:</label>
-      <input type="text" id="topic" name="topic" required>
+    <div>
+        <h2>Word Scramble</h2>
+        <input type="text" id="scrambleInput" placeholder="Enter words separated by commas">
+        <button onclick="generateScramble()">Generate Scramble</button>
+        <p id="scrambleOutput"></p>
+    </div>
+    <div>
+        <h2>Crossword</h2>
+        <input type="text" id="crosswordInput" placeholder="Enter words separated by commas">
+        <button onclick="generateCrossword()">Generate Crossword</button>
+        <div id="crosswordOutput"></div>
+    </div>
+    <script>
+        function generateScramble() {
+            const input = document.getElementById('scrambleInput').value;
+            const words = input.split(',').map(word => word.trim());
+            const scrambledWords = words.map(word => word.split('').sort(() => 0.5 - Math.random()).join(''));
+            document.getElementById('scrambleOutput').innerHTML = scrambledWords.join(', ');
+        }
 
-      <div class="button-group">
-        <button type="submit" name="type" value="scramble">Generate Word Scramble PDF</button>
-        <button type="submit" name="type" value="crossword">Generate Crossword PDF</button>
-      </div>
-    </form>
-  </div>
-
+        function generateCrossword() {
+            const input = document.getElementById('crosswordInput').value;
+            const words = input.split(',').map(word => word.trim());
+            let crosswordHtml = '<table>';
+            words.forEach(word => {
+                crosswordHtml += '<tr>' + word.split('').map(letter => `<td>${letter}</td>`).join('') + '</tr>';
+            });
+            crosswordHtml += '</table>';
+            document.getElementById('crosswordOutput').innerHTML = crosswordHtml;
+        }
+    </script>
 </body>
 </html>
