@@ -2,41 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Puzzle Generator</title>
+    <title>My Teacher Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f6f8;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            background-color: #34495e;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        section {
+            padding: 20px;
+            margin: 20px;
+            background-color: white;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #2c3e50;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Word Puzzle Generator</h1>
-    <div>
-        <h2>Word Scramble</h2>
-        <input type="text" id="scrambleInput" placeholder="Enter words separated by commas">
-        <button onclick="generateScramble()">Generate Scramble</button>
-        <p id="scrambleOutput"></p>
-    </div>
-    <div>
-        <h2>Crossword</h2>
-        <input type="text" id="crosswordInput" placeholder="Enter words separated by commas">
-        <button onclick="generateCrossword()">Generate Crossword</button>
-        <div id="crosswordOutput"></div>
-    </div>
-    <script>
-        function generateScramble() {
-            const input = document.getElementById('scrambleInput').value;
-            const words = input.split(',').map(word => word.trim());
-            const scrambledWords = words.map(word => word.split('').sort(() => 0.5 - Math.random()).join(''));
-            document.getElementById('scrambleOutput').innerHTML = scrambledWords.join(', ');
-        }
 
-        function generateCrossword() {
-            const input = document.getElementById('crosswordInput').value;
-            const words = input.split(',').map(word => word.trim());
-            let crosswordHtml = '<table>';
-            words.forEach(word => {
-                crosswordHtml += '<tr>' + word.split('').map(letter => `<td>${letter}</td>`).join('') + '</tr>';
-            });
-            crosswordHtml += '</table>';
-            document.getElementById('crosswordOutput').innerHTML = crosswordHtml;
-        }
-    </script>
+<header>
+    <h1>Mr./Ms. Your Name</h1>
+    <p>Welcome to My Classroom Page</p>
+</header>
+
+<nav>
+    <a href="#about">About Me</a>
+    <a href="#schedule">Class Schedule</a>
+    <a href="#assignments">Assignments</a>
+    <a href="#contact">Contact</a>
+</nav>
+
+<section id="about">
+    <h2>About Me</h2>
+    <p>Hello! I am a teacher passionate about helping students learn and grow. I teach [subject] and love making lessons engaging and fun.</p>
+</section>
+
+<section id="schedule">
+    <h2>Class Schedule</h2>
+    <ul>
+        <li>Period 1: [Class Name]</li>
+        <li>Period 2: [Class Name]</li>
+        <li>Period 3: [Class Name]</li>
+        <li>Period 4: [Class Name]</li>
+    </ul>
+</section>
+
+<section id="assignments">
+    <h2>Assignments</h2>
+    <ul>
+        <li>Homework 1 – Due Date</li>
+        <li>Project – Due Date</li>
+        <li>Quiz – Date</li>
+    </ul>
+</section>
+
+<section id="contact">
+    <h2>Contact</h2>
+    <p>Email: yourname@school.com</p>
+    <p>Office Hours: Mon–Fri, 3:00–4:00 PM</p>
+</section>
+
+<footer>
+    <p>© 2026 Your Name | Classroom Page</p>
+</footer>
+
 </body>
 </html>
