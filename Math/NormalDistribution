@@ -1,1 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How Much of the Population? — A Normal-Curve Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#102A43;
+    --ink-soft:#486581;
+    --paper:#EBF0F7;
+    --panel:#FFFFFF;
+    --grid:#D7E0EC;
+    --curve:#1B3A5C;
+    --capture:#E8920C;
+    --capture-2:#F6B53D;
+    --tail:#AEBCD0;
+    --accent:#0E7C86;
+    --accent-deep:#0A5C64;
+    --accent-soft:#D6ECEE;
+    --good:#2E9E5B;
+    --hairline:#C9D4E3;
+    --shadow:0 1px 2px rgba(16,42,67,.06),0 8px 28px rgba(16,42,67,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:clamp(14px,3vw,34px);
+  }
+  .wrap{max-width:1120px;margin:0 auto;}
 
+  /* ---- header ---- */
+  header{margin-bottom:clamp(16px,2.4vw,26px);}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent-deep);font-weight:500;margin:0 0 8px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:clamp(26px,4.4vw,42px);
+    line-height:1.05;letter-spacing:-.015em;margin:0 0 10px;
+  }
+  h1 em{font-style:normal;color:var(--capture);}
+  .lede{max-width:62ch;color:var(--ink-soft);font-size:clamp(14px,1.4vw,16px);margin:0;}
+
+  /* ---- layout ---- */
+  .stage{
+    display:grid;grid-template-columns:1.55fr 1fr;gap:18px;align-items:start;
+    margin-top:22px;
+  }
+  @media(max-width:880px){.stage{grid-template-columns:1fr;}}
+  .card{
+    background:var(--panel);border:1px solid var(--hairline);
+    border-radius:16px;box-shadow:var(--shadow);
+  }
+
+  /* ---- plot card ---- */
+  .plot-card{padding:clamp(10px,1.6vw,18px) clamp(8px,1.4vw,14px);}
+  svg{display:block;width:100%;height:auto;touch-action:none;}
+  .curve-line{fill:none;stroke:var(--curve);stroke-width:2.4;stroke-linejoin:round;}
+  .axis-line{stroke:var(--ink);stroke-width:1.4;}
+  .tick{stroke:var(--hairline);stroke-width:1;}
+  .gridline{stroke:var(--grid);stroke-width:1;}
+  .tick-label{font-family:'IBM Plex Mono',monospace;font-size:13px;fill:var(--ink-soft);}
+  .er-band{fill:var(--accent);opacity:.05;}
+  .er-rule{stroke:var(--accent);stroke-width:1;stroke-dasharray:3 4;opacity:.5;}
+  .er-label{font-family:'IBM Plex Mono',monospace;font-size:12px;fill:var(--accent-deep);font-weight:500;}
+  .handle-line{stroke:var(--accent);stroke-width:1.6;}
+  .handle-hit{fill:transparent;cursor:ew-resize;}
+  .handle-tab{fill:var(--accent);}
+  .handle-tab-label{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;fill:#fff;text-anchor:middle;}
+  .handle-grp{cursor:ew-resize;}
+  .handle-grp:focus{outline:none;}
+  .handle-grp:focus .handle-tab{fill:var(--accent-deep);}
+  .notation{font-family:'IBM Plex Mono',monospace;font-size:14px;fill:var(--ink);}
+  .notation .v{fill:var(--capture);font-weight:600;}
+
+  /* ---- readout panel ---- */
+  .panel-pad{padding:clamp(16px,2vw,22px);}
+  .readout .label{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-soft);margin:0 0 2px;
+  }
+  .big-pct{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:clamp(46px,8vw,62px);line-height:1;letter-spacing:-.02em;
+    color:var(--capture);font-variant-numeric:tabular-nums;
+  }
+  .big-pct .sym{font-size:.5em;color:var(--ink-soft);margin-left:2px;}
+  .gauge{height:12px;border-radius:7px;background:var(--paper);overflow:hidden;margin:14px 0 6px;border:1px solid var(--hairline);}
+  .gauge-fill{height:100%;width:0%;border-radius:7px;background:linear-gradient(90deg,var(--capture),var(--capture-2));transition:width .12s linear;}
+  .sub-eq{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-soft);margin-top:8px;}
+  .sub-eq b{color:var(--ink);font-weight:600;}
+
+  .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;}
+  .mini{background:var(--paper);border:1px solid var(--hairline);border-radius:11px;padding:10px 12px;}
+  .mini .m-label{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);}
+  .mini .m-val{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px;}
+  .mini.tail .m-val{color:var(--ink-soft);}
+  .mini.bound .m-val{color:var(--accent-deep);}
+
+  /* ---- controls ---- */
+  .controls{margin-top:18px;}
+  .slider-row{display:flex;align-items:center;gap:12px;margin:10px 0;}
+  .slider-row label{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;
+    color:var(--accent-deep);width:78px;flex:none;letter-spacing:.04em;
+  }
+  input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:4px;background:var(--accent-soft);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 1px 4px rgba(14,124,134,.5);cursor:ew-resize;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:3px solid #fff;box-shadow:0 1px 4px rgba(14,124,134,.5);cursor:ew-resize;}
+  input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--ink);outline-offset:2px;}
+  .slider-row .num{font-family:'IBM Plex Mono',monospace;font-size:13px;width:58px;text-align:right;color:var(--ink);flex:none;font-variant-numeric:tabular-nums;}
+
+  .chip-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin:20px 0 9px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
+    background:var(--panel);border:1px solid var(--hairline);color:var(--ink);
+    padding:7px 12px;border-radius:9px;cursor:pointer;transition:.12s;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent-deep);}
+  .chip:active{transform:translateY(1px);}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .toggle-row{display:flex;align-items:center;gap:10px;margin-top:20px;}
+  .switch{position:relative;width:42px;height:24px;flex:none;}
+  .switch input{opacity:0;width:0;height:0;}
+  .track{position:absolute;inset:0;background:var(--hairline);border-radius:13px;transition:.15s;cursor:pointer;}
+  .track::before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .switch input:checked + .track{background:var(--accent);}
+  .switch input:checked + .track::before{transform:translateX(18px);}
+  .switch input:focus-visible + .track{outline:2px solid var(--ink);outline-offset:2px;}
+  .toggle-row span{font-size:13.5px;color:var(--ink);}
+
+  /* ---- challenge ---- */
+  .challenge{margin-top:18px;border-color:var(--accent-soft);}
+  .ch-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px;}
+  .ch-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;color:var(--ink);}
+  .ch-new{font-family:'IBM Plex Mono',monospace;font-size:12px;background:none;border:none;color:var(--accent-deep);cursor:pointer;text-decoration:underline;padding:0;}
+  .ch-task{font-size:14px;color:var(--ink-soft);margin:0 0 12px;}
+  .ch-task b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+  .ch-status{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:13px;}
+  .ch-dot{width:12px;height:12px;border-radius:50%;background:var(--tail);flex:none;transition:.2s;}
+  .ch-status.hit .ch-dot{background:var(--good);box-shadow:0 0 0 4px rgba(46,158,91,.18);}
+  .ch-status .ch-msg{color:var(--ink-soft);}
+  .ch-status.hit .ch-msg{color:var(--good);font-weight:600;}
+
+  footer{margin-top:26px;font-size:12.5px;color:var(--ink-soft);max-width:70ch;}
+  footer code{font-family:'IBM Plex Mono',monospace;background:var(--panel);border:1px solid var(--hairline);padding:1px 5px;border-radius:5px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Normal Distribution · Activity</p>
+    <h1>Drag the cutoffs. Watch how much of the <em>population</em> you capture.</h1>
+    <p class="lede">The navy curve is the whole population. The teal handles are the cutoffs you choose, measured in standard deviations (σ) from the mean. The shaded amber region is the share of the population that falls between them. Move a handle and the percentage updates instantly.</p>
+  </header>
+
+  <div class="stage">
+    <!-- PLOT -->
+    <div class="card plot-card">
+      <svg id="plot" viewBox="0 0 800 470" role="img" aria-label="Normal distribution curve with adjustable lower and upper cutoffs.">
+        <!-- empirical-rule reference (toggled) -->
+        <g id="empirical" style="display:none"></g>
+        <!-- gridlines -->
+        <g id="grid"></g>
+        <!-- captured fill -->
+        <path id="fill" fill="url(#capGrad)"></path>
+        <!-- curve -->
+        <path id="curve" class="curve-line"></path>
+        <!-- axis -->
+        <line id="axis" class="axis-line"></line>
+        <g id="ticks"></g>
+        <!-- notation -->
+        <text id="notation" class="notation" x="400" y="448" text-anchor="middle"></text>
+        <!-- handles drawn last so they sit on top -->
+        <g id="handleLo" class="handle-grp" tabindex="0" role="slider" aria-label="Lower cutoff in standard deviations" aria-valuemin="-4" aria-valuemax="4"></g>
+        <g id="handleHi" class="handle-grp" tabindex="0" role="slider" aria-label="Upper cutoff in standard deviations" aria-valuemin="-4" aria-valuemax="4"></g>
+        <defs>
+          <linearGradient id="capGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="var(--capture-2)" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="var(--capture)" stop-opacity=".45"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- READOUT + CONTROLS -->
+    <div class="card panel-pad">
+      <div class="readout">
+        <p class="label">Population captured</p>
+        <div class="big-pct"><span id="pctMain">68.27</span><span class="sym">%</span></div>
+        <div class="gauge"><div class="gauge-fill" id="gauge"></div></div>
+        <div class="sub-eq">P(<b id="eqLo">−1.00</b> &lt; Z &lt; <b id="eqHi">+1.00</b>) = <b id="eqPct">0.6827</b></div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini bound"><div class="m-label">Lower cutoff</div><div class="m-val" id="vLo">−1.00σ</div></div>
+        <div class="mini bound"><div class="m-label">Upper cutoff</div><div class="m-val" id="vHi">+1.00σ</div></div>
+        <div class="mini tail"><div class="m-label">Left tail</div><div class="m-val" id="vTailL">15.87%</div></div>
+        <div class="mini tail"><div class="m-label">Right tail</div><div class="m-val" id="vTailR">15.87%</div></div>
+      </div>
+
+      <div class="controls">
+        <div class="slider-row">
+          <label for="sLo">Lower σ</label>
+          <input type="range" id="sLo" min="-4" max="4" step="0.01" value="-1">
+          <span class="num" id="nLo">−1.00</span>
+        </div>
+        <div class="slider-row">
+          <label for="sHi">Upper σ</label>
+          <input type="range" id="sHi" min="-4" max="4" step="0.01" value="1">
+          <span class="num" id="nHi">+1.00</span>
+        </div>
+
+        <p class="chip-label">Jump to a preset</p>
+        <div class="chips" id="chips"></div>
+
+        <div class="toggle-row">
+          <label class="switch"><input type="checkbox" id="erToggle"><span class="track"></span></label>
+          <span>Show the 68–95–99.7 empirical rule bands</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHALLENGE -->
+  <div class="card challenge panel-pad">
+    <div class="ch-head">
+      <span class="ch-title">Challenge</span>
+      <button class="ch-new" id="chNew">New target ↻</button>
+    </div>
+    <p class="ch-task" id="chTask"></p>
+    <div class="ch-status" id="chStatus">
+      <span class="ch-dot"></span>
+      <span class="ch-msg" id="chMsg"></span>
+    </div>
+  </div>
+
+  <footer>
+    Cutoffs are z-scores: the number of standard deviations away from the mean. The captured share comes from the standard normal curve, <code>P(a &lt; Z &lt; b) = Φ(b) − Φ(a)</code>. Notice that capturing the middle ±1σ always gives ≈68.27% — no matter how large or small the actual standard deviation is, because the cutoffs are scaled in σ units.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  // ---------- math ----------
+  function erf(x){
+    var s = x<0?-1:1; x=Math.abs(x);
+    var t=1/(1+0.3275911*x);
+    var y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
+    return s*y;
+  }
+  function Phi(z){ return 0.5*(1+erf(z/Math.SQRT2)); }
+  function pdf(z){ return Math.exp(-z*z/2)/Math.sqrt(2*Math.PI); }
+
+  // ---------- geometry ----------
+  var Z_MIN=-4, Z_MAX=4;
+  var L=58, R=770, T=34, B=400;        // plot box
+  var MAXD=pdf(0), HEADROOM=0.90;
+  function xOf(z){ return L+(z-Z_MIN)/(Z_MAX-Z_MIN)*(R-L); }
+  function zOf(x){ return Z_MIN+(x-L)/(R-L)*(Z_MAX-Z_MIN); }
+  function yOf(d){ return B-(d/MAXD)*(B-T)*HEADROOM; }
+
+  // build static curve points once
+  var CURVE=[];
+  for(var z=Z_MIN; z<=Z_MAX+1e-9; z+=0.02){ CURVE.push([z, pdf(z)]); }
+  function curvePath(){
+    var d="M"+xOf(CURVE[0][0]).toFixed(2)+" "+yOf(CURVE[0][1]).toFixed(2);
+    for(var i=1;i<CURVE.length;i++){ d+="L"+xOf(CURVE[i][0]).toFixed(2)+" "+yOf(CURVE[i][1]).toFixed(2); }
+    return d;
+  }
+  function fillPath(lo,hi){
+    var d="M"+xOf(lo).toFixed(2)+" "+B.toFixed(2);
+    for(var zz=lo; zz<=hi+1e-9; zz+=0.02){ d+="L"+xOf(zz).toFixed(2)+" "+yOf(pdf(zz)).toFixed(2); }
+    d+="L"+xOf(hi).toFixed(2)+" "+yOf(pdf(hi)).toFixed(2);
+    d+="L"+xOf(hi).toFixed(2)+" "+B.toFixed(2)+"Z";
+    return d;
+  }
+
+  // ---------- DOM ----------
+  var $=function(id){return document.getElementById(id);};
+  var svg=$("plot"), elCurve=$("curve"), elFill=$("fill"), elAxis=$("axis"),
+      elTicks=$("ticks"), elGrid=$("grid"), elEmp=$("empirical"),
+      hLo=$("handleLo"), hHi=$("handleHi"), elNote=$("notation");
+  var sLo=$("sLo"), sHi=$("sHi"), nLo=$("nLo"), nHi=$("nHi");
+  var SVGNS="http://www.w3.org/2000/svg";
+
+  function fmtZ(z){ return (z<0?"−":"+")+Math.abs(z).toFixed(2); }   // signed, unicode minus
+  function disp(z){ return (z<0?"−":"")+Math.abs(z).toFixed(2); }     // plain unicode minus
+
+  // static draw
+  elCurve.setAttribute("d", curvePath());
+  elAxis.setAttribute("x1",L); elAxis.setAttribute("y1",B);
+  elAxis.setAttribute("x2",R); elAxis.setAttribute("y2",B);
+
+  // ticks + gridlines
+  for(var t=-3;t<=3;t++){
+    var gx=xOf(t);
+    var gl=document.createElementNS(SVGNS,"line");
+    gl.setAttribute("class","gridline");
+    gl.setAttribute("x1",gx);gl.setAttribute("y1",T);gl.setAttribute("x2",gx);gl.setAttribute("y2",B);
+    elGrid.appendChild(gl);
+    var tk=document.createElementNS(SVGNS,"line");
+    tk.setAttribute("class","tick");
+    tk.setAttribute("x1",gx);tk.setAttribute("y1",B);tk.setAttribute("x2",gx);tk.setAttribute("y2",B+6);
+    elTicks.appendChild(tk);
+    var lb=document.createElementNS(SVGNS,"text");
+    lb.setAttribute("class","tick-label");
+    lb.setAttribute("x",gx);lb.setAttribute("y",B+22);lb.setAttribute("text-anchor","middle");
+    lb.textContent = t===0 ? "0" : (t<0?"−":"+")+Math.abs(t)+"σ";
+    elTicks.appendChild(lb);
+  }
+
+  // empirical rule bands
+  (function(){
+    var bands=[[1,"68.27%"],[2,"95.45%"],[3,"99.73%"]];
+    bands.forEach(function(bd){
+      var k=bd[0];
+      var l=document.createElementNS(SVGNS,"line");
+      l.setAttribute("class","er-rule");
+      l.setAttribute("x1",xOf(k));l.setAttribute("y1",T+8);l.setAttribute("x2",xOf(k));l.setAttribute("y2",B);
+      elEmp.appendChild(l);
+      var l2=document.createElementNS(SVGNS,"line");
+      l2.setAttribute("class","er-rule");
+      l2.setAttribute("x1",xOf(-k));l2.setAttribute("y1",T+8);l2.setAttribute("x2",xOf(-k));l2.setAttribute("y2",B);
+      elEmp.appendChild(l2);
+      var tx=document.createElementNS(SVGNS,"text");
+      tx.setAttribute("class","er-label");
+      tx.setAttribute("x",400);tx.setAttribute("y",T+10+(k-1)*17);tx.setAttribute("text-anchor","middle");
+      tx.textContent="±"+k+"σ  →  "+bd[1];
+      elEmp.appendChild(tx);
+    });
+  })();
+
+  // build a handle group (vertical line + grip tab + hit area)
+  function buildHandle(g){
+    var line=document.createElementNS(SVGNS,"line"); line.setAttribute("class","handle-line"); g.appendChild(line);
+    var tab=document.createElementNS(SVGNS,"rect"); tab.setAttribute("class","handle-tab");
+    tab.setAttribute("width",46);tab.setAttribute("height",24);tab.setAttribute("rx",6);tab.setAttribute("y",B+30);
+    g.appendChild(tab);
+    var txt=document.createElementNS(SVGNS,"text"); txt.setAttribute("class","handle-tab-label");
+    txt.setAttribute("y",B+47); g.appendChild(txt);
+    var hit=document.createElementNS(SVGNS,"rect"); hit.setAttribute("class","handle-hit");
+    hit.setAttribute("width",26);hit.setAttribute("y",T);hit.setAttribute("height",B+54-T); g.appendChild(hit);
+    return {line:line,tab:tab,txt:txt,hit:hit};
+  }
+  var partsLo=buildHandle(hLo), partsHi=buildHandle(hHi);
+
+  function placeHandle(p,z){
+    var x=xOf(z), topY=yOf(pdf(z));
+    p.line.setAttribute("x1",x);p.line.setAttribute("y1",topY);p.line.setAttribute("x2",x);p.line.setAttribute("y2",B);
+    p.tab.setAttribute("x",x-23);
+    p.txt.setAttribute("x",x);p.txt.textContent=fmtZ(z);
+    p.hit.setAttribute("x",x-13);
+  }
+
+  // ---------- state ----------
+  var lo=-1, hi=1;
+
+  function clampOrder(){
+    if(lo>hi){ var m=(lo+hi)/2; lo=m; hi=m; }
+    lo=Math.max(Z_MIN,Math.min(Z_MAX,lo));
+    hi=Math.max(Z_MIN,Math.min(Z_MAX,hi));
+  }
+
+  var animTarget=0, animNow=0, raf=null;
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function tick(){
+    animNow += (animTarget-animNow)*0.25;
+    if(Math.abs(animTarget-animNow)<0.02){ animNow=animTarget; }
+    $("pctMain").textContent=animNow.toFixed(2);
+    if(animNow!==animTarget){ raf=requestAnimationFrame(tick); } else { raf=null; }
+  }
+
+  function render(){
+    clampOrder();
+    elFill.setAttribute("d", fillPath(lo,hi));
+    placeHandle(partsLo,lo); placeHandle(partsHi,hi);
+
+    var area=Phi(hi)-Phi(lo);
+    var tl=Phi(lo), tr=1-Phi(hi);
+    var pct=area*100;
+
+    // animated big number
+    animTarget=pct;
+    if(reduce){ $("pctMain").textContent=pct.toFixed(2); }
+    else if(!raf){ raf=requestAnimationFrame(tick); }
+
+    $("gauge").style.width=pct.toFixed(2)+"%";
+    $("eqLo").textContent=fmtZ(lo); $("eqHi").textContent=fmtZ(hi);
+    $("eqPct").textContent=area.toFixed(4);
+    $("vLo").textContent=fmtZ(lo)+"σ"; $("vHi").textContent=fmtZ(hi)+"σ";
+    $("vTailL").textContent=(tl*100).toFixed(2)+"%";
+    $("vTailR").textContent=(tr*100).toFixed(2)+"%";
+    elNote.innerHTML=""; // notation handled in panel; keep svg clean
+
+    // sliders + their labels (without retriggering loop)
+    sLo.value=lo; sHi.value=hi;
+    nLo.textContent=fmtZ(lo); nHi.textContent=fmtZ(hi);
+
+    checkChallenge(pct, lo, hi);
+  }
+
+  // ---------- pointer dragging on the SVG handles ----------
+  function svgZFromEvent(e){
+    var rect=svg.getBoundingClientRect();
+    var cx=(e.touches?e.touches[0].clientX:e.clientX);
+    var sx=(cx-rect.left)/rect.width*800;   // 800 = viewBox width
+    return Math.max(Z_MIN,Math.min(Z_MAX, zOf(sx)));
+  }
+  var dragging=null;
+  function startDrag(which){
+    return function(e){ dragging=which; e.preventDefault();
+      try{ (e.target).setPointerCapture && e.target.setPointerCapture(e.pointerId);}catch(_){} };
+  }
+  function moveDrag(e){
+    if(!dragging) return;
+    var z=svgZFromEvent(e);
+    if(dragging==="lo"){ lo=Math.min(z,hi); } else { hi=Math.max(z,lo); }
+    render();
+  }
+  function endDrag(){ dragging=null; }
+  hLo.addEventListener("pointerdown", startDrag("lo"));
+  hHi.addEventListener("pointerdown", startDrag("hi"));
+  window.addEventListener("pointermove", moveDrag);
+  window.addEventListener("pointerup", endDrag);
+
+  // keyboard on handles
+  function keyHandle(which){
+    return function(e){
+      var step = e.shiftKey?0.25:0.05;
+      var d=0;
+      if(e.key==="ArrowRight"||e.key==="ArrowUp") d=step;
+      else if(e.key==="ArrowLeft"||e.key==="ArrowDown") d=-step;
+      else return;
+      e.preventDefault();
+      if(which==="lo"){ lo=Math.min(lo+d,hi); } else { hi=Math.max(hi+d,lo); }
+      render();
+    };
+  }
+  hLo.addEventListener("keydown", keyHandle("lo"));
+  hHi.addEventListener("keydown", keyHandle("hi"));
+
+  // sliders
+  sLo.addEventListener("input", function(){ lo=parseFloat(sLo.value); if(lo>hi)hi=lo; render(); });
+  sHi.addEventListener("input", function(){ hi=parseFloat(sHi.value); if(hi<lo)lo=hi; render(); });
+
+  // presets
+  var PRESETS=[
+    ["±1σ",-1,1],["±2σ",-2,2],["±3σ",-3,3],
+    ["Middle 50%",-0.6745,0.6745],["Middle 90%",-1.6449,1.6449],["Middle 95%",-1.96,1.96],
+    ["Lower half",-4,0],["Right tail · top 5%",1.6449,4]
+  ];
+  var chipBox=$("chips");
+  PRESETS.forEach(function(p){
+    var b=document.createElement("button");
+    b.className="chip"; b.textContent=p[0];
+    b.addEventListener("click",function(){ lo=p[1]; hi=p[2]; render(); });
+    chipBox.appendChild(b);
+  });
+
+  // empirical toggle
+  $("erToggle").addEventListener("change",function(e){
+    elEmp.style.display = e.target.checked ? "block":"none";
+  });
+
+  // ---------- challenge ----------
+  var TARGETS=[
+    {t:"Capture exactly the middle <b>50%</b> of the population.", lo:null, hi:null, goal:50, tol:0.5, hint:"middle"},
+    {t:"Capture as close to <b>90%</b> of the population as you can.", goal:90, tol:0.5, hint:"any"},
+    {t:"Capture as close to <b>95%</b> as you can.", goal:95, tol:0.4, hint:"any"},
+    {t:"Capture <b>99%</b> of the population.", goal:99, tol:0.3, hint:"any"},
+    {t:"Capture the <b>top 10%</b> (the highest scores only).", goal:10, tol:0.5, hint:"rtail"},
+    {t:"Capture the <b>bottom 25%</b> (the lowest scores only).", goal:25, tol:0.5, hint:"ltail"}
+  ];
+  var chIdx=0;
+  function loadChallenge(){
+    var c=TARGETS[chIdx];
+    $("chTask").innerHTML=c.t;
+    $("chMsg").textContent="Adjust the cutoffs to hit the target.";
+    $("chStatus").classList.remove("hit");
+  }
+  function checkChallenge(pct,lo,hi){
+    var c=TARGETS[chIdx];
+    var ok=Math.abs(pct-c.goal)<=c.tol;
+    // for tail challenges, also require the correct side
+    if(c.hint==="rtail"){ ok = ok && hi>=3.9 && lo>0; }
+    if(c.hint==="ltail"){ ok = ok && lo<=-3.9 && hi<0; }
+    var st=$("chStatus");
+    if(ok){
+      st.classList.add("hit");
+      $("chMsg").textContent="Nailed it — you're within tolerance of the target.";
+    }else{
+      st.classList.remove("hit");
+      var diff=(pct-c.goal);
+      $("chMsg").textContent="Currently "+pct.toFixed(2)+"%  ·  "+(diff>0?"+":"")+diff.toFixed(2)+"% from target";
+    }
+  }
+  $("chNew").addEventListener("click",function(){
+    chIdx=(chIdx+1)%TARGETS.length; loadChallenge(); render();
+  });
+
+  // ---------- go ----------
+  loadChallenge();
+  render();
+})();
+</script>
+</body>
+</html>
