@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Maura - Math Hub</title>
+    <title>STEM Maura - Mathematics Hub</title>
     <style>
-        /* General Styles - Consistent with Main Hub */
+        /* General Styles */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -15,9 +15,9 @@
             line-height: 1.6;
         }
 
-        /* Header Styles */
+        /* Header and Nav Styles */
         header {
-            background-color: #005662; /* STEM Maura Teal */
+            background-color: #005662; /* Consistent teal */
             color: white;
             text-align: center;
             padding: 2rem 1rem;
@@ -29,11 +29,23 @@
             font-weight: 700;
         }
 
+        .home-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #b2dfdb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .home-link:hover {
+            text-decoration: underline;
+        }
+
         /* Main Content Styles */
         main {
-            max-width: 800px; /* Focused, readable column */
+            max-width: 960px;
             margin: 2rem auto;
-            padding: 0 2rem;
+            padding: 0 1rem;
         }
 
         /* Hub Section Container */
@@ -51,70 +63,82 @@
             margin-top: 0;
         }
 
-        p.intro-text {
+        p.intro {
             font-size: 1.1rem;
             margin-bottom: 2rem;
         }
 
-        /* Resource Card (Focus on the main link) */
-        .resource-card {
-            background-color: #e0f2f1; /* Light cyan-teal background */
+        /* --- Link to specific topic --- */
+        #statistics-section {
+            margin-top: 2rem;
+        }
+
+        .topic-link-card {
+            background: #e0f2f1;
             border: 1px solid #b2dfdb;
             border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
+            max-width: 400px;
+            margin: 1rem auto; /* Center the single card */
         }
 
-        .resource-card h3 {
+        .topic-link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .topic-link-card h3 {
             color: #005662;
             margin-top: 0;
-            font-size: 1.6rem;
         }
 
-        .resource-description {
-            color: #555;
-            margin-bottom: 1.5rem;
-        }
-
-        /* The Main Link Button (Crucial requested element) */
-        .cta-link {
+        .view-link {
             display: inline-block;
-            padding: 12px 30px;
-            background-color: #00796b; /* Darker teal action color */
+            margin-top: 1rem;
+            padding: 10px 20px;
+            background-color: #00796b;
             color: white;
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
-            font-size: 1.1rem;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;
         }
 
-        .cta-link:hover {
+        .view-link:hover {
             background-color: #005662;
-            transform: translateY(-2px);
         }
 
-        .cta-link:active {
-            transform: translateY(1px);
+        /* --- Placeholder styles for FUTURE sections --- */
+        #future-concepts {
+            margin-top: 3rem;
+            border-top: 2px dashed #ccc;
+            padding-top: 2rem;
         }
 
-        /* Nav Link Back to Home */
-        .back-nav {
+        .concept-placeholder-list {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .placeholder-item {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 5px;
             text-align: center;
-            margin-top: 2rem;
+            color: #777;
         }
 
-        .back-link {
-            color: #00796b;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
+        .placeholder-item strong {
+            color: #555;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
         /* Footer Styles */
@@ -122,19 +146,15 @@
             text-align: center;
             padding: 1.5rem;
             background-color: #333;
-            color: #b2dfdb;
-            margin-top: 3rem;
+            color: white;
             font-size: 0.9rem;
+            margin-top: 3rem;
         }
 
-        /* Responsive adjustments */
+        /* Responsive Styles (Small Screens) */
         @media (max-width: 600px) {
             header h1 {
                 font-size: 2rem;
-            }
-            
-            main {
-                padding: 0 1rem;
             }
         }
     </style>
@@ -142,37 +162,54 @@
 <body>
 
     <header>
-        <h1>Math with Maura</h1>
+        <h1>STEM Maura - Mathematics Hub</h1>
+        <a href="https://marisatyr.github.io/" class="home-link">← Back to Main Hub (index.html)</a>
     </header>
 
     <main>
         <div class="hub-container">
-            <h2>Welcome to the Mathematics Hub</h2>
-            <p class="intro-text">Hello! Welcome to the central repository for my advanced mathematics resources. This section is designed to break down complex statistical and algebraic concepts into manageable, digestible learning modules. Check back often as I continue to add new material!</p>
+            <h2>Math Resources</h2>
+            <p class="intro">Welcome to my curated collection of mathematics resources! This page acts as a central hub for various topics we explore in depth. Select a concept below to get started. Be sure to check back as new sections are being added regularly!</p>
 
-            <!-- Spotlight Resource (The specific link you requested) -->
-            <article class="resource-card">
-                <h3>Statistical Concepts: The Normal Distribution</h3>
-                <p class="resource-description">
-                    Explore the fundamental concepts of the normal distribution, the characteristics of the bell curve, understanding standard deviations, and working with Z-scores. This module provides a complete visualization and explanation.
-                </p>
-                
-                <!-- This is the key requested link -->
-                <a href="https://marisatyr.github.io/Math/NormalDistribution.html" class="cta-link" target="_blank" rel="noopener noreferrer">
-                    Open Normal Distribution Module
-                </a>
-            </article>
+            <!-- STATISTICS SECTION (Target of specific link request) -->
+            <section id="statistics-section">
+                <h3>Statistics</h3>
+                <div class="topic-link-card">
+                    <h3>The Normal Distribution</h3>
+                    <p>Explore concepts of the bell curve, standard deviation, and Z-scores.</p>
+                    <a href="https://marisatyr.github.io/Math/NormalDistribution.html" class="view-link">View Module →</a>
+                </section>
+            </div>
 
-            <!-- Navigation back to main site -->
-            <nav class="back-nav">
-                <a href="index.html" class="back-link">&larr; Return to STEM Maura Main Hub</a>
-            </nav>
+            <!-- FUTURE EXPANSION SECTION -->
+            <section id="future-concepts">
+                <h2>Coming Soon: Other Math Concepts</h2>
+                <p>I am actively working on new content! Here are some of the areas that will be added soon:</p>
+                <ul class="concept-placeholder-list">
+                    <li class="placeholder-item">
+                        <strong>Algebra Fundamentals</strong>
+                        (Placeholders for key formulas, equation solving, and graphing)
+                    </li>
+                    <li class="placeholder-item">
+                        <strong>Geometry Basics</strong>
+                        (Placeholders for theorems, shape properties, and proofs)
+                    </li>
+                    <li class="placeholder-item">
+                        <strong>Calculus Introduction</strong>
+                        (Placeholders for limits, derivatives, and integral concepts)
+                    </li>
+                    <li class="placeholder-item">
+                        <strong>Trigonometry Review</strong>
+                        (Placeholders for sine/cosine functions, unit circle, and identities)
+                    </li>
+                </ul>
+            </section>
+
         </div>
     </main>
 
     <footer>
-        <p>&copy; STEM Maura. Specific Mathematics Resources.</p>
-        <p>Site by <a href="https://mariSatyr.github.io" style="color:white; text-decoration: none;">mariSatyr.github.io</a></p>
+        <p>&copy; STEM Maura. Hosted at marisatyr.github.io</p>
     </footer>
 
 </body>
