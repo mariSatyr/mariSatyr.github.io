@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Maura - Math Hub</title>
+    <style>
+        /* General Styles - Consistent with Main Hub */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9fbfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #005662; /* STEM Maura Teal */
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        /* Main Content Styles */
+        main {
+            max-width: 800px; /* Focused, readable column */
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Hub Section Container */
+        .hub-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            border-bottom: 3px solid #005662;
+            padding-bottom: 0.5rem;
+            color: #005662;
+            margin-top: 0;
+        }
+
+        p.intro-text {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Resource Card (Focus on the main link) */
+        .resource-card {
+            background-color: #e0f2f1; /* Light cyan-teal background */
+            border: 1px solid #b2dfdb;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .resource-card h3 {
+            color: #005662;
+            margin-top: 0;
+            font-size: 1.6rem;
+        }
+
+        .resource-description {
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+
+        /* The Main Link Button (Crucial requested element) */
+        .cta-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #00796b; /* Darker teal action color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .cta-link:hover {
+            background-color: #005662;
+            transform: translateY(-2px);
+        }
+
+        .cta-link:active {
+            transform: translateY(1px);
+        }
+
+        /* Nav Link Back to Home */
+        .back-nav {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-link {
+            color: #00796b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer Styles */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: #333;
+            color: #b2dfdb;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            main {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Math with Maura</h1>
+    </header>
+
+    <main>
+        <div class="hub-container">
+            <h2>Welcome to the Mathematics Hub</h2>
+            <p class="intro-text">Hello! Welcome to the central repository for my advanced mathematics resources. This section is designed to break down complex statistical and algebraic concepts into manageable, digestible learning modules. Check back often as I continue to add new material!</p>
+
+            <!-- Spotlight Resource (The specific link you requested) -->
+            <article class="resource-card">
+                <h3>Statistical Concepts: The Normal Distribution</h3>
+                <p class="resource-description">
+                    Explore the fundamental concepts of the normal distribution, the characteristics of the bell curve, understanding standard deviations, and working with Z-scores. This module provides a complete visualization and explanation.
+                </p>
+                
+                <!-- This is the key requested link -->
+                <a href="https://marisatyr.github.io/Math/NormalDistribution.html" class="cta-link" target="_blank" rel="noopener noreferrer">
+                    Open Normal Distribution Module
+                </a>
+            </article>
+
+            <!-- Navigation back to main site -->
+            <nav class="back-nav">
+                <a href="index.html" class="back-link">&larr; Return to STEM Maura Main Hub</a>
+            </nav>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; STEM Maura. Specific Mathematics Resources.</p>
+        <p>Site by <a href="https://mariSatyr.github.io" style="color:white; text-decoration: none;">mariSatyr.github.io</a></p>
+    </footer>
+
+</body>
+</html>
