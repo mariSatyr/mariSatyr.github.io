@@ -121,6 +121,26 @@
             background-color: #005662;
         }
 
+        /* Coffee Button Styles */
+        .coffee-button {
+            display: block;
+            margin: 2rem auto;
+            width: fit-content;
+        }
+
+        .coffee-button img {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .coffee-button img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
         /* Footer Styles */
         footer {
             text-align: center;
@@ -152,6 +172,10 @@
 
             .resource-card {
                 width: 100%; /* Stack cards on mobile */
+            }
+
+            .coffee-button img {
+                max-width: 300px;
             }
         }
     </style>
@@ -202,13 +226,19 @@
 
             </div>
         </section>
+
+        <!-- Buy Me a Coffee Button -->
+        <a href="https://buymeacoffee.com/mauraSTEM" class="coffee-button">
+            <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=mauraSTEM&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" />
+        </a>
+
     </main>
 
     <footer>
         <p>Hosted at <a href="http://mariSatyr.github.io">mariSatyr.github.io</a></p>
         <p>&copy; STEM Maura. All resources are for educational use.</p>
         <p>Contact: maura.sateriale@gmail.com </p>
-        <p><a href="https://buymeacoffee.com/mauraSTEM">Buy me a coffee</a></p>    </footer>
+    </footer>
 
 </body>
 </html>
