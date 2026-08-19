@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cell Builder: Review Game</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --cell-bg: #e1f5fe;
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        p { color: #555; }
+
+        #game-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* The Cell Diagram */
+        #cell-diagram {
+            width: 500px;
+            height: 500px;
+            background-color: var(--cell-bg);
+            border: 8px solid #81d4fa;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+        }
+
+        .drop-zone {
+            position: absolute;
+            border: 2px dashed #b0bec5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #90a4ae;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.hover {
+            background: rgba(52, 152, 219, 0.2);
+            border-color: var(--accent);
+        }
+
+        /* Part Sidebar */
+        #parts-bin {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .organelle {
+            background: var(--accent);
+            color: white;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            cursor: grab;
+            text-align: center;
+            font-weight: bold;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .organelle:active { cursor: grabbing; }
+        .organelle.placed {
+            background: var(--success);
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        /* Info Box */
+        #info-panel {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 840px;
+            min-height: 100px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 10px solid var(--accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .hidden { display: none; }
+
+        /* Specific positions for organelles */
+        #target-nucleus { width: 100px; height: 100px; top: 35%; left: 35%; }
+        #target-mitochondria { width: 60px; height: 40px; top: 20%; left: 65%; border-radius: 20px; }
+        #target-ribosomes { width: 40px; height: 40px; top: 70%; left: 30%; }
+        #target-golgi { width: 80px; height: 50px; top: 60%; left: 60%; border-radius: 10px; }
+        #target-vacuole { width: 70px; height: 70px; top: 15%; left: 25%; }
+
+        .placed-organelle {
+            width: 100%;
+            height: 100%;
+            border-radius: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--success);
+            color: white;
+            font-weight: bold;
+            animation: pop 0.3s ease-out;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cell Builder: Animal Cell</h1>
+    <p>Drag the organelles from the bin and place them in the correct spots within the cell!</p>
+
+    <div id="game-container">
+        <!-- The interactive cell -->
+        <div id="cell-diagram">
+            <div class="drop-zone" id="target-nucleus" data-accept="nucleus">?</div>
+            <div class="drop-zone" id="target-mitochondria" data-accept="mitochondria">?</div>
+            <div class="drop-zone" id="target-ribosomes" data-accept="ribosomes">?</div>
+            <div class="drop-zone" id="target-golgi" data-accept="golgi">?</div>
+            <div class="drop-zone" id="target-vacuole" data-accept="vacuole">?</div>
+        </div>
+
+        <!-- The parts to drag -->
+        <div id="parts-bin">
+            <h3>Organelles</h3>
+            <div class="organelle" draggable="true" id="nucleus">Nucleus</div>
+            <div class="organelle" draggable="true" id="mitochondria">Mitochondria</div>
+            <div class="organelle" draggable="true" id="ribosomes">Ribosomes</div>
+            <div class="organelle" draggable="true" id="golgi">Golgi Apparatus</div>
+            <div class="organelle" draggable="true" id="vacuole">Vacuole</div>
+            <button onclick="location.reload()" style="margin-top:20px; width:100%; padding:10px; cursor:pointer;">Reset Game</button>
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <h3 id="info-title">Function Review</h3>
+        <p id="info-text">Correctly place an organelle to see its function here...</p>
+    </div>
+
+    <script>
+        const organelles = document.querySelectorAll('.organelle');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        const infoTitle = document.getElementById('info-title');
+        const infoText = document.getElementById('info-text');
+
+        const functions = {
+            nucleus: "The 'Brain' of the cell. It contains the cell's DNA and coordinates activities like growth and reproduction.",
+            mitochondria: "The 'Powerhouse' of the cell. It takes in nutrients and creates energy-rich molecules (ATP) for the cell.",
+            ribosomes: "The protein factories. They follow instructions from the nucleus to create proteins needed for the cell to function.",
+            golgi: "The 'Post Office'. It modifies, sorts, and packages proteins for secretion or delivery to other organelles.",
+            vacuole: "The 'Storage Closet'. It stores nutrients, water, or waste products so the rest of the cell is protected from contamination."
+        };
+
+        // Drag and Drop Logic
+        organelles.forEach(organelle => {
+            organelle.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', e.target.id);
+            });
+        });
+
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('hover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('hover');
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('hover');
+                
+                const draggedId = e.dataTransfer.getData('text/plain');
+                const targetType = zone.getAttribute('data-accept');
+
+                if (draggedId === targetType) {
+                    // Correct Placement
+                    handleSuccess(draggedId, zone);
+                } else {
+                    // Wrong Placement
+                    alert("That's not the right spot for this organelle! Try again.");
+                }
+            });
+        });
+
+        function handleSuccess(id, zone) {
+            // Update the UI
+            const originalElement = document.getElementById(id);
+            originalElement.classList.add('placed');
+            originalElement.draggable = false;
+
+            zone.innerHTML = `<div class="placed-organelle">${id.toUpperCase()}</div>`;
+            zone.style.border = "none";
+            zone.style.background = "transparent";
+
+            // Update Info Panel
+            infoTitle.innerText = id.charAt(0).toUpperCase() + id.slice(1);
+            infoText.innerText = functions[id];
+            
+            // Check if game is won
+            const placedCount = document.querySelectorAll('.placed').length;
+            if (placedCount === Object.keys(functions).length) {
+                infoTitle.innerText = "🎉 Cell Complete!";
+                infoText.innerText = "Great job! You've identified all the key organelles and their functions.";
+            }
+        }
+    </script>
+</body>
+</html>
