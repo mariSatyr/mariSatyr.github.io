@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Maura - Biology Hub</title>
+    <style>
+        /* Reuse the site's styles for consistency */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; padding:0; background-color:#f9fbfd; color:#333; line-height:1.6; }
+        header { background-color:#005662; color:white; text-align:center; padding:2rem 1rem; }
+        header h1 { margin:0; font-size:2.2rem; font-weight:700; }
+        .home-link { display:inline-block; margin-top:0.75rem; color:#b2dfdb; text-decoration:none; font-weight:bold; }
+        .home-link:hover { text-decoration:underline; }
+        main { max-width:960px; margin:2rem auto; padding:0 1rem; }
+        .hub-container { background-color:white; padding:2rem; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+        h2 { border-bottom:3px solid #005662; padding-bottom:0.5rem; color:#005662; margin-top:0; }
+        p.intro { font-size:1.05rem; margin-bottom:1.25rem; }
+
+        .topic-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1.25rem; margin-top:1rem; }
+        .topic-card { background:#e8f5e9; border:1px solid #c8e6c9; border-radius:8px; padding:1rem; text-align:left; transition:transform 0.15s, box-shadow 0.15s; }
+        .topic-card h3 { color:#005662; margin-top:0; }
+        .topic-card p { color:#333; }
+        .view-link { display:inline-block; margin-top:0.75rem; padding:8px 14px; background-color:#00796b; color:white; text-decoration:none; border-radius:5px; font-weight:bold; }
+        .view-link:hover { background-color:#005662; }
+
+        .resources-list { margin-top:1.25rem; list-style-type:none; padding:0; }
+        .resources-list li { margin-bottom:0.5rem; }
+
+        footer { text-align:center; padding:1.5rem; background-color:#333; color:white; font-size:0.9rem; margin-top:2rem; }
+        @media (max-width:600px) { header h1 { font-size:1.6rem; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>STEM Maura - Biology Hub</h1>
+        <a href="https://marisatyr.github.io/science.html" class="home-link">← Back to Science Hub</a>
+    </header>
+
+    <main>
+        <div class="hub-container">
+            <h2>Biology</h2>
+            <p class="intro">Welcome to the Biology hub — a place for exploring life from cells to ecosystems. Below you'll find curated topic areas, hands-on lab activities, and resources for learners at different levels.</p>
+
+            <div class="topic-grid">
+                <article class="topic-card">
+                    <h3>Cells &amp; Cell Structure</h3>
+                    <p>Discover organelles, cell types, microscopy, and how structure supports function.</p>
+                    <a class="view-link" href="https://marisatyr.github.io/Science/CellStructure.html">Open Cell Structure Module →</a>
+                </article>
+
+                <article class="topic-card">
+                    <h3>Genetics &amp; Heredity</h3>
+                    <p>Learn about DNA, genes, Mendelian inheritance, and modern genetics techniques.</p>
+                    <a class="view-link" href="#genetics">Read Genetics Overview →</a>
+                </article>
+
+                <article class="topic-card">
+                    <h3>Ecology &amp; Ecosystems</h3>
+                    <p>Explore population dynamics, food webs, biomes, and human impacts on ecosystems.</p>
+                    <a class="view-link" href="#ecology">Explore Ecology →</a>
+                </article>
+
+                <article class="topic-card">
+                    <h3>Evolution &amp; Diversity of Life</h3>
+                    <p>Understand natural selection, speciation, and the tree of life.</p>
+                    <a class="view-link" href="#evolution">Learn More →</a>
+                </article>
+
+                <article class="topic-card">
+                    <h3>Human Biology</h3>
+                    <p>Highlights of anatomy, physiology, and systems-level organization.</p>
+                    <a class="view-link" href="#human-bio">View Human Biology →</a>
+                </article>
+
+                <article class="topic-card">
+                    <h3>Laboratory Skills</h3>
+                    <p>Tips for experimental design, safety, microscopy, and data analysis.</p>
+                    <a class="view-link" href="#labs">Lab Activities &amp; Protocols →</a>
+                </article>
+            </div>
+
+            <!-- In-page sections -->
+            <section id="genetics" style="margin-top:1.75rem;">
+                <h3>Genetics &amp; Heredity</h3>
+                <p>Genetics covers the chemistry of heredity (DNA/RNA), how traits are inherited, and how modern tools like PCR and sequencing help us read genomes. Example topics:</p>
+                <ul class="resources-list">
+                    <li>DNA structure &amp; replication</li>
+                    <li>Mendelian crosses &amp; Punnett squares</li>
+                    <li>Chromosomes, meiosis, and genetic variation</li>
+                </ul>
+            </section>
+
+            <section id="ecology" style="margin-top:1.25rem;">
+                <h3>Ecology &amp; Ecosystems</h3>
+                <p>Ecology examines relationships between organisms and their environment. Core concepts include trophic levels, energy flow, nutrient cycles, and human-driven change.</p>
+                <ul class="resources-list">
+                    <li>Populations &amp; carrying capacity</li>
+                    <li>Food webs &amp; energy pyramids</li>
+                    <li>Conservation and biodiversity</li>
+                </ul>
+            </section>
+
+            <section id="evolution" style="margin-top:1.25rem;">
+                <h3>Evolution &amp; Diversity</h3>
+                <p>Evolution explains the diversity of life through variation, selection, and time. The section covers evidence, mechanisms, and phylogenetic thinking.</p>
+            </section>
+
+            <section id="human-bio" style="margin-top:1.25rem;">
+                <h3>Human Biology</h3>
+                <p>Overview of major systems (circulatory, respiratory, nervous, digestive) and how they maintain homeostasis.</p>
+            </section>
+
+            <section id="labs" style="margin-top:1.25rem;">
+                <h3>Laboratory Skills &amp; Activities</h3>
+                <p>Hands-on practice builds understanding. Suggested activities include: microscope labs, DNA extraction demos, field sampling for ecology, and data analysis exercises.</p>
+                <p>Safety note: Always follow lab safety guidelines and teacher/supervisor instructions.</p>
+            </section>
+
+            <section id="resources" style="margin-top:1.5rem;">
+                <h3>Further Resources</h3>
+                <ul class="resources-list">
+                    <li><a href="https://www.khanacademy.org/science/biology" target="_blank">Khan Academy: Biology</a></li>
+                    <li><a href="https://www.nature.com/subjects/biology" target="_blank">Nature: Biology Topics</a></li>
+                    <li><a href="https://www.nationalgeographic.com/science/article" target="_blank">National Geographic Science</a></li>
+                </ul>
+            </section>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; STEM Maura. Hosted at marisatyr.github.io</p>
+    </footer>
+
+</body>
+</html>
