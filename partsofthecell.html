@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cell Builder: Review Game</title>
+    <title>Cell Anatomy: Shape Match</title>
     <style>
         :root {
-            --bg-color: #f0f4f8;
-            --cell-bg: #e1f5fe;
-            --primary: #2c3e50;
-            --accent: #3498db;
-            --success: #27ae60;
+            --bg-color: #f8fafc;
+            --cell-membrane: #64748b;
+            --cytoplasm: #f0f9ff;
+            --success: #22c55e;
+            --accent: #3b82f6;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
@@ -23,169 +23,211 @@
             padding: 20px;
         }
 
-        h1 { color: var(--primary); margin-bottom: 10px; }
-        p { color: #555; }
-
+        .header { text-align: center; margin-bottom: 20px; }
+        
         #game-container {
             display: flex;
-            gap: 40px;
-            margin-top: 20px;
+            gap: 50px;
+            align-items: flex-start;
             flex-wrap: wrap;
             justify-content: center;
         }
 
         /* The Cell Diagram */
-        #cell-diagram {
+        #cell-canvas {
             width: 500px;
             height: 500px;
-            background-color: var(--cell-bg);
-            border: 8px solid #81d4fa;
+            background-color: var(--cytoplasm);
+            border: 10px solid var(--cell-membrane);
             border-radius: 50%;
             position: relative;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
         }
 
+        /* Drop Zones (Shadow Outlines) */
         .drop-zone {
             position: absolute;
-            border: 2px dashed #b0bec5;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #90a4ae;
+            opacity: 0.2;
             transition: all 0.3s;
+            filter: grayscale(1) brightness(0.5);
         }
 
         .drop-zone.hover {
-            background: rgba(52, 152, 219, 0.2);
-            border-color: var(--accent);
+            opacity: 0.5;
+            filter: grayscale(0) brightness(1.2);
+            transform: scale(1.05);
         }
 
-        /* Part Sidebar */
+        .drop-zone.placed {
+            opacity: 1;
+            filter: none;
+            pointer-events: none;
+        }
+
+        /* Organelle Sidebar */
         #parts-bin {
-            width: 300px;
+            width: 200px;
             background: white;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .organelle {
-            background: var(--accent);
-            color: white;
-            padding: 10px 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            cursor: grab;
-            text-align: center;
-            font-weight: bold;
-            transition: transform 0.2s;
-            user-select: none;
-        }
-
-        .organelle:active { cursor: grabbing; }
-        .organelle.placed {
-            background: var(--success);
-            opacity: 0.6;
-            cursor: default;
-        }
-
-        /* Info Box */
-        #info-panel {
-            margin-top: 20px;
-            width: 100%;
-            max-width: 840px;
-            min-height: 100px;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 10px solid var(--accent);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .hidden { display: none; }
-
-        /* Specific positions for organelles */
-        #target-nucleus { width: 100px; height: 100px; top: 35%; left: 35%; }
-        #target-mitochondria { width: 60px; height: 40px; top: 20%; left: 65%; border-radius: 20px; }
-        #target-ribosomes { width: 40px; height: 40px; top: 70%; left: 30%; }
-        #target-golgi { width: 80px; height: 50px; top: 60%; left: 60%; border-radius: 10px; }
-        #target-vacuole { width: 70px; height: 70px; top: 15%; left: 25%; }
-
-        .placed-organelle {
-            width: 100%;
-            height: 100%;
-            border-radius: inherit;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            background: var(--success);
-            color: white;
-            font-weight: bold;
-            animation: pop 0.3s ease-out;
+            gap: 20px;
         }
 
-        @keyframes pop {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
+        .draggable-part {
+            cursor: grab;
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #475569;
         }
+
+        .draggable-part:active { cursor: grabbing; }
+        .draggable-part svg { width: 80px; height: 80px; }
+        .draggable-part.hidden { visibility: hidden; pointer-events: none; }
+
+        /* Info Panel */
+        #info-panel {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 750px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            border-bottom: 5px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .success-text { color: var(--success); font-weight: bold; }
+
+        /* SVGs styling */
+        .organelle-svg { filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1)); }
     </style>
 </head>
 <body>
 
-    <h1>Cell Builder: Animal Cell</h1>
-    <p>Drag the organelles from the bin and place them in the correct spots within the cell!</p>
+    <div class="header">
+        <h1>Cell Anatomy Puzzle</h1>
+        <p>Drag the 3D organelles into their correct positions in the animal cell.</p>
+    </div>
 
     <div id="game-container">
-        <!-- The interactive cell -->
-        <div id="cell-diagram">
-            <div class="drop-zone" id="target-nucleus" data-accept="nucleus">?</div>
-            <div class="drop-zone" id="target-mitochondria" data-accept="mitochondria">?</div>
-            <div class="drop-zone" id="target-ribosomes" data-accept="ribosomes">?</div>
-            <div class="drop-zone" id="target-golgi" data-accept="golgi">?</div>
-            <div class="drop-zone" id="target-vacuole" data-accept="vacuole">?</div>
+        <!-- Main Cell -->
+        <div id="cell-canvas">
+            <!-- Nucleus Target -->
+            <div class="drop-zone" id="target-nucleus" data-accept="nucleus" style="top: 30%; left: 30%;">
+                <svg width="150" height="150" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="#a855f7" />
+                    <circle cx="50" cy="50" r="15" fill="#6b21a8" />
+                </svg>
+            </div>
+
+            <!-- Mitochondria Target -->
+            <div class="drop-zone" id="target-mito" data-accept="mito" style="top: 15%; left: 60%;">
+                <svg width="80" height="50" viewBox="0 0 100 60">
+                    <ellipse cx="50" cy="30" rx="45" ry="25" fill="#ef4444" />
+                    <path d="M20 30 Q 35 10, 50 30 T 80 30" stroke="white" fill="none" stroke-width="3" />
+                </svg>
+            </div>
+
+            <!-- Golgi Target -->
+            <div class="drop-zone" id="target-golgi" data-accept="golgi" style="top: 60%; left: 55%;">
+                <svg width="100" height="60" viewBox="0 0 100 60">
+                    <path d="M10 10 Q 50 5, 90 10 M15 25 Q 50 20, 85 25 M20 40 Q 50 35, 80 40" stroke="#f59e0b" stroke-width="8" fill="none" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- Vacuole Target -->
+            <div class="drop-zone" id="target-vacuole" data-accept="vacuole" style="top: 10%; left: 15%;">
+                <svg width="70" height="70" viewBox="0 0 100 100">
+                    <path d="M20 50 Q 20 20, 50 20 T 80 50 T 50 80 T 20 50" fill="#3b82f6" />
+                </svg>
+            </div>
+
+            <!-- Ribosome Target -->
+            <div class="drop-zone" id="target-ribo" data-accept="ribo" style="top: 70%; left: 20%;">
+                <svg width="50" height="50" viewBox="0 0 100 100">
+                    <circle cx="30" cy="30" r="8" fill="#475569" />
+                    <circle cx="50" cy="50" r="8" fill="#475569" />
+                    <circle cx="70" cy="30" r="8" fill="#475569" />
+                </svg>
+            </div>
         </div>
 
-        <!-- The parts to drag -->
+        <!-- Sidebar -->
         <div id="parts-bin">
-            <h3>Organelles</h3>
-            <div class="organelle" draggable="true" id="nucleus">Nucleus</div>
-            <div class="organelle" draggable="true" id="mitochondria">Mitochondria</div>
-            <div class="organelle" draggable="true" id="ribosomes">Ribosomes</div>
-            <div class="organelle" draggable="true" id="golgi">Golgi Apparatus</div>
-            <div class="organelle" draggable="true" id="vacuole">Vacuole</div>
-            <button onclick="location.reload()" style="margin-top:20px; width:100%; padding:10px; cursor:pointer;">Reset Game</button>
+            <div class="draggable-part" draggable="true" id="nucleus">
+                <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#a855f7" /><circle cx="50" cy="50" r="15" fill="#6b21a8" /></svg>
+                Nucleus
+            </div>
+            <div class="draggable-part" draggable="true" id="mito">
+                <svg viewBox="0 0 100 60"><ellipse cx="50" cy="30" rx="45" ry="25" fill="#ef4444" /><path d="M20 30 Q 35 10, 50 30 T 80 30" stroke="white" fill="none" stroke-width="3" /></svg>
+                Mitochondria
+            </div>
+            <div class="draggable-part" draggable="true" id="golgi">
+                <svg viewBox="0 0 100 60"><path d="M10 10 Q 50 5, 90 10 M15 25 Q 50 20, 85 25 M20 40 Q 50 35, 80 40" stroke="#f59e0b" stroke-width="8" fill="none" stroke-linecap="round" /></svg>
+                Golgi Body
+            </div>
+            <div class="draggable-part" draggable="true" id="vacuole">
+                <svg viewBox="0 0 100 100"><path d="M20 50 Q 20 20, 50 20 T 80 50 T 50 80 T 20 50" fill="#3b82f6" /></svg>
+                Vacuole
+            </div>
+            <div class="draggable-part" draggable="true" id="ribo">
+                <svg viewBox="0 0 100 100"><circle cx="30" cy="30" r="8" fill="#475569" /><circle cx="50" cy="50" r="8" fill="#475569" /><circle cx="70" cy="30" r="8" fill="#475569" /></svg>
+                Ribosomes
+            </div>
+            <button onclick="location.reload()" style="cursor:pointer; padding: 8px 16px; border-radius: 5px; border: 1px solid #ccc;">Restart</button>
         </div>
     </div>
 
     <div id="info-panel">
-        <h3 id="info-title">Function Review</h3>
-        <p id="info-text">Correctly place an organelle to see its function here...</p>
+        <h3 id="info-title">Organelle Functions</h3>
+        <p id="info-text">Drag a part into the cell to learn what it does!</p>
     </div>
 
     <script>
-        const organelles = document.querySelectorAll('.organelle');
-        const dropZones = document.querySelectorAll('.drop-zone');
+        const parts = document.querySelectorAll('.draggable-part');
+        const zones = document.querySelectorAll('.drop-zone');
         const infoTitle = document.getElementById('info-title');
         const infoText = document.getElementById('info-text');
 
-        const functions = {
-            nucleus: "The 'Brain' of the cell. It contains the cell's DNA and coordinates activities like growth and reproduction.",
-            mitochondria: "The 'Powerhouse' of the cell. It takes in nutrients and creates energy-rich molecules (ATP) for the cell.",
-            ribosomes: "The protein factories. They follow instructions from the nucleus to create proteins needed for the cell to function.",
-            golgi: "The 'Post Office'. It modifies, sorts, and packages proteins for secretion or delivery to other organelles.",
-            vacuole: "The 'Storage Closet'. It stores nutrients, water, or waste products so the rest of the cell is protected from contamination."
+        const data = {
+            nucleus: {
+                name: "Nucleus",
+                desc: "The control center. It holds the DNA (genetic blueprint) and tells the cell what to do."
+            },
+            mito: {
+                name: "Mitochondria",
+                desc: "The powerhouse. It converts nutrients (glucose) into energy (ATP) for the cell through cellular respiration."
+            },
+            golgi: {
+                name: "Golgi Apparatus",
+                desc: "The packaging center. It sorts and ships proteins produced by the cell to their final destinations."
+            },
+            vacuole: {
+                name: "Vacuole",
+                desc: "The storage tank. In animal cells, these are small and store water, food, or waste."
+            },
+            ribo: {
+                name: "Ribosomes",
+                desc: "The protein makers. These tiny structures build proteins based on instructions from the nucleus."
+            }
         };
 
-        // Drag and Drop Logic
-        organelles.forEach(organelle => {
-            organelle.addEventListener('dragstart', (e) => {
+        parts.forEach(part => {
+            part.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', e.target.id);
             });
         });
 
-        dropZones.forEach(zone => {
+        zones.forEach(zone => {
             zone.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 zone.classList.add('hover');
@@ -200,37 +242,29 @@
                 zone.classList.remove('hover');
                 
                 const draggedId = e.dataTransfer.getData('text/plain');
-                const targetType = zone.getAttribute('data-accept');
+                const targetId = zone.getAttribute('data-accept');
 
-                if (draggedId === targetType) {
-                    // Correct Placement
-                    handleSuccess(draggedId, zone);
+                if (draggedId === targetId) {
+                    // Success
+                    zone.classList.add('placed');
+                    document.getElementById(draggedId).classList.add('hidden');
+                    
+                    // Show Info
+                    infoTitle.innerHTML = `<span class="success-text">Correct!</span> ${data[draggedId].name}`;
+                    infoText.innerText = data[draggedId].desc;
+
+                    checkWin();
                 } else {
-                    // Wrong Placement
-                    alert("That's not the right spot for this organelle! Try again.");
+                    alert("The shapes don't match! Look at the outline in the cell carefully.");
                 }
             });
         });
 
-        function handleSuccess(id, zone) {
-            // Update the UI
-            const originalElement = document.getElementById(id);
-            originalElement.classList.add('placed');
-            originalElement.draggable = false;
-
-            zone.innerHTML = `<div class="placed-organelle">${id.toUpperCase()}</div>`;
-            zone.style.border = "none";
-            zone.style.background = "transparent";
-
-            // Update Info Panel
-            infoTitle.innerText = id.charAt(0).toUpperCase() + id.slice(1);
-            infoText.innerText = functions[id];
-            
-            // Check if game is won
-            const placedCount = document.querySelectorAll('.placed').length;
-            if (placedCount === Object.keys(functions).length) {
-                infoTitle.innerText = "🎉 Cell Complete!";
-                infoText.innerText = "Great job! You've identified all the key organelles and their functions.";
+        function checkWin() {
+            const placed = document.querySelectorAll('.drop-zone.placed').length;
+            if (placed === 5) {
+                infoTitle.innerText = "🌟 Cell Complete!";
+                infoText.innerText = "You have successfully built the cell and identified all organelle functions!";
             }
         }
     </script>
