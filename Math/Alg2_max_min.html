@@ -5,69 +5,98 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Alg 2 — Max/Min & Average Rate of Change Interactive</title>
   <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/expr-eval/2.0.2/expr-eval.min.js" integrity="sha512-1g1c0m1yctw2s7q7x3s1Qv5zq+4L1eQ2e5b0Z3k1I2k9G/3ZqJgVvKF7z0i4FZrI2M1y0Z8PvqK3Z9yYt6t0g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1000px;margin:18px auto;padding:0 12px}
-    header{display:flex;align-items:center;gap:12px}
-    h1{font-size:1.4rem;margin:0}
+    :root{--card-bg:#fafafa;--muted:#666}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial, "Noto Sans";max-width:1100px;margin:18px auto;padding:12px}
+    header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    h1{font-size:1.2rem;margin:0}
     .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-    .card{border:1px solid #ddd;padding:12px;border-radius:6px;background:#fafafa}
+    @media(max-width:880px){.controls{grid-template-columns:1fr}}
+    .card{border:1px solid #ddd;padding:12px;border-radius:8px;background:var(--card-bg)}
     label{display:block;font-weight:600;margin-bottom:6px}
-    input[type=number],select,input[type=text]{width:100%;padding:6px;margin-bottom:8px}
+    input[type=number],select,input[type=text],textarea{width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ccc}
     .row{display:flex;gap:8px}
-    .btn{padding:8px 10px;border-radius:6px;border:1px solid #666;background:#eee;cursor:pointer}
+    .row .col{flex:1}
+    .btn{padding:8px 10px;border-radius:8px;border:1px solid #666;background:#eee;cursor:pointer}
     .btn-primary{background:#1f78d1;color:white;border-color:#1761a6}
-    .result{background:#fff;padding:8px;border-radius:6px;border:1px solid #eee;margin-top:8px}
+    .result{background:#fff;padding:8px;border-radius:6px;border:1px solid #eee;margin-top:8px;white-space:pre-wrap}
     .task{margin-top:12px}
-    footer{font-size:0.9rem;color:#666;margin-top:18px}
+    footer{font-size:0.9rem;color:var(--muted);margin-top:18px}
     pre{background:#f7f7f7;padding:8px;border-radius:6px}
+    .top-controls{display:flex;gap:8px;align-items:center}
+    .small{font-size:0.9rem;color:var(--muted)}
+    details{margin-top:8px}
+    .preset-list{display:flex;gap:8px;flex-wrap:wrap}
+    .preset-list button{padding:6px 8px;border-radius:8px;border:1px solid #ccc;background:white}
+    .teacher-mode{background:#fff8dc;border:1px solid #f0d980;padding:8px;border-radius:6px;margin-top:8px}
+    .debug{font-family:monospace;font-size:0.9rem}
   </style>
 </head>
 <body>
   <header>
     <h1>Interactive: Absolute/Local Max & Min, Set-Builder, Average Rate of Change</h1>
+    <div style="margin-left:auto" class="small">Accessible, mobile-friendly classroom tool</div>
   </header>
 
-  <p>Pick a function, set an x-interval, and use the tools to explore absolute maxima/minima, local maxima/minima, write the range in set-builder form, and compute the average rate of change (AROC) between two x-values.</p>
+  <p>Pick a function, set an x-interval, and use the tools to explore absolute maxima/minima, local maxima/minima, write the range in set-builder form, and compute the average rate of change (AROC).</p>
 
   <div class="controls">
-    <div class="card">
-      <label for="fn">Function</label>
-      <select id="fn">
-        <option value="cub">f(x) = x^3 - 6x^2 + 9x + 1</option>
-        <option value="par">g(x) = -(x-1)^2 + 4  (downward parabola)</option>
-        <option value="sin">h(x) = 2*sin(x) (periodic)</option>
-        <option value="abs">k(x) = |x-1| - 1 (absolute value)</option>
-      </select>
+    <div class="card" aria-labelledby="fnLabel">
+      <label id="fnLabel">Function (choose or enter custom)</label>
+      <div class="row">
+        <select id="fn">
+          <option value="cub">f(x) = x^3 - 6x^2 + 9x + 1</option>
+          <option value="par">g(x) = -(x-1)^2 + 4  (downward parabola)</option>
+          <option value="sin">h(x) = 2*sin(x) (periodic)</option>
+          <option value="abs">k(x) = |x-1| - 1 (absolute value)</option>
+          <option value="exp">m(x) = e^-x (decay)</option>
+          <option value="custom">Custom expression</option>
+        </select>
+        <div style="flex:1">
+          <input id="customExpr" type="text" placeholder="Enter expression in x, e.g. x^2+3*x-1 or sin(x)*2" aria-label="custom function expression">
+        </div>
+      </div>
 
       <label>x-range (domain to inspect)</label>
       <div class="row">
-        <input id="xmin" type="number" value="-2" step="0.5">
-        <input id="xmax" type="number" value="6" step="0.5">
+        <input id="xmin" type="number" value="-2" step="0.5" aria-label="x min">
+        <input id="xmax" type="number" value="6" step="0.5" aria-label="x max">
       </div>
 
       <div class="row">
         <button class="btn btn-primary" id="plotBtn">Plot</button>
         <button class="btn" id="markBtn">Mark extrema</button>
+        <button class="btn" id="teacherToggle">Teacher mode</button>
       </div>
 
-      <div class="result" id="extremaResult">Extrema: -</div>
+      <div class="result" id="extremaResult" aria-live="polite">Extrema: -</div>
 
       <div class="task">
         <label>Set-builder notation for the range (use 'y' variable):</label>
-        <input id="setInput" type="text" placeholder="example: {y | y \le 5}">
-        <button class="btn" id="checkSet">Check set-builder</button>
+        <input id="setInput" type="text" placeholder="example: {y | -1 <= y <= 4} or [ -1, 4 ]">
+        <div class="row">
+          <button class="btn" id="checkSet">Check set-builder</button>
+          <button class="btn" id="showCorrect" style="display:none">Show correct answer</button>
+        </div>
         <div id="setResult" class="result">Range: -</div>
       </div>
+
+      <details class="small"><summary>Presets / Worksheets</summary>
+        <div class="preset-list" id="presets">
+          <!-- populated by JS -->
+        </div>
+      </details>
     </div>
 
     <div class="card">
       <label>Average Rate of Change (choose two x values)</label>
       <div class="row">
-        <div style="flex:1">
+        <div class="col">
           <label for="x1">x1</label>
           <input id="x1" type="number" value="0" step="0.1">
         </div>
-        <div style="flex:1">
+        <div class="col">
           <label for="x2">x2</label>
           <input id="x2" type="number" value="3" step="0.1">
         </div>
@@ -82,36 +111,63 @@
         <label>Local extrema found (click 'Mark extrema' then identify which are local max/min)</label>
         <div id="localList" class="result">Local extrema: -</div>
       </div>
+
+      <details><summary>Debug & derivative info</summary>
+        <div id="debugPanel" class="result debug">Derivative debug: -</div>
+      </details>
+
     </div>
   </div>
 
-  <div id="plot" style="height:480px;margin-top:18px;"></div>
+  <div id="plot" style="height:520px;margin-top:18px;" role="img" aria-label="function plot"></div>
 
   <div class="card" style="margin-top:12px;">
     <h3>Instructions / Tasks for students</h3>
     <ol>
-      <li>Choose a function and domain. Click 'Plot'.</li>
-      <li>Click 'Mark extrema' to have the app estimate absolute and local extrema on the domain.</li>
-      <li>Write the range in set-builder notation in the box and click 'Check set-builder'. The app will check a standard normalized form (simple comparisons like y &le; c, y &gt;= c).</li>
+      <li>Choose a function (or enter a custom expression) and domain. Click 'Plot'.</li>
+      <li>Click 'Mark extrema' to estimate absolute and local extrema on the domain.</li>
+      <li>Write the range in set-builder notation in the box and click 'Check set-builder'. The app accepts inequalities like -1 &lt;= y &lt;= 4, interval notation like [-1,4], and will check approximately.</li>
       <li>Pick x1 and x2 and click 'Show secant & compute slope' to see the average rate of change between the two points (slope of secant line).</li>
+      <li>Teachers: enable teacher mode to reveal correct set-builder and to label extrema answers.</li>
     </ol>
   </div>
 
-  <footer>Created for Algebra II classroom exploration. Feel free to edit this file in your repo.</footer>
+  <footer>Created for Algebra II classroom exploration. Edit this file in your repo. Libraries used: Plotly + expr-eval.</footer>
 
 <script>
-  // Functions
+  // Built-in functions
   function f_cub(x){ return x*x*x - 6*x*x + 9*x + 1; }
   function f_par(x){ return -(x-1)*(x-1) + 4; }
   function f_sin(x){ return 2*Math.sin(x); }
   function f_abs(x){ return Math.abs(x-1) - 1; }
+  function f_exp(x){ return Math.exp(-x); }
+
+  // Parser for custom expression using expr-eval
+  const Parser = window.exprEval.Parser;
+  function makeFnFromExpr(expr){
+    try{
+      // restrict to 'x' and math functions available in parser
+      const parser = new Parser({operators:{in:false}});
+      const parsed = parser.parse(expr);
+      // return a function that evaluates with JS number x
+      return function(x){ return parsed.evaluate({x:x}); };
+    } catch(e){
+      return null;
+    }
+  }
 
   function getCurrentFunction(){
     const v = document.getElementById('fn').value;
     if(v==='cub') return {fn:f_cub, name:'x^3 - 6x^2 + 9x + 1'};
     if(v==='par') return {fn:f_par, name:'-(x-1)^2 + 4'};
     if(v==='sin') return {fn:f_sin, name:'2 sin x'};
-    return {fn:f_abs, name:'|x-1| - 1'};
+    if(v==='abs') return {fn:f_abs, name:'|x-1| - 1'};
+    if(v==='exp') return {fn:f_exp, name:'e^-x'};
+    // custom
+    const expr = document.getElementById('customExpr').value.trim();
+    const fn = makeFnFromExpr(expr);
+    if(fn) return {fn:fn, name:expr};
+    return {fn:x=>0, name:'invalid expression'};
   }
 
   // Sampling
@@ -120,7 +176,7 @@
     const ys = new Array(n);
     for(let i=0;i<n;i++){
       const t = xmin + (xmax-xmin)*(i/(n-1));
-      xs[i]=t; ys[i]=fn(t);
+      xs[i]=t; ys[i]=Number(fn(t));
     }
     return {x:xs,y:ys};
   }
@@ -129,136 +185,265 @@
   function derivativeApprox(fn,x,h=1e-6){ return (fn(x+h)-fn(x-h))/(2*h); }
   function secondDerivativeApprox(fn,x,h=1e-4){ return (fn(x+h)-2*fn(x)+fn(x-h))/(h*h); }
 
-  // Find extrema: absolute max/min on sample; local extrema by sign change of derivative
+  // Find extrema
   function findExtrema(fn, xmin, xmax){
     const s = sample(fn,xmin,xmax,2001);
     let maxY = -Infinity, minY = Infinity, maxX=null, minX=null;
     for(let i=0;i<s.x.length;i++){
-      if(s.y[i] > maxY){ maxY = s.y[i]; maxX = s.x[i]; }
-      if(s.y[i] < minY){ minY = s.y[i]; minX = s.x[i]; }
+      const y = s.y[i];
+      if(y > maxY){ maxY = y; maxX = s.x[i]; }
+      if(y < minY){ minY = y; minX = s.x[i]; }
     }
-    // local extrema: find critical points where derivative ~0 and second derivative sign
+    // local extrema: sign changes in discrete slope
     const locals = [];
     const m = s.x.length;
     for(let i=1;i<m-1;i++){
       const left = (s.y[i]-s.y[i-1]);
       const right = (s.y[i+1]-s.y[i]);
-      // detect a sign change in discrete slope
       if(left*right <= 0){
-        // refine location using simple Newton-ish root find on derivative
         let x0 = s.x[i];
-        for(let iter=0;iter<20;iter++){
+        // refine with Newton on derivative when possible
+        for(let iter=0;iter<25;iter++){
           const d = derivativeApprox(fn,x0);
           const sd = secondDerivativeApprox(fn,x0);
-          if(Math.abs(d) < 1e-7) break;
-          if(Math.abs(sd) < 1e-8) break;
+          if(!isFinite(d) || !isFinite(sd)) break;
+          if(Math.abs(d) < 1e-9) break;
+          if(Math.abs(sd) < 1e-12) break;
           x0 = x0 - d/sd;
           if(x0 < xmin || x0 > xmax) break;
         }
         const y0 = fn(x0);
         const sd2 = secondDerivativeApprox(fn,x0);
-        // avoid duplicates (points near each other)
-        if(!locals.some(pt=>Math.abs(pt.x-x0) < 1e-3)){
-          locals.push({x:x0,y:y0,sd:sd2});
-        }
+        if(!locals.some(pt=>Math.abs(pt.x-x0) < 1e-4)) locals.push({x:x0,y:y0,sd:sd2});
       }
     }
-    // classify local extrema
-    const localClass = locals.map(pt => ({x:pt.x,y:pt.y,type: (pt.sd>0? 'local min' : (pt.sd<0? 'local max' : 'inflection'))}));
-    return {absMax:{x:maxX,y:maxY}, absMin:{x:minX,y:minY}, locals:localClass};
+    const localClass = locals.map(pt => ({x:pt.x,y:pt.y, sd:pt.sd, type: (pt.sd>0? 'local min' : (pt.sd<0? 'local max' : 'inflection'))}));
+    return {absMax:{x:maxX,y:maxY}, absMin:{x:minX,y:minY}, locals:localClass, sample:s};
   }
 
-  // Plot
+  // Plotting
   let currentData = null;
   function plot(){
     const {fn,name} = getCurrentFunction();
     const xmin = parseFloat(document.getElementById('xmin').value);
     const xmax = parseFloat(document.getElementById('xmax').value);
-    const s = sample(fn,xmin,xmax,1001);
+    if(isNaN(xmin) || isNaN(xmax) || xmin >= xmax){ alert('Enter a valid x-range where xmin < xmax'); return; }
+    const s = sample(fn,xmin,xmax,1501);
     currentData = {fn,name,xmin,xmax, xs:s.x, ys:s.y};
     const trace = { x:s.x, y:s.y, mode:'lines', name:name };
-    const layout = { title: name + `  — domain [${xmin}, ${xmax}]`, margin:{t:36} };
+    const layout = { title: name + `  — domain [${xmin}, ${xmax}]`, margin:{t:36}, legend:{orientation:'h'} };
     Plotly.newPlot('plot',[trace],layout, {responsive:true});
     document.getElementById('extremaResult').innerText = 'Extrema: click "Mark extrema" to calculate.';
     document.getElementById('setResult').innerText = 'Range: -';
     document.getElementById('arocResult').innerText = 'AROC: -';
     document.getElementById('localList').innerText = 'Local extrema: -';
+    document.getElementById('debugPanel').innerText = 'Derivative debug: -';
   }
 
-  async function markExtrema(){
+  async function markExtrema(teacher=false, reveal=false){
     if(!currentData) { plot(); }
     const {fn,xmin,xmax} = currentData;
     const res = findExtrema(fn,xmin,xmax);
     // plot markers
     const points = [
-      { x:[res.absMax.x], y:[res.absMax.y], mode:'markers+text',marker:{color:'red',size:10}, text:['Absolute max'], textposition:'top center' },
-      { x:[res.absMin.x], y:[res.absMin.y], mode:'markers+text',marker:{color:'blue',size:10}, text:['Absolute min'], textposition:'bottom center' }
+      { x:[res.absMax.x], y:[res.absMax.y], mode:'markers+text',marker:{color:'red',size:12}, text:['Absolute max'], textposition:'top center' },
+      { x:[res.absMin.x], y:[res.absMin.y], mode:'markers+text',marker:{color:'blue',size:12}, text:['Absolute min'], textposition:'bottom center' }
     ];
-    // locals
     for(const pt of res.locals){
-      points.push({ x:[pt.x], y:[pt.y], mode:'markers+text', marker:{color:pt.type==='local max'? 'orange' : 'green',size:8}, text:[pt.type], textposition:'right middle' });
+      points.push({ x:[pt.x], y:[pt.y], mode:'markers+text', marker:{color:pt.type==='local max'? 'orange' : 'green',size:9}, text:[pt.type], textposition:'right middle' });
     }
     const base = { x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name };
     await Plotly.react('plot',[base, ...points],{title:currentData.name + `  — domain [${currentData.xmin}, ${currentData.xmax}]`});
-    document.getElementById('extremaResult').innerText = `Absolute max at x=${res.absMax.x.toFixed(3)}, y=${res.absMax.y.toFixed(3)}; Absolute min at x=${res.absMin.x.toFixed(3)}, y=${res.absMin.y.toFixed(3)}.`;
+    document.getElementById('extremaResult').innerText = `Absolute max at x=${res.absMax.x.toFixed(4)}, y=${res.absMax.y.toFixed(4)}; Absolute min at x=${res.absMin.x.toFixed(4)}, y=${res.absMin.y.toFixed(4)}.`;
     if(res.locals.length>0){
-      document.getElementById('localList').innerText = res.locals.map(pt=>`${pt.type} at x=${pt.x.toFixed(3)}, y=${pt.y.toFixed(3)}`).join('\n');
+      document.getElementById('localList').innerText = res.locals.map(pt=>`${pt.type} at x=${pt.x.toFixed(4)}, y=${pt.y.toFixed(4)}`).join('\n');
     } else document.getElementById('localList').innerText = 'No local extrema found.';
 
-    // show range for set-builder assistance
-    const allY = currentData.ys;
+    // show range
+    const allY = res.sample.y;
     const yMin = Math.min(...allY); const yMax = Math.max(...allY);
-    document.getElementById('setResult').innerText = `Range approximately: [${yMin.toFixed(3)}, ${yMax.toFixed(3)}]`;
+    const rangeStr = `[${yMin.toFixed(4)}, ${yMax.toFixed(4)}]`;
+    document.getElementById('setResult').innerText = `Range approximately: ${rangeStr}`;
+
+    // debug info
+    const dbgLines = [];
+    dbgLines.push('Sample points: ' + res.sample.x.length + ' points');
+    for(const pt of res.locals){
+      dbgLines.push(`${pt.type}: x=${pt.x.toFixed(6)}, y=${pt.y.toFixed(6)}, f'(x)≈${derivativeApprox(currentData.fn,pt.x).toExponential(3)}, f''(x)≈${secondDerivativeApprox(currentData.fn,pt.x).toExponential(3)}`);
+    }
+    document.getElementById('debugPanel').innerText = dbgLines.join('\n');
+
+    // teacher reveal
+    if(teacher){
+      // show the correct set-builder button
+      document.getElementById('showCorrect').style.display = 'inline-block';
+      document.getElementById('showCorrect').onclick = () => {
+        // present interval as set-builder
+        const sb = `{y | ${yMin.toFixed(4)} <= y <= ${yMax.toFixed(4)}}`;
+        alert('Correct (approx) set-builder for range: ' + sb);
+      };
+    }
+    if(reveal){
+      // highlight labels on the plot by adding larger annotations
+      const ann = [];
+      ann.push({ x:res.absMax.x, y:res.absMax.y, xref:'x', yref:'y', text:'ABS MAX', showarrow:true, arrowhead:2, bgcolor:'red', opacity:0.9 });
+      ann.push({ x:res.absMin.x, y:res.absMin.y, xref:'x', yref:'y', text:'ABS MIN', showarrow:true, arrowhead:2, bgcolor:'blue', opacity:0.9 });
+      Plotly.relayout('plot',{annotations:ann});
+    }
   }
 
   // AROC / Secant
-  let secantId = null;
   async function showSecant(){
     if(!currentData) plot();
     const {fn} = currentData;
     let x1 = parseFloat(document.getElementById('x1').value);
     let x2 = parseFloat(document.getElementById('x2').value);
-    if(x1 === x2){ document.getElementById('arocResult').innerText = 'Choose two different x values.'; return; }
+    if(x1 === x2 || isNaN(x1) || isNaN(x2)){ document.getElementById('arocResult').innerText = 'Choose two different x values.'; return; }
     const y1 = fn(x1); const y2 = fn(x2);
     const slope = (y2-y1)/(x2-x1);
     document.getElementById('arocResult').innerText = `AROC between x=${x1} and x=${x2} is ${slope.toFixed(5)} (\u0394y/\u0394x).`;
     // draw secant line across plot domain
     const xs = [currentData.xmin, currentData.xmax];
     const secY = xs.map(x => y1 + slope*(x-x1));
-    const secTrace = { x:xs, y:secY, mode:'lines', name:'secant', line:{dash:'dash',color:'purple'}};
-    const pts = { x:[x1,x2], y:[y1,y2], mode:'markers', marker:{size:8,color:'purple'}, name:'secant points'};
+    const secTrace = { x:xs, y:secY, mode:'lines', name:'secant', line:{dash:'dash',color:'purple'}, hoverinfo:'none' };
+    const pts = { x:[x1,x2], y:[y1,y2], mode:'markers', marker:{size:9,color:'purple'}, name:'secant points'};
     const base = { x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name };
     await Plotly.react('plot',[base, secTrace, pts], {title:currentData.name});
-    secantId = secTrace;
   }
   function clearSecant(){ if(currentData) Plotly.react('plot',[{ x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name }], {title:currentData.name}); document.getElementById('arocResult').innerText='AROC: -'; }
 
-  // Simple set-builder checker for forms like {y | y <= c} or {y | y >= c}
+  // Set-builder parsing and checking (supports inequalities and interval notation)
+  function parseSetBuilder(input){
+    // normalize
+    let s = input.trim();
+    if(!s) return null;
+    // Try interval notation like [a,b], (a,b), [a,b)
+    const intervalRe = /^(\[|\()\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*(\]|\))$/;
+    const mInt = s.match(intervalRe);
+    if(mInt){
+      const leftInc = mInt[1] === '[';
+      const a = parseFloat(mInt[2]);
+      const b = parseFloat(mInt[3]);
+      const rightInc = mInt[4] === ']';
+      return {type:'interval', a:a, b:b, leftInc:leftInc, rightInc:rightInc};
+    }
+    // Try set-builder like {y | a <= y <= b} or {y | y >= c}
+    const sbRe = /\{\s*y\s*\|\s*(.+)\s*\}/i;
+    const mm = s.match(sbRe);
+    if(mm){
+      const cond = mm[1];
+      // support chained comparisons: a <= y <= b  or y >= c
+      const chainRe = /(-?\d+(?:\.\d+)?)\s*(<=|<|>=|>)\s*y\s*(?:\s*(<=|<|>=|>)\s*(-?\d+(?:\.\d+)?))?/;
+      const m2 = cond.match(chainRe);
+      if(m2){
+        const a = parseFloat(m2[1]);
+        const op1 = m2[2];
+        const op2 = m2[3];
+        const b = m2[4] ? parseFloat(m2[4]) : null;
+        if(b!==null){
+          return {type:'chain', a:a, op1:op1, b:b, op2:op2};
+        } else {
+          // form like y <= c or y >= c? try other direction
+          const otherRe = /y\s*(<=|<|>=|>)\s*(-?\d+(?:\.\d+)?)/i;
+          const mo = cond.match(otherRe);
+          if(mo){ return {type:'single', op:mo[1], val:parseFloat(mo[2])}; }
+        }
+      } else {
+        // also accept y op c
+        const mo = cond.match(/y\s*(<=|<|>=|>)\s*(-?\d+(?:\.\d+)?)/i);
+        if(mo) return {type:'single', op:mo[1], val:parseFloat(mo[2])};
+      }
+    }
+    return null;
+  }
+
   function checkSetBuilder(){
     if(!currentData) plot();
     const input = document.getElementById('setInput').value.trim();
+    const parsed = parseSetBuilder(input);
     const allY = currentData.ys;
     const yMin = Math.min(...allY); const yMax = Math.max(...allY);
-    const normalized = input.replaceAll(' ','');
-    const re = /\{y\|y(<=|>=|<|>)(-?\d+(?:\.\d+)?)\}/i;
-    const m = normalized.match(re);
-    if(!m){ document.getElementById('setResult').innerText = 'Could not parse set-builder. Use form: {y | y <= c} or {y | y >= c}'; return; }
-    const op = m[1]; const val = parseFloat(m[2]);
-    let ok=false;
-    if(op==='<=') ok = (Math.abs(yMax - val) < 1e-2) || (val >= yMax && val >= yMin);
-    if(op==='>=') ok = (Math.abs(yMin - val) < 1e-2) || (val <= yMin && val <= yMax);
-    if(op==='<') ok = (val > yMin && val < yMax);
-    if(op==='>') ok = (val > yMin && val < yMax);
-    document.getElementById('setResult').innerText = `Range approx [${yMin.toFixed(3)}, ${yMax.toFixed(3)}]. Your input ${input} is ` + (ok? 'POSSIBLY CORRECT' : 'UNLIKELY CORRECT');
+    if(!parsed){ document.getElementById('setResult').innerText = 'Could not parse input. Try interval [a,b] or {y | -1 <= y <= 4}'; return; }
+    let ok=false; let msg='';
+    if(parsed.type==='interval'){
+      const a=parsed.a, b=parsed.b;
+      // check containment: sampled [yMin,yMax] should be within provided interval
+      const leftOK = parsed.leftInc ? (a <= yMin + 1e-6) : (a < yMin - 1e-6);
+      const rightOK = parsed.rightInc ? (b >= yMax - 1e-6) : (b > yMax + 1e-6);
+      ok = leftOK && rightOK;
+      msg = `Detected interval ${parsed.leftInc? '[':'('}${a}, ${b}${parsed.rightInc?']':')'}. Sampled range: [${yMin.toFixed(4)}, ${yMax.toFixed(4)}].`;
+    } else if(parsed.type==='chain'){
+      // form a <= y <= b basically
+      const a = parsed.a; const b = parsed.b; const op1 = parsed.op1; const op2 = parsed.op2;
+      // accept only <= and < combos for chain
+      const leftOK = (op1 === '<' ? a < yMin - 1e-6 : a <= yMin + 1e-6);
+      const rightOK = (op2 === '<' ? b > yMax + 1e-6 : b >= yMax - 1e-6);
+      ok = leftOK && rightOK;
+      msg = `Detected chained comparison ${a} ${op1} y ${op2} ${b}. Sampled range: [${yMin.toFixed(4)}, ${yMax.toFixed(4)}].`;
+    } else if(parsed.type==='single'){
+      const op = parsed.op; const v = parsed.val;
+      if(op==='<=') ok = v >= yMax - 1e-6;
+      if(op==='>=') ok = v <= yMin + 1e-6;
+      if(op==='<') ok = v > yMax + 1e-6;
+      if(op==='>') ok = v < yMin - 1e-6;
+      msg = `Detected condition y ${op} ${v}. Sampled range: [${yMin.toFixed(4)}, ${yMax.toFixed(4)}].`;
+    }
+    document.getElementById('setResult').innerText = msg + '\nYour answer is ' + (ok? 'LIKELY CORRECT' : 'UNLIKELY CORRECT');
+  }
+
+  // Teacher mode toggle
+  let teacherMode = false;
+  document.getElementById('teacherToggle').addEventListener('click', ()=>{
+    teacherMode = !teacherMode;
+    const btn = document.getElementById('teacherToggle');
+    btn.textContent = teacherMode ? 'Teacher mode (ON)' : 'Teacher mode';
+    if(teacherMode){
+      document.getElementById('showCorrect').style.display = 'inline-block';
+      markExtrema(true,true);
+    } else {
+      document.getElementById('showCorrect').style.display = 'none';
+      // clear annotations
+      Plotly.relayout('plot',{annotations:[]});
+    }
+  });
+
+  // presets / worksheets
+  const presets = [
+    {title:'Basic cubic', fn:'cub', xmin:-2, xmax:6},
+    {title:'Downward parabola', fn:'par', xmin:-3, xmax:5},
+    {title:'Sine wave (period)', fn:'sin', xmin:-1, xmax:7},
+    {title:'Absolute value (cusp)', fn:'abs', xmin:-2, xmax:4},
+    {title:'Exponential decay custom', fn:'exp', xmin:-1, xmax:6},
+    {title:'Custom: x^3-3x', fn:'custom', expr:'x^3-3*x', xmin:-3, xmax:3}
+  ];
+  function populatePresets(){
+    const container = document.getElementById('presets');
+    presets.forEach(p=>{
+      const btn = document.createElement('button'); btn.type='button'; btn.textContent=p.title;
+      btn.addEventListener('click', ()=>{
+        document.getElementById('fn').value = p.fn === 'custom' ? 'custom' : p.fn;
+        if(p.expr) document.getElementById('customExpr').value = p.expr;
+        document.getElementById('xmin').value = p.xmin; document.getElementById('xmax').value = p.xmax;
+        plot();
+      });
+      container.appendChild(btn);
+    });
   }
 
   // wire up
   document.getElementById('plotBtn').addEventListener('click', plot);
-  document.getElementById('markBtn').addEventListener('click', markExtrema);
+  document.getElementById('markBtn').addEventListener('click', ()=>markExtrema(teacherMode,false));
   document.getElementById('secantBtn').addEventListener('click', showSecant);
   document.getElementById('clearSecant').addEventListener('click', clearSecant);
   document.getElementById('checkSet').addEventListener('click', checkSetBuilder);
+  document.getElementById('showCorrect').addEventListener('click', ()=>{
+    // show correct set-builder in alert
+    if(!currentData) plot();
+    const s = currentData.ys; const yMin = Math.min(...s); const yMax = Math.max(...s);
+    alert(`Correct (approx) set-builder: {y | ${yMin.toFixed(4)} <= y <= ${yMax.toFixed(4)}}`);
+  });
 
+  populatePresets();
   // initial plot
   plot();
 </script>
