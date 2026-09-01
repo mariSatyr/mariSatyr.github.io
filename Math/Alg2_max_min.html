@@ -1,1 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Alg 2 — Max/Min & Average Rate of Change Interactive</title>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1000px;margin:18px auto;padding:0 12px}
+    header{display:flex;align-items:center;gap:12px}
+    h1{font-size:1.4rem;margin:0}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .card{border:1px solid #ddd;padding:12px;border-radius:6px;background:#fafafa}
+    label{display:block;font-weight:600;margin-bottom:6px}
+    input[type=number],select,input[type=text]{width:100%;padding:6px;margin-bottom:8px}
+    .row{display:flex;gap:8px}
+    .btn{padding:8px 10px;border-radius:6px;border:1px solid #666;background:#eee;cursor:pointer}
+    .btn-primary{background:#1f78d1;color:white;border-color:#1761a6}
+    .result{background:#fff;padding:8px;border-radius:6px;border:1px solid #eee;margin-top:8px}
+    .task{margin-top:12px}
+    footer{font-size:0.9rem;color:#666;margin-top:18px}
+    pre{background:#f7f7f7;padding:8px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Interactive: Absolute/Local Max & Min, Set-Builder, Average Rate of Change</h1>
+  </header>
 
+  <p>Pick a function, set an x-interval, and use the tools to explore absolute maxima/minima, local maxima/minima, write the range in set-builder form, and compute the average rate of change (AROC) between two x-values.</p>
+
+  <div class="controls">
+    <div class="card">
+      <label for="fn">Function</label>
+      <select id="fn">
+        <option value="cub">f(x) = x^3 - 6x^2 + 9x + 1</option>
+        <option value="par">g(x) = -(x-1)^2 + 4  (downward parabola)</option>
+        <option value="sin">h(x) = 2*sin(x) (periodic)</option>
+        <option value="abs">k(x) = |x-1| - 1 (absolute value)</option>
+      </select>
+
+      <label>x-range (domain to inspect)</label>
+      <div class="row">
+        <input id="xmin" type="number" value="-2" step="0.5">
+        <input id="xmax" type="number" value="6" step="0.5">
+      </div>
+
+      <div class="row">
+        <button class="btn btn-primary" id="plotBtn">Plot</button>
+        <button class="btn" id="markBtn">Mark extrema</button>
+      </div>
+
+      <div class="result" id="extremaResult">Extrema: -</div>
+
+      <div class="task">
+        <label>Set-builder notation for the range (use 'y' variable):</label>
+        <input id="setInput" type="text" placeholder="example: {y | y \le 5}">
+        <button class="btn" id="checkSet">Check set-builder</button>
+        <div id="setResult" class="result">Range: -</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Average Rate of Change (choose two x values)</label>
+      <div class="row">
+        <div style="flex:1">
+          <label for="x1">x1</label>
+          <input id="x1" type="number" value="0" step="0.1">
+        </div>
+        <div style="flex:1">
+          <label for="x2">x2</label>
+          <input id="x2" type="number" value="3" step="0.1">
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="secantBtn">Show secant & compute slope</button>
+        <button class="btn" id="clearSecant">Clear secant</button>
+      </div>
+      <div id="arocResult" class="result">AROC: -</div>
+
+      <div class="task">
+        <label>Local extrema found (click 'Mark extrema' then identify which are local max/min)</label>
+        <div id="localList" class="result">Local extrema: -</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="plot" style="height:480px;margin-top:18px;"></div>
+
+  <div class="card" style="margin-top:12px;">
+    <h3>Instructions / Tasks for students</h3>
+    <ol>
+      <li>Choose a function and domain. Click 'Plot'.</li>
+      <li>Click 'Mark extrema' to have the app estimate absolute and local extrema on the domain.</li>
+      <li>Write the range in set-builder notation in the box and click 'Check set-builder'. The app will check a standard normalized form (simple comparisons like y &le; c, y &gt;= c).</li>
+      <li>Pick x1 and x2 and click 'Show secant & compute slope' to see the average rate of change between the two points (slope of secant line).</li>
+    </ol>
+  </div>
+
+  <footer>Created for Algebra II classroom exploration. Feel free to edit this file in your repo.</footer>
+
+<script>
+  // Functions
+  function f_cub(x){ return x*x*x - 6*x*x + 9*x + 1; }
+  function f_par(x){ return -(x-1)*(x-1) + 4; }
+  function f_sin(x){ return 2*Math.sin(x); }
+  function f_abs(x){ return Math.abs(x-1) - 1; }
+
+  function getCurrentFunction(){
+    const v = document.getElementById('fn').value;
+    if(v==='cub') return {fn:f_cub, name:'x^3 - 6x^2 + 9x + 1'};
+    if(v==='par') return {fn:f_par, name:'-(x-1)^2 + 4'};
+    if(v==='sin') return {fn:f_sin, name:'2 sin x'};
+    return {fn:f_abs, name:'|x-1| - 1'};
+  }
+
+  // Sampling
+  function sample(fn, xmin, xmax, n=1000){
+    const xs = new Array(n);
+    const ys = new Array(n);
+    for(let i=0;i<n;i++){
+      const t = xmin + (xmax-xmin)*(i/(n-1));
+      xs[i]=t; ys[i]=fn(t);
+    }
+    return {x:xs,y:ys};
+  }
+
+  // Numerical derivative
+  function derivativeApprox(fn,x,h=1e-6){ return (fn(x+h)-fn(x-h))/(2*h); }
+  function secondDerivativeApprox(fn,x,h=1e-4){ return (fn(x+h)-2*fn(x)+fn(x-h))/(h*h); }
+
+  // Find extrema: absolute max/min on sample; local extrema by sign change of derivative
+  function findExtrema(fn, xmin, xmax){
+    const s = sample(fn,xmin,xmax,2001);
+    let maxY = -Infinity, minY = Infinity, maxX=null, minX=null;
+    for(let i=0;i<s.x.length;i++){
+      if(s.y[i] > maxY){ maxY = s.y[i]; maxX = s.x[i]; }
+      if(s.y[i] < minY){ minY = s.y[i]; minX = s.x[i]; }
+    }
+    // local extrema: find critical points where derivative ~0 and second derivative sign
+    const locals = [];
+    const m = s.x.length;
+    for(let i=1;i<m-1;i++){
+      const left = (s.y[i]-s.y[i-1]);
+      const right = (s.y[i+1]-s.y[i]);
+      // detect a sign change in discrete slope
+      if(left*right <= 0){
+        // refine location using simple Newton-ish root find on derivative
+        let x0 = s.x[i];
+        for(let iter=0;iter<20;iter++){
+          const d = derivativeApprox(fn,x0);
+          const sd = secondDerivativeApprox(fn,x0);
+          if(Math.abs(d) < 1e-7) break;
+          if(Math.abs(sd) < 1e-8) break;
+          x0 = x0 - d/sd;
+          if(x0 < xmin || x0 > xmax) break;
+        }
+        const y0 = fn(x0);
+        const sd2 = secondDerivativeApprox(fn,x0);
+        // avoid duplicates (points near each other)
+        if(!locals.some(pt=>Math.abs(pt.x-x0) < 1e-3)){
+          locals.push({x:x0,y:y0,sd:sd2});
+        }
+      }
+    }
+    // classify local extrema
+    const localClass = locals.map(pt => ({x:pt.x,y:pt.y,type: (pt.sd>0? 'local min' : (pt.sd<0? 'local max' : 'inflection'))}));
+    return {absMax:{x:maxX,y:maxY}, absMin:{x:minX,y:minY}, locals:localClass};
+  }
+
+  // Plot
+  let currentData = null;
+  function plot(){
+    const {fn,name} = getCurrentFunction();
+    const xmin = parseFloat(document.getElementById('xmin').value);
+    const xmax = parseFloat(document.getElementById('xmax').value);
+    const s = sample(fn,xmin,xmax,1001);
+    currentData = {fn,name,xmin,xmax, xs:s.x, ys:s.y};
+    const trace = { x:s.x, y:s.y, mode:'lines', name:name };
+    const layout = { title: name + `  — domain [${xmin}, ${xmax}]`, margin:{t:36} };
+    Plotly.newPlot('plot',[trace],layout, {responsive:true});
+    document.getElementById('extremaResult').innerText = 'Extrema: click "Mark extrema" to calculate.';
+    document.getElementById('setResult').innerText = 'Range: -';
+    document.getElementById('arocResult').innerText = 'AROC: -';
+    document.getElementById('localList').innerText = 'Local extrema: -';
+  }
+
+  async function markExtrema(){
+    if(!currentData) { plot(); }
+    const {fn,xmin,xmax} = currentData;
+    const res = findExtrema(fn,xmin,xmax);
+    // plot markers
+    const points = [
+      { x:[res.absMax.x], y:[res.absMax.y], mode:'markers+text',marker:{color:'red',size:10}, text:['Absolute max'], textposition:'top center' },
+      { x:[res.absMin.x], y:[res.absMin.y], mode:'markers+text',marker:{color:'blue',size:10}, text:['Absolute min'], textposition:'bottom center' }
+    ];
+    // locals
+    for(const pt of res.locals){
+      points.push({ x:[pt.x], y:[pt.y], mode:'markers+text', marker:{color:pt.type==='local max'? 'orange' : 'green',size:8}, text:[pt.type], textposition:'right middle' });
+    }
+    const base = { x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name };
+    await Plotly.react('plot',[base, ...points],{title:currentData.name + `  — domain [${currentData.xmin}, ${currentData.xmax}]`});
+    document.getElementById('extremaResult').innerText = `Absolute max at x=${res.absMax.x.toFixed(3)}, y=${res.absMax.y.toFixed(3)}; Absolute min at x=${res.absMin.x.toFixed(3)}, y=${res.absMin.y.toFixed(3)}.`;
+    if(res.locals.length>0){
+      document.getElementById('localList').innerText = res.locals.map(pt=>`${pt.type} at x=${pt.x.toFixed(3)}, y=${pt.y.toFixed(3)}`).join('\n');
+    } else document.getElementById('localList').innerText = 'No local extrema found.';
+
+    // show range for set-builder assistance
+    const allY = currentData.ys;
+    const yMin = Math.min(...allY); const yMax = Math.max(...allY);
+    document.getElementById('setResult').innerText = `Range approximately: [${yMin.toFixed(3)}, ${yMax.toFixed(3)}]`;
+  }
+
+  // AROC / Secant
+  let secantId = null;
+  async function showSecant(){
+    if(!currentData) plot();
+    const {fn} = currentData;
+    let x1 = parseFloat(document.getElementById('x1').value);
+    let x2 = parseFloat(document.getElementById('x2').value);
+    if(x1 === x2){ document.getElementById('arocResult').innerText = 'Choose two different x values.'; return; }
+    const y1 = fn(x1); const y2 = fn(x2);
+    const slope = (y2-y1)/(x2-x1);
+    document.getElementById('arocResult').innerText = `AROC between x=${x1} and x=${x2} is ${slope.toFixed(5)} (\u0394y/\u0394x).`;
+    // draw secant line across plot domain
+    const xs = [currentData.xmin, currentData.xmax];
+    const secY = xs.map(x => y1 + slope*(x-x1));
+    const secTrace = { x:xs, y:secY, mode:'lines', name:'secant', line:{dash:'dash',color:'purple'}};
+    const pts = { x:[x1,x2], y:[y1,y2], mode:'markers', marker:{size:8,color:'purple'}, name:'secant points'};
+    const base = { x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name };
+    await Plotly.react('plot',[base, secTrace, pts], {title:currentData.name});
+    secantId = secTrace;
+  }
+  function clearSecant(){ if(currentData) Plotly.react('plot',[{ x:currentData.xs, y:currentData.ys, mode:'lines', name:currentData.name }], {title:currentData.name}); document.getElementById('arocResult').innerText='AROC: -'; }
+
+  // Simple set-builder checker for forms like {y | y <= c} or {y | y >= c}
+  function checkSetBuilder(){
+    if(!currentData) plot();
+    const input = document.getElementById('setInput').value.trim();
+    const allY = currentData.ys;
+    const yMin = Math.min(...allY); const yMax = Math.max(...allY);
+    const normalized = input.replaceAll(' ','');
+    const re = /\{y\|y(<=|>=|<|>)(-?\d+(?:\.\d+)?)\}/i;
+    const m = normalized.match(re);
+    if(!m){ document.getElementById('setResult').innerText = 'Could not parse set-builder. Use form: {y | y <= c} or {y | y >= c}'; return; }
+    const op = m[1]; const val = parseFloat(m[2]);
+    let ok=false;
+    if(op==='<=') ok = (Math.abs(yMax - val) < 1e-2) || (val >= yMax && val >= yMin);
+    if(op==='>=') ok = (Math.abs(yMin - val) < 1e-2) || (val <= yMin && val <= yMax);
+    if(op==='<') ok = (val > yMin && val < yMax);
+    if(op==='>') ok = (val > yMin && val < yMax);
+    document.getElementById('setResult').innerText = `Range approx [${yMin.toFixed(3)}, ${yMax.toFixed(3)}]. Your input ${input} is ` + (ok? 'POSSIBLY CORRECT' : 'UNLIKELY CORRECT');
+  }
+
+  // wire up
+  document.getElementById('plotBtn').addEventListener('click', plot);
+  document.getElementById('markBtn').addEventListener('click', markExtrema);
+  document.getElementById('secantBtn').addEventListener('click', showSecant);
+  document.getElementById('clearSecant').addEventListener('click', clearSecant);
+  document.getElementById('checkSet').addEventListener('click', checkSetBuilder);
+
+  // initial plot
+  plot();
+</script>
+</body>
+</html>
