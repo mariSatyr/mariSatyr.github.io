@@ -69,7 +69,7 @@
         }
 
         /* --- Link to specific topic --- */
-        #statistics-section {
+        .section {
             margin-top: 2rem;
         }
 
@@ -82,7 +82,7 @@
             text-align: center;
             transition: transform 0.2s, box-shadow 0.2s;
             max-width: 400px;
-            margin: 1rem auto; /* Center the single card */
+            margin: 1rem auto; /* Center the card */
         }
 
         .topic-link-card:hover {
@@ -169,27 +169,43 @@
     <main>
         <div class="hub-container">
             <h2>Math Resources</h2>
-            <p class="intro">Welcome to my curated collection of mathematics resources! This page acts as a central hub for various topics we explore in depth. Select a concept below to get started. Be sure to check back as new sections are being added regularly!</p>
+            <p class="intro">Welcome to my curated collection of mathematics resources! This page acts as a central hub for various topics we explore in depth. Select a concept below to get started.</p>
 
-            <!-- STATISTICS SECTION (Target of specific link request) -->
-            <section id="statistics-section">
+            <!-- STATISTICS SECTION -->
+            <section class="section">
                 <h3>Statistics</h3>
                 <div class="topic-link-card">
                     <h3>The Normal Distribution</h3>
                     <p>Explore concepts of the bell curve, standard deviation, and Z-scores.</p>
                     <a href="https://marisatyr.github.io/Math/NormalDistribution.html" class="view-link">View Module →</a>
-                </section>
-            </div>
+                </div>
+            </section>
+
+            <!-- ALGEBRA SECTION -->
+            <section class="section">
+                <h3>Algebra</h3>
+                <div class="topic-link-card">
+                    <h3>Algebra 2: Finding Maximum & Minimum</h3>
+                    <p>Learn how to find the maximum and minimum values of functions in Algebra 2.</p>
+                    <a href="https://marisatyr.github.io/Math/Alg2_max_min.html" class="view-link">View Module →</a>
+                </div>
+            </section>
+
+            <!-- ARITHMETIC SECTION -->
+            <section class="section">
+                <h3>Arithmetic</h3>
+                <div class="topic-link-card">
+                    <h3>Long Division Lab</h3>
+                    <p>Master long division step-by-step with interactive guided practice.</p>
+                    <a href="https://marisatyr.github.io/Math/long-division-lab.html" class="view-link">View Module →</a>
+                </div>
+            </section>
 
             <!-- FUTURE EXPANSION SECTION -->
             <section id="future-concepts">
                 <h2>Coming Soon: Other Math Concepts</h2>
                 <p>I am actively working on new content! Here are some of the areas that will be added soon:</p>
                 <ul class="concept-placeholder-list">
-                    <li class="placeholder-item">
-                        <strong>Algebra Fundamentals</strong>
-                        (Placeholders for key formulas, equation solving, and graphing)
-                    </li>
                     <li class="placeholder-item">
                         <strong>Geometry Basics</strong>
                         (Placeholders for theorems, shape properties, and proofs)
