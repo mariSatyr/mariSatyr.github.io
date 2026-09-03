@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Let's Learn Long Division</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F6FB;
+    --grid-line:#DCE6F2;
+    --paper:#FFFFFF;
+    --ink:#1B2540;
+    --ink-soft:#5B6785;
+    --teal:#168F86;
+    --teal-dark:#0F6E67;
+    --red:#E6543F;
+    --yellow:#FFC94A;
+    --purple:#7B5EEA;
+    --green:#2FA463;
+    --line:#D7DEEC;
+    --gutter-w:4ch;
+    --col-w:2.4ch;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+
+  html,body{ height:100%; }
+
+  body{
+    margin:0;
+    font-family:'Nunito', sans-serif;
+    color:var(--ink);
+    background-color:var(--bg);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size:28px 28px;
+    min-height:100%;
+    padding:2.5rem 1.25rem 4rem;
+  }
+
+  .page{ max-width:640px; margin:0 auto; }
+
+  .hero{ text-align:center; margin-bottom:1.75rem; }
+  .hero-mark{ display:inline-flex; margin-bottom:0.5rem; }
+  .hero h1{
+    font-family:'Fredoka', sans-serif;
+    font-weight:700;
+    font-size:clamp(1.7rem, 5vw, 2.4rem);
+    margin:0 0 0.5rem;
+    letter-spacing:-0.01em;
+  }
+  .hero p{
+    font-size:1rem;
+    color:var(--ink-soft);
+    max-width:38ch;
+    margin:0 auto;
+    line-height:1.5;
+  }
+
+  .card{
+    background:var(--paper);
+    border:2px solid rgba(27,37,64,0.08);
+    border-top:6px solid var(--teal);
+    border-radius:20px;
+    padding:2rem;
+    box-shadow:0 14px 34px -22px rgba(27,37,64,0.45);
+  }
+
+  /* ---------- setup ---------- */
+  .problem-inputs{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:0.9rem;
+  }
+  .input-group{ display:flex; flex-direction:column; gap:0.4rem; }
+  .input-group label{
+    font-family:'Fredoka', sans-serif;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    text-align:center;
+  }
+  .input-group input{
+    width:6.5rem;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:1.6rem;
+    text-align:center;
+    padding:0.6rem 0.4rem;
+    border-radius:12px;
+    border:2px solid var(--line);
+    background:#FBFCFE;
+    color:var(--ink);
+  }
+  .input-group input:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:#fff;
+  }
+  .op-symbol{
+    font-family:'Fredoka', sans-serif;
+    font-size:1.8rem;
+    font-weight:600;
+    color:var(--ink-soft);
+    padding-bottom:0.7rem;
+  }
+
+  .error{
+    color:var(--red);
+    font-weight:700;
+    text-align:center;
+    margin:0.9rem 0 0;
+    font-size:0.92rem;
+  }
+
+  .btn-primary{
+    display:block;
+    margin:1.4rem auto 0;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:0.85rem 1.8rem;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:1.05rem;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--teal-dark);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn-primary:hover{ filter:brightness(1.03); }
+  .btn-primary:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--teal-dark); }
+
+  .btn-ghost{
+    background:transparent;
+    border:2px solid var(--line);
+    color:var(--ink-soft);
+    border-radius:999px;
+    padding:0.45rem 0.95rem;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:0.85rem;
+    cursor:pointer;
+  }
+  .btn-ghost:hover{ border-color:var(--ink-soft); color:var(--ink); }
+
+  .examples{
+    margin-top:1.4rem;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:0.5rem;
+    font-size:0.88rem;
+    color:var(--ink-soft);
+  }
+  .chip{
+    background:#EEF3FB;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:0.35rem 0.85rem;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:0.9rem;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .chip:hover{ border-color:var(--teal); color:var(--teal-dark); }
+
+  /* ---------- workspace ---------- */
+  .workspace-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.4rem;
+  }
+  .progress{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:0.88rem;
+    color:var(--ink-soft);
+  }
+
+  .division-grid{
+    display:flex;
+    flex-direction:column;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:clamp(1.15rem, 3.6vw, 1.65rem);
+    color:var(--ink);
+    margin-bottom:1.6rem;
+    overflow-x:auto;
+  }
+  .grid-row{ display:grid; align-items:stretch; }
+  .gutter-cell{
+    grid-column:1;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    padding-right:0.3ch;
+    min-height:2.1em;
+  }
+  .cell{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:2.1em;
+  }
+  .cell.active{
+    background:var(--yellow);
+    border-radius:6px;
+  }
+  .bracket-row .gutter-cell{
+    border-top:3px solid var(--ink);
+    border-right:3px solid var(--ink);
+    padding-right:0.5ch;
+    padding-bottom:2px;
+  }
+  .bracket-row .d-cell{
+    border-top:3px solid var(--ink);
+    padding-top:2px;
+  }
+  .quotient-row .q-cell{ color:var(--teal-dark); }
+  .w-cell.underline{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:2px;
+  }
+  .work-row .gutter-cell{ color:var(--red); }
+
+  /* ---------- panel ---------- */
+  .step-pill{
+    display:inline-block;
+    color:#fff;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:0.82rem;
+    padding:0.3rem 0.85rem;
+    border-radius:999px;
+    margin-bottom:0.7rem;
+  }
+  .pill-teal{ background:var(--teal); }
+  .pill-purple{ background:var(--purple); }
+  .pill-red{ background:var(--red); }
+  .pill-yellow{ background:var(--yellow); color:var(--ink); }
+  .pill-grey{ background:#8A93AC; }
+
+  .instruction-text{
+    font-size:1.12rem;
+    line-height:1.5;
+    margin:0 0 1rem;
+  }
+
+  .choices{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:0.7rem;
+  }
+  .choice-btn{
+    background:#fff;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:0.85rem 1rem;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size:1.1rem;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .choice-btn:hover:not(:disabled){ border-color:var(--teal); }
+  .choice-btn.correct{ border-color:var(--green); background:#EAF8EF; color:var(--green); }
+  .choice-btn.wrong{ border-color:var(--red); background:#FDEEEC; color:var(--red); }
+  .choice-btn:disabled{ cursor:default; }
+  .choice-btn:disabled:not(.correct):not(.wrong){ opacity:0.5; }
+
+  .feedback{
+    min-height:1.4em;
+    margin:0.9rem 0 0;
+    font-size:0.98rem;
+  }
+  .feedback-good{ color:var(--green); font-weight:700; }
+  .feedback-hint{ color:var(--ink-soft); }
+
+  #continue-btn{ margin-left:0; margin-top:1.1rem; }
+
+  /* ---------- finale ---------- */
+  .finale-panel{
+    text-align:center;
+    animation:popIn .4s ease-out;
+  }
+  @keyframes popIn{
+    from{ opacity:0; transform:translateY(10px) scale(0.98); }
+    to{ opacity:1; transform:none; }
+  }
+  .finale-badge{ margin:0 auto 0.8rem; display:block; }
+  .finale-panel h2{
+    font-family:'Fredoka', sans-serif;
+    font-size:1.6rem;
+    margin:0 0 0.5rem;
+  }
+  .finale-panel .answer{
+    font-family:'JetBrains Mono', monospace;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--teal-dark);
+    margin:0 0 0.4rem;
+  }
+  .finale-check{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.95rem;
+    color:var(--ink-soft);
+    margin:0 0 1.4rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .finale-panel{ animation:none; }
+  }
+
+  @media (max-width:520px){
+    .choices{ grid-template-columns:1fr; }
+    .card{ padding:1.4rem; }
+    :root{ --col-w:2ch; --gutter-w:3.2ch; }
+    .problem-inputs{ gap:0.6rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <span class="hero-mark" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect x="9" y="4" width="10" height="27" rx="2.5" transform="rotate(18 9 4)" fill="#7B5EEA"/>
+          <rect x="9" y="4" width="10" height="7" rx="2.5" transform="rotate(18 9 4)" fill="#FFC94A"/>
+          <path d="M9.5 30 L4 36 L12 34.5 Z" fill="#1B2540"/>
+        </svg>
+      </span>
+      <h1>Let's learn long division</h1>
+      <p>Type a division problem and we'll work through it together, one small step at a time.</p>
+    </header>
+
+    <main>
+      <section id="setup" class="card">
+        <form id="setup-form" novalidate>
+          <div class="problem-inputs">
+            <div class="input-group">
+              <label for="dividend">Dividend</label>
+              <input type="text" inputmode="numeric" autocomplete="off" id="dividend" placeholder="845" />
+            </div>
+            <div class="op-symbol" aria-hidden="true">÷</div>
+            <div class="input-group">
+              <label for="divisor">Divisor</label>
+              <input type="text" inputmode="numeric" autocomplete="off" id="divisor" placeholder="7" />
+            </div>
+          </div>
+          <p id="setup-error" class="error" hidden></p>
+          <button type="submit" class="btn-primary">Start dividing</button>
+        </form>
+        <div class="examples">
+          <span>Need an idea? Try</span>
+          <button type="button" class="chip" data-dividend="845" data-divisor="7">845 ÷ 7</button>
+          <button type="button" class="chip" data-dividend="138" data-divisor="6">138 ÷ 6</button>
+          <button type="button" class="chip" data-dividend="4325" data-divisor="12">4325 ÷ 12</button>
+        </div>
+      </section>
+
+      <section id="workspace" class="card" hidden>
+        <div class="workspace-top">
+          <button id="restart-btn" class="btn-ghost" type="button">↺ New problem</button>
+          <div class="progress" id="progress-label"></div>
+        </div>
+
+        <div class="division-grid" id="division-grid"></div>
+
+        <div class="panel" id="step-panel">
+          <span class="step-pill" id="step-pill"></span>
+          <p class="instruction-text" id="instruction-text"></p>
+          <div class="choices" id="choices"></div>
+          <p class="feedback" id="feedback" aria-live="polite"></p>
+          <button id="continue-btn" class="btn-primary" hidden type="button">Continue</button>
+        </div>
+
+        <div class="panel finale-panel" id="finale-panel" hidden>
+          <svg class="finale-badge" width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true">
+            <circle cx="23" cy="23" r="21" fill="#2FA463"/>
+            <path d="M14 23.5 L20 29.5 L33 16.5" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <h2>You solved it!</h2>
+          <p class="answer" id="finale-sentence"></p>
+          <p class="finale-check" id="finale-check"></p>
+          <button id="again-btn" class="btn-primary" type="button">Try another problem</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script>
+  /* ---------- helpers ---------- */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function numericOptions(correct, candidates, count, min, max){
+    const seen = new Set([correct]);
+    const pool = [];
+    for(const c of candidates){
+      if(Number.isInteger(c) && c>=min && c<=max && !seen.has(c)){
+        seen.add(c);
+        pool.push(c);
+      }
+    }
+    const picked = shuffle(pool).slice(0, count);
+    let guard = 0;
+    while(picked.length < count && guard < 300){
+      guard++;
+      const r = Math.floor(Math.random()*(max-min+1)) + min;
+      if(!seen.has(r)){ seen.add(r); picked.push(r); }
+    }
+    return shuffle([correct, ...picked]);
+  }
+
+  function range(a,b){ const r=[]; for(let i=a;i<=b;i++) r.push(i); return r; }
+
+  /* ---------- step generation ---------- */
+  function buildSteps(dividend, divisor){
+    const digits = String(dividend).split('').map(Number);
+    const n = digits.length;
+    const steps = [];
+
+    let pos = 0;
+    let current = digits[0];
+    while(current < divisor && pos < n-1){
+      const partial = current;
+      steps.push({
+        type:'skip', pos, partial, divisor,
+        options: shuffle(['bringdown','stop']),
+        optionLabels: {bringdown:'Bring down the next digit', stop:'Write a 0 and stop here'},
+        answer:'bringdown'
+      });
+      pos++;
+      current = current*10 + digits[pos];
+    }
+
+    const workingPos = pos;
+    let workingValue = current;
+    let remainder = 0;
+
+    for(let p=workingPos; p<n; p++){
+      if(p > workingPos){
+        const digit = digits[p];
+        const otherDigits = [...new Set(digits.filter((d,idx)=> idx!==p && d!==digit))];
+        const options = numericOptions(digit, otherDigits, 3, 0, 9);
+        steps.push({ type:'branddown', pos:p, digit, divisor, options, answer:digit });
+        workingValue = remainder*10 + digit;
+      }
+
+      const q = Math.floor(workingValue/divisor);
+      const divideOptions = numericOptions(q, [q-2,q-1,q+1,q+2,q+3], 3, 0, 9);
+      steps.push({ type:'divide', pos:p, current:workingValue, divisor, options:divideOptions, answer:q });
+
+      const product = q*divisor;
+      const multiplyCandidates = [product-divisor, product+divisor, product-1, product+1, q+divisor];
+      const multiplyOptions = numericOptions(product, multiplyCandidates, 3, 0, Math.max(product+divisor*2, 12));
+      steps.push({ type:'multiply', pos:p, divisor, q, options:multiplyOptions, answer:product });
+
+      remainder = workingValue - product;
+      const subtractCandidates = [workingValue+product, remainder+divisor, remainder-divisor, workingValue-product+divisor, workingValue-product-divisor];
+      const subtractOptions = numericOptions(remainder, subtractCandidates, 3, 0, Math.max(workingValue, 12));
+      steps.push({ type:'subtract', pos:p, current:workingValue, product, options:subtractOptions, answer:remainder });
+    }
+
+    return { steps, digits, n };
+  }
+
+  /* ---------- state ---------- */
+  const state = {};
+
+  const setupSection = document.getElementById('setup');
+  const workspaceSection = document.getElementById('workspace');
+  const setupForm = document.getElementById('setup-form');
+  const dividendInput = document.getElementById('dividend');
+  const divisorInput = document.getElementById('divisor');
+  const setupError = document.getElementById('setup-error');
+  const gridEl = document.getElementById('division-grid');
+  const progressLabel = document.getElementById('progress-label');
+  const stepPill = document.getElementById('step-pill');
+  const instructionText = document.getElementById('instruction-text');
+  const choicesEl = document.getElementById('choices');
+  const feedbackEl = document.getElementById('feedback');
+  const continueBtn = document.getElementById('continue-btn');
+  const stepPanel = document.getElementById('step-panel');
+  const finalePanel = document.getElementById('finale-panel');
+  const finaleSentence = document.getElementById('finale-sentence');
+  const finaleCheck = document.getElementById('finale-check');
+  const restartBtn = document.getElementById('restart-btn');
+  const againBtn = document.getElementById('again-btn');
+
+  dividendInput.addEventListener('input', ()=>{ dividendInput.value = dividendInput.value.replace(/[^0-9]/g,''); });
+  divisorInput.addEventListener('input', ()=>{ divisorInput.value = divisorInput.value.replace(/[^0-9]/g,''); });
+
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      dividendInput.value = chip.dataset.dividend;
+      divisorInput.value = chip.dataset.divisor;
+      beginFromInputs();
+    });
+  });
+
+  setupForm.addEventListener('submit', (e)=>{ e.preventDefault(); beginFromInputs(); });
+  restartBtn.addEventListener('click', resetToSetup);
+  againBtn.addEventListener('click', resetToSetup);
+  continueBtn.addEventListener('click', ()=>{
+    state.stepIndex++;
+    if(state.stepIndex >= state.steps.length){ showFinale(); }
+    else { renderStep(); }
+  });
+
+  function beginFromInputs(){
+    const dividend = parseInt(dividendInput.value, 10);
+    const divisor = parseInt(divisorInput.value, 10);
+    const err = validate(dividend, divisor);
+    if(err){ setupError.textContent = err; setupError.hidden = false; return; }
+    setupError.hidden = true;
+    startProblem(dividend, divisor);
+  }
+
+  function validate(dividend, divisor){
+    if(!Number.isInteger(dividend) || !Number.isInteger(divisor)) return 'Enter whole numbers for both the dividend and divisor.';
+    if(divisor < 1) return 'The divisor needs to be at least 1.';
+    if(dividend < 1) return 'The dividend needs to be at least 1.';
+    if(dividend > 999999) return 'Try a dividend with 6 digits or fewer.';
+    if(divisor >= dividend) return 'The divisor should be smaller than the dividend.';
+    return null;
+  }
+
+  function startProblem(dividend, divisor){
+    const built = buildSteps(dividend, divisor);
+    state.dividend = dividend;
+    state.divisor = divisor;
+    state.digits = built.digits;
+    state.n = built.n;
+    state.steps = built.steps;
+    state.stepIndex = 0;
+    state.wrongAttempts = 0;
+    state.quotientDigits = new Array(state.n).fill(null);
+    state.rows = [];
+    state.finalRemainder = null;
+    state._pendingProduct = 0;
+
+    setupSection.hidden = true;
+    workspaceSection.hidden = false;
+    finalePanel.hidden = true;
+    stepPanel.hidden = false;
+
+    renderStep();
+  }
+
+  function resetToSetup(){
+    setupSection.hidden = false;
+    workspaceSection.hidden = true;
+    dividendInput.value = '';
+    divisorInput.value = '';
+    dividendInput.focus();
+  }
+
+  function currentStep(){ return state.steps[state.stepIndex]; }
+
+  function activeColsFor(step){
+    if(step.type === 'skip') return range(0, step.pos);
+    return [step.pos];
+  }
+
+  const PILL_INFO = {
+    skip:      { text:'Check',      cls:'pill-grey' },
+    divide:    { text:'Divide',     cls:'pill-teal' },
+    multiply:  { text:'Multiply',   cls:'pill-purple' },
+    subtract:  { text:'Subtract',   cls:'pill-red' },
+    branddown: { text:'Bring down', cls:'pill-yellow' }
+  };
+
+  function instructionFor(step){
+    switch(step.type){
+      case 'skip': return `${step.divisor} can't go into ${step.partial} — it's too small. What do we do next?`;
+      case 'divide': return `How many times does ${step.divisor} go into ${step.current}?`;
+      case 'multiply': return `Multiply: ${step.divisor} × ${step.q} = ?`;
+      case 'subtract': return `Subtract: ${step.current} − ${step.product} = ?`;
+      case 'branddown': return `Bring down the next digit from the dividend. Which digit is it?`;
+      default: return '';
+    }
+  }
+
+  function hintFor(step){
+    switch(step.type){
+      case 'skip': return `${step.partial} is smaller than ${step.divisor}, so we need another digit before we can divide.`;
+      case 'divide': return `Think about groups of ${step.divisor}. How many whole groups fit inside ${step.current}?`;
+      case 'multiply': return `${step.divisor} × ${step.q} means adding ${step.divisor} to itself ${step.q} times.`;
+      case 'subtract': return `Take ${step.product} away from ${step.current}.`;
+      case 'branddown': return `Look at the full number above and find the digit right after the part we've already used.`;
+      default: return '';
+    }
+  }
+
+  const AFFIRMATIONS = ["Yes, that's right!", "Nice work!", "Exactly right!", "You got it!", "Great thinking!"];
+
+  function renderStep(){
+    state.wrongAttempts = 0;
+    const step = currentStep();
+    progressLabel.textContent = `Step ${state.stepIndex+1} of ${state.steps.length}`;
+
+    const info = PILL_INFO[step.type];
+    stepPill.textContent = info.text;
+    stepPill.className = 'step-pill ' + info.cls;
+
+    instructionText.textContent = instructionFor(step);
+
+    choicesEl.innerHTML = '';
+    step.options.forEach(opt=>{
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'choice-btn';
+      btn.dataset.value = String(opt);
+      btn.textContent = step.optionLabels ? step.optionLabels[opt] : String(opt);
+      btn.addEventListener('click', ()=> checkAnswer(step, opt, btn));
+      choicesEl.appendChild(btn);
+    });
+
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+    continueBtn.hidden = true;
+
+    renderGrid(activeColsFor(step));
+  }
+
+  function checkAnswer(step, chosen, btn){
+    if(btn.disabled) return;
+
+    if(chosen === step.answer){
+      Array.from(choicesEl.children).forEach(b=> b.disabled = true);
+      btn.classList.add('correct');
+      applyStep(step);
+      feedbackEl.textContent = AFFIRMATIONS[Math.floor(Math.random()*AFFIRMATIONS.length)];
+      feedbackEl.className = 'feedback feedback-good';
+      continueBtn.hidden = false;
+      renderGrid(activeColsFor(step));
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      state.wrongAttempts++;
+
+      if(state.wrongAttempts >= 2){
+        Array.from(choicesEl.children).forEach(b=>{
+          b.disabled = true;
+          if(b.dataset.value === String(step.answer)) b.classList.add('correct');
+        });
+        const answerLabel = step.optionLabels ? step.optionLabels[step.answer] : step.answer;
+        feedbackEl.textContent = `The answer is ${answerLabel}. ${hintFor(step)}`;
+        feedbackEl.className = 'feedback feedback-hint';
+        continueBtn.hidden = false;
+      } else {
+        feedbackEl.textContent = hintFor(step);
+        feedbackEl.className = 'feedback feedback-hint';
+      }
+    }
+  }
+
+  function applyStep(step){
+    switch(step.type){
+      case 'divide':
+        state.quotientDigits[step.pos] = step.answer;
+        break;
+      case 'multiply':
+        state._pendingProduct = step.answer;
+        break;
+      case 'subtract': {
+        const p = step.pos;
+        const product = state._pendingProduct;
+        state.rows.push({ text:String(product), endCol:p, sign:'−', underline:true });
+        state.rows.push({ text:String(step.answer), endCol:p, sign:null, underline:false, isRemainder:true });
+        if(p === state.n-1){ state.finalRemainder = step.answer; }
+        break;
+      }
+      case 'branddown': {
+        const lastRem = [...state.rows].reverse().find(r=> r.isRemainder);
+        if(lastRem){
+          lastRem.text = lastRem.text + String(step.digit);
+          lastRem.endCol = step.pos;
+        }
+        break;
+      }
+      default: break;
+    }
+  }
+
+  function showFinale(){
+    stepPanel.hidden = true;
+    finalePanel.hidden = false;
+    const quotient = state.quotientDigits.filter(d=> d!==null).join('');
+    const remainder = state.finalRemainder === null ? 0 : state.finalRemainder;
+    let sentence = `${state.dividend} ÷ ${state.divisor} = ${quotient}`;
+    if(remainder > 0) sentence += ` remainder ${remainder}`;
+    finaleSentence.textContent = sentence;
+    finaleCheck.textContent = `Check it: ${state.divisor} × ${quotient} + ${remainder} = ${state.divisor*Number(quotient)+remainder}`;
+    renderGrid([]);
+  }
+
+  /* ---------- grid rendering ---------- */
+  function renderGrid(activeCols){
+    activeCols = activeCols || [];
+    const n = state.n;
+    gridEl.innerHTML = '';
+    const template = 'var(--gutter-w) ' + Array(n).fill('var(--col-w)').join(' ');
+
+    function makeRow(extraClass){
+      const row = document.createElement('div');
+      row.className = 'grid-row' + (extraClass ? ' '+extraClass : '');
+      row.style.gridTemplateColumns = template;
+      return row;
+    }
+    function cellAt(col, text, extraClass){
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (extraClass ? ' '+extraClass : '');
+      cell.style.gridColumn = String(col+2);
+      cell.textContent = text;
+      return cell;
+    }
+    function gutterCell(text, extraClass){
+      const cell = document.createElement('div');
+      cell.className = 'gutter-cell' + (extraClass ? ' '+extraClass : '');
+      cell.style.gridColumn = '1';
+      cell.textContent = text;
+      return cell;
+    }
+
+    const qRow = makeRow('quotient-row');
+    qRow.appendChild(gutterCell(''));
+    for(let c=0;c<n;c++){
+      const val = state.quotientDigits[c];
+      const cell = cellAt(c, (val===null||val===undefined) ? '' : String(val), 'q-cell');
+      if(activeCols.includes(c)) cell.classList.add('active');
+      qRow.appendChild(cell);
+    }
+    gridEl.appendChild(qRow);
+
+    const bRow = makeRow('bracket-row');
+    bRow.appendChild(gutterCell(String(state.divisor), 'divisor-cell'));
+    for(let c=0;c<n;c++){
+      const cell = cellAt(c, String(state.digits[c]), 'd-cell');
+      if(activeCols.includes(c)) cell.classList.add('active');
+      bRow.appendChild(cell);
+    }
+    gridEl.appendChild(bRow);
+
+    state.rows.forEach(row=>{
+      const r = makeRow('work-row');
+      r.appendChild(gutterCell(row.sign || ''));
+      const k = row.text.length;
+      const startCol = row.endCol - k + 1;
+      for(let i=0;i<k;i++){
+        const cell = cellAt(startCol+i, row.text[i], 'w-cell' + (row.underline ? ' underline' : ''));
+        r.appendChild(cell);
+      }
+      gridEl.appendChild(r);
+    });
+  }
+</script>
+</body>
+</html>
