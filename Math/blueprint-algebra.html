@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueprint Algebra — Distributive Property Workshop</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  --blue-deep:#12314f;
+  --blue-mid:#1c4570;
+  --blue-line:#3a6796;
+  --blue-line-soft:#2a5580;
+  --paper:#f2f6fa;
+  --ink:#eaf1f8;
+  --amber:#e8a33d;
+  --amber-dim:#c98a2c;
+  --green:#5fc38a;
+  --red:#ff8a7a;
+  --mono:'IBM Plex Mono', monospace;
+  --head:'Space Grotesk', sans-serif;
+  --body:'Inter', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--blue-deep);
+  background-image:
+    linear-gradient(var(--blue-line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--blue-line-soft) 1px, transparent 1px);
+  background-size:28px 28px;
+  color:var(--ink);
+  font-family:var(--body);
+  min-height:100vh;
+  padding:0 0 80px 0;
+}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+
+/* header */
+header{padding:48px 0 28px 0;}
+.eyebrow{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:0.02em;
+  color:var(--amber);
+  margin-bottom:10px;
+}
+h1{
+  font-family:var(--head);
+  font-weight:600;
+  font-size:clamp(32px,5vw,48px);
+  margin:0 0 12px 0;
+  line-height:1.08;
+  color:#fff;
+}
+.sub{
+  max-width:560px;
+  font-size:16px;
+  line-height:1.55;
+  color:#c3d4e6;
+}
+
+/* tabs */
+.tabs{
+  display:flex;
+  gap:2px;
+  margin-top:34px;
+  border-bottom:1px solid var(--blue-line);
+  flex-wrap:wrap;
+}
+.tab{
+  font-family:var(--head);
+  font-size:15px;
+  font-weight:500;
+  color:#9db6cf;
+  background:none;
+  border:none;
+  padding:12px 18px;
+  cursor:pointer;
+  position:relative;
+  transition:color .15s ease;
+}
+.tab:hover{color:#fff;}
+.tab.active{color:#fff;}
+.tab.active::after{
+  content:"";
+  position:absolute;
+  left:18px;right:18px;bottom:-1px;
+  height:2px;
+  background:var(--amber);
+}
+
+.panel{display:none;padding-top:36px;}
+.panel.active{display:block;}
+
+/* card */
+.card{
+  background:var(--blue-mid);
+  border:1px solid var(--blue-line);
+  border-radius:4px;
+  padding:28px;
+  margin-bottom:22px;
+}
+.card-label{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--amber);
+  margin-bottom:8px;
+}
+.card p{line-height:1.6;font-size:15px;color:#dbe7f2;margin:0 0 6px 0;}
+
+/* blueprint diagram */
+.diagram-row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start;}
+.diagram-box{flex:0 0 auto;}
+svg text{font-family:var(--mono);fill:var(--ink);}
+.dim-line{stroke:#7fa6c9;stroke-width:1;}
+.room-fill{fill:none;stroke:#eaf1f8;stroke-width:1.5;}
+.deck-fill{fill:rgba(232,163,61,0.08);}
+.living-fill{fill:rgba(255,255,255,0.02);}
+.d-label{fill:var(--amber);font-weight:600;}
+
+.slider-row{display:flex;align-items:center;gap:12px;margin-top:16px;font-family:var(--mono);font-size:13px;color:#b8ccdf;}
+input[type=range]{accent-color:var(--amber);flex:1;max-width:220px;}
+
+/* steps */
+.steps{margin-top:8px;}
+.step{
+  border-left:2px solid var(--blue-line);
+  padding:0 0 22px 22px;
+  margin-left:10px;
+  position:relative;
+  opacity:0.35;
+  transition:opacity .25s ease;
+}
+.step.unlocked{opacity:1;}
+.step:last-child{border-left:2px solid transparent;}
+.step::before{
+  content:attr(data-n);
+  position:absolute;
+  left:-13px;top:0;
+  width:24px;height:24px;
+  border-radius:50%;
+  background:var(--blue-deep);
+  border:2px solid var(--blue-line);
+  color:#9db6cf;
+  font-family:var(--mono);
+  font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+}
+.step.unlocked::before{border-color:var(--amber);color:var(--amber);}
+.step.done::before{
+  content:"✓";
+  background:var(--green);
+  border-color:var(--green);
+  color:var(--blue-deep);
+}
+.step-prompt{font-size:15px;color:#eaf1f8;margin-bottom:10px;line-height:1.5;}
+.step-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.step-row input[type=text]{
+  font-family:var(--mono);
+  font-size:15px;
+  background:var(--blue-deep);
+  border:1px solid var(--blue-line);
+  color:#fff;
+  border-radius:3px;
+  padding:9px 12px;
+  width:180px;
+  outline:none;
+}
+.step-row input[type=text]:focus{border-color:var(--amber);}
+button.check{
+  font-family:var(--head);
+  font-weight:600;
+  font-size:13px;
+  background:var(--amber);
+  color:var(--blue-deep);
+  border:none;
+  padding:9px 16px;
+  border-radius:3px;
+  cursor:pointer;
+}
+button.check:hover{background:#f0b556;}
+button.check:disabled{opacity:0.4;cursor:default;}
+.feedback{
+  font-family:var(--mono);
+  font-size:13px;
+  margin-top:8px;
+  min-height:18px;
+}
+.feedback.ok{color:var(--green);}
+.feedback.err{color:var(--red);}
+.hint-btn{
+  background:none;border:none;color:#8fb0cc;font-family:var(--mono);
+  font-size:12px;text-decoration:underline;cursor:pointer;padding:0;margin-top:8px;
+}
+.hint-text{font-family:var(--mono);font-size:13px;color:#f0c88a;margin-top:8px;display:none;}
+
+.final-note{
+  margin-top:18px;padding:16px;border:1px dashed var(--amber-dim);border-radius:4px;
+  font-family:var(--mono);font-size:14px;color:var(--amber);display:none;
+}
+
+/* practice generator */
+.practice-controls{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.new-btn{
+  font-family:var(--head);font-weight:600;font-size:14px;
+  background:none;border:1px solid var(--amber-dim);color:var(--amber);
+  padding:9px 16px;border-radius:3px;cursor:pointer;
+}
+.new-btn:hover{background:rgba(232,163,61,0.1);}
+.expr-display{
+  font-family:var(--mono);font-size:22px;color:#fff;
+  background:var(--blue-deep);border:1px solid var(--blue-line);
+  border-radius:4px;padding:18px 22px;margin-bottom:18px;
+}
+.score{font-family:var(--mono);font-size:13px;color:#9db6cf;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">RETEACH TO BUILD UNDERSTANDING · 4-4</div>
+    <h1>Blueprint Algebra</h1>
+    <p class="sub">Work through the distributive property the way an architect reads a floor plan — one measurement at a time. Solve the deck problem, the deli special, or generate new practice problems.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="deck">1 · Deck Blueprint</button>
+    <button class="tab" data-tab="deli">2 · Deli Special</button>
+    <button class="tab" data-tab="practice">Practice Generator</button>
+  </div>
+
+  <!-- DECK PANEL -->
+  <div class="panel active" id="panel-deck">
+    <div class="card">
+      <div class="card-label">FLOOR PLAN</div>
+      <div class="diagram-row">
+        <div class="diagram-box">
+          <svg width="300" height="220" viewBox="0 0 300 220">
+            <!-- vertical dim -->
+            <line class="dim-line" x1="20" y1="20" x2="20" y2="170"></line>
+            <text x="8" y="98" transform="rotate(-90 8 98)" font-size="13" text-anchor="middle">12 ft</text>
+            <!-- rectangle -->
+            <rect class="living-fill room-fill" x="55" y="20" width="150" height="150"></rect>
+            <rect class="deck-fill room-fill" id="deckRect" x="205" y="20" width="40" height="150"></rect>
+            <text x="128" y="100" font-size="13" text-anchor="middle">Living room</text>
+            <text x="226" y="100" font-size="12" text-anchor="middle">Deck</text>
+            <!-- horizontal dims -->
+            <line class="dim-line" x1="55" y1="182" x2="205" y2="182"></line>
+            <text x="128" y="198" font-size="13" text-anchor="middle">14 ft</text>
+            <line class="dim-line" x1="205" y1="182" x2="245" y2="182"></line>
+            <text x="225" y="198" font-size="13" text-anchor="middle" class="d-label" id="dLabel">d</text>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:220px;">
+          <p>The Bains' house has a deck next to the living room. What is the total combined area of the living room and deck?</p>
+          <div class="slider-row">
+            drag <span id="dVal">d</span>: <input type="range" id="dSlider" min="2" max="10" value="3" step="1"> <span id="dValShow">d = 3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card steps" id="deckSteps">
+      <div class="step-prompt" style="margin-bottom:18px;color:#9db6cf;font-family:var(--mono);font-size:12px;">STEP-BY-STEP</div>
+      <!-- steps injected by JS -->
+    </div>
+  </div>
+
+  <!-- DELI PANEL -->
+  <div class="panel" id="panel-deli">
+    <div class="card">
+      <div class="card-label">WORD PROBLEM</div>
+      <p>The deli's lunch special offers customers half off the total cost of a sandwich of their choice and a bag of pretzels. The original price of the pretzels is $1.50. Let <em>s</em> represent the original cost of a selected customer's sandwich. What is the total cost of the customer's order?</p>
+    </div>
+    <div class="card steps" id="deliSteps">
+      <div class="step-prompt" style="margin-bottom:18px;color:#9db6cf;font-family:var(--mono);font-size:12px;">STEP-BY-STEP</div>
+    </div>
+  </div>
+
+  <!-- PRACTICE PANEL -->
+  <div class="panel" id="panel-practice">
+    <div class="card">
+      <div class="card-label">PRACTICE GENERATOR</div>
+      <p>Expand each expression using the Distributive Property, then simplify. Type your final answer — order and spacing don't matter.</p>
+      <div class="practice-controls">
+        <button class="new-btn" id="newProblemBtn">New problem</button>
+        <span class="score" id="scoreLine">Solved: 0</span>
+      </div>
+      <div class="expr-display" id="exprDisplay">a(bx + c)</div>
+      <div class="step-row">
+        <input type="text" id="practiceInput" placeholder="e.g. 12x + 8">
+        <button class="check" id="practiceCheckBtn">Check</button>
+      </div>
+      <div class="feedback" id="practiceFeedback"></div>
+      <button class="hint-btn" id="practiceHintBtn">Show hint</button>
+      <div class="hint-text" id="practiceHintText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- utility: equivalence checker ---------- */
+function preprocess(str, varName){
+  let s = str.replace(/\s+/g,'');
+  if(varName){
+    s = s.replace(new RegExp('(\\d)('+varName+')','g'), '$1*$2');
+    s = s.replace(new RegExp('('+varName+')\\(','g'), '$1*(');
+  }
+  s = s.replace(/(\d|\))\(/g, '$1*(');
+  s = s.replace(/\)(\d)/g, ')*$1');
+  if(varName){
+    s = s.replace(/\)([a-zA-Z])/g, ')*$1');
+  }
+  return s;
+}
+function checkAnswer(input, expectedFn, varName){
+  if(!input || !input.trim()) return false;
+  try{
+    const testVals = varName ? [2,5,11] : [0];
+    for(const t of testVals){
+      let processed = preprocess(input, varName);
+      let expr = processed;
+      if(varName){
+        expr = expr.replace(new RegExp(varName,'g'), '('+t+')');
+      }
+      if(!/^[0-9+\-*/().]+$/.test(expr)) return false;
+      const got = Function('"use strict";return ('+expr+')')();
+      const want = expectedFn(t);
+      if(!isFinite(got) || Math.abs(got - want) > 1e-6) return false;
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- generic step-sequence renderer ---------- */
+function renderSteps(containerId, steps){
+  const container = document.getElementById(containerId);
+  steps.forEach((step, i) => {
+    const div = document.createElement('div');
+    div.className = 'step' + (i===0 ? ' unlocked' : '');
+    div.setAttribute('data-n', i+1);
+    div.id = containerId+'-step-'+i;
+    div.innerHTML = `
+      <div class="step-prompt">${step.prompt}</div>
+      <div class="step-row">
+        <input type="text" placeholder="${step.placeholder}">
+        <button class="check">Check</button>
+      </div>
+      <div class="feedback"></div>
+      ${step.hint ? '<button class="hint-btn">Show hint</button><div class="hint-text">'+step.hint+'</div>' : ''}
+    `;
+    container.appendChild(div);
+
+    const input = div.querySelector('input');
+    const btn = div.querySelector('button.check');
+    const fb = div.querySelector('.feedback');
+    const hintBtn = div.querySelector('.hint-btn');
+    const hintText = div.querySelector('.hint-text');
+
+    if(hintBtn){
+      hintBtn.addEventListener('click', () => {
+        hintText.style.display = hintText.style.display === 'block' ? 'none' : 'block';
+      });
+    }
+
+    function submit(){
+      if(!div.classList.contains('unlocked')) return;
+      const ok = checkAnswer(input.value, step.expected, step.varName);
+      if(ok){
+        fb.textContent = step.okMsg || 'Correct.';
+        fb.className = 'feedback ok';
+        div.classList.add('done');
+        input.disabled = true;
+        btn.disabled = true;
+        const next = document.getElementById(containerId+'-step-'+(i+1));
+        if(next) next.classList.add('unlocked');
+        else {
+          const note = container.parentElement.querySelector('.final-note') || container.querySelector('.final-note');
+        }
+        if(i === steps.length - 1){
+          const finalNote = container.querySelector('.final-note-holder');
+        }
+      } else {
+        fb.textContent = 'Not quite — check your work and try again.';
+        fb.className = 'feedback err';
+      }
+    }
+    btn.addEventListener('click', submit);
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') submit(); });
+  });
+}
+
+/* ---------- DECK PROBLEM ---------- */
+let dVal = 3;
+function updateDeckDiagram(){
+  document.getElementById('dValShow').textContent = 'd = ' + dVal;
+  const deckWidthPx = 12 + dVal*6;
+  document.getElementById('deckRect').setAttribute('width', deckWidthPx);
+}
+document.getElementById('dSlider').addEventListener('input', e => {
+  dVal = parseInt(e.target.value, 10);
+  updateDeckDiagram();
+});
+updateDeckDiagram();
+
+renderSteps('deckSteps', [
+  {
+    prompt: '1. The deck and living room combine to form one rectangle. What is the width of that rectangle — the side already shared by both rooms?',
+    placeholder: 'width in ft',
+    expected: () => 12,
+    varName: null,
+    okMsg: 'Right — both rooms share the 12 ft side.',
+    hint: 'Look at the side labeled the same way for the whole rectangle, not just one room.'
+  },
+  {
+    prompt: '2. Write an expression for the combined length of the rectangle (living room + deck).',
+    placeholder: 'e.g. 14+d',
+    expected: (d) => 14 + d,
+    varName: 'd',
+    okMsg: 'Right — 14 + d.',
+    hint: 'Add the living room\'s length to the deck\'s length.'
+  },
+  {
+    prompt: '3. Write an expression for the combined area (don\'t expand yet).',
+    placeholder: 'e.g. 12(14+d)',
+    expected: (d) => 12 * (14 + d),
+    varName: 'd',
+    okMsg: 'Right — area = width × length = 12(14 + d).',
+    hint: 'Area = width × length. Use your answers from steps 1 and 2.'
+  },
+  {
+    prompt: '4. Use the Distributive Property to expand and simplify. What expression represents the total combined area?',
+    placeholder: 'e.g. 168+12d',
+    expected: (d) => 168 + 12*d,
+    varName: 'd',
+    okMsg: 'Correct — 12(14 + d) = 168 + 12d.',
+    hint: 'Multiply 12 by 14, then 12 by d, and add the results.'
+  }
+]);
+
+/* ---------- DELI PROBLEM ---------- */
+renderSteps('deliSteps', [
+  {
+    prompt: '1. Write an expression for the original total cost of the sandwich and pretzels, before any discount.',
+    placeholder: 'e.g. s+1.5',
+    expected: (s) => s + 1.5,
+    varName: 's',
+    okMsg: 'Right — s + 1.50.',
+    hint: 'Add the sandwich price (s) and the pretzel price ($1.50).'
+  },
+  {
+    prompt: '2. The special takes half off that total. Write an expression for the discounted total (don\'t expand yet).',
+    placeholder: 'e.g. 0.5(s+1.5)',
+    expected: (s) => 0.5 * (s + 1.5),
+    varName: 's',
+    okMsg: 'Right — 0.5(s + 1.50).',
+    hint: 'Half off means multiplying the total from step 1 by 0.5 (or dividing by 2).'
+  },
+  {
+    prompt: '3. Use the Distributive Property to expand and simplify. What is the total cost of the order?',
+    placeholder: 'e.g. 0.5s+0.75',
+    expected: (s) => 0.5*s + 0.75,
+    varName: 's',
+    okMsg: 'Correct — 0.5(s + 1.50) = 0.5s + 0.75.',
+    hint: 'Multiply 0.5 by s, then 0.5 by 1.50, and add the results.'
+  }
+]);
+
+/* ---------- PRACTICE GENERATOR ---------- */
+let currentProblem = null;
+let solvedCount = 0;
+
+function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function newPracticeProblem(){
+  const a = randInt(2,9);
+  const b = randInt(2,9);
+  const c = randInt(2,20);
+  const subtract = Math.random() < 0.3;
+  currentProblem = { a, b, c, subtract };
+  const sign = subtract ? '-' : '+';
+  document.getElementById('exprDisplay').textContent = a + '(' + b + 'x ' + sign + ' ' + c + ')';
+  document.getElementById('practiceInput').value = '';
+  document.getElementById('practiceInput').disabled = false;
+  document.getElementById('practiceCheckBtn').disabled = false;
+  document.getElementById('practiceFeedback').textContent = '';
+  document.getElementById('practiceFeedback').className = 'feedback';
+  document.getElementById('practiceHintText').style.display = 'none';
+  const abx = a*b;
+  const ac = a*c;
+  document.getElementById('practiceHintText').textContent =
+    'Multiply ' + a + ' × ' + b + 'x = ' + abx + 'x, then ' + a + ' × ' + c + ' = ' + ac + '. Combine: ' + abx + 'x ' + (subtract ? '-' : '+') + ' ' + ac + '.';
+}
+
+function practiceExpected(x){
+  const { a, b, c, subtract } = currentProblem;
+  return subtract ? a*(b*x - c) : a*(b*x + c);
+}
+
+document.getElementById('newProblemBtn').addEventListener('click', newPracticeProblem);
+document.getElementById('practiceHintBtn').addEventListener('click', () => {
+  const el = document.getElementById('practiceHintText');
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+});
+
+function submitPractice(){
+  const input = document.getElementById('practiceInput');
+  const fb = document.getElementById('practiceFeedback');
+  const ok = checkAnswer(input.value, practiceExpected, 'x');
+  if(ok){
+    fb.textContent = 'Correct — nice work.';
+    fb.className = 'feedback ok';
+    solvedCount++;
+    document.getElementById('scoreLine').textContent = 'Solved: ' + solvedCount;
+    input.disabled = true;
+    document.getElementById('practiceCheckBtn').disabled = true;
+  } else {
+    fb.textContent = 'Not quite — check your multiplication and try again.';
+    fb.className = 'feedback err';
+  }
+}
+document.getElementById('practiceCheckBtn').addEventListener('click', submitPractice);
+document.getElementById('practiceInput').addEventListener('keydown', e => { if(e.key === 'Enter') submitPractice(); });
+
+newPracticeProblem();
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
