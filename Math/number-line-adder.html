@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Line: Add & Subtract Positive and Negative Numbers</title>
+<style>
+  :root{
+    --bg: #f7f5ef;
+    --card: #ffffff;
+    --ink: #2c2c2a;
+    --muted: #6b6a63;
+    --border: #d8d5c9;
+    --blue: #185fa5;
+    --blue-bg: #e6f1fb;
+    --teal: #0f6e56;
+    --teal-bg: #e1f5ee;
+    --coral: #993c1d;
+    --coral-bg: #faece7;
+    --amber: #854f0b;
+    --amber-bg: #faeeda;
+  }
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 24px 16px 60px;
+  }
+  .wrap{ max-width: 760px; margin: 0 auto; }
+  h1{
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+  .subtitle{
+    text-align:center;
+    color: var(--muted);
+    font-size: 15px;
+    margin: 0 0 24px;
+  }
+  .card{
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+  }
+  .equation{
+    text-align:center;
+    font-size: 30px;
+    font-weight: 700;
+    margin: 4px 0 18px;
+    min-height: 40px;
+    letter-spacing: 0.5px;
+  }
+  .equation .start{ color: var(--blue); }
+  .equation .amt{ color: var(--amber); }
+  .equation .result{ color: var(--teal); }
+  .equation.negative .result{ color: var(--coral); }
+  #note{
+    text-align:center;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 18px;
+    margin-bottom: 6px;
+  }
+  svg{ display:block; width:100%; height:auto; }
+  .controls{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .field{
+    flex: 1 1 200px;
+    display:flex;
+    flex-direction:column;
+    gap: 6px;
+  }
+  .field label{
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  input[type="number"]{
+    font-size: 22px;
+    font-weight: 700;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: #fff;
+    width: 100%;
+    text-align: center;
+  }
+  input[type="number"]:focus{
+    outline: none;
+    border-color: var(--blue);
+  }
+  .op-toggle{
+    display:flex;
+    gap: 8px;
+  }
+  .op-toggle button{
+    flex:1;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 10px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .op-toggle button.active-add{
+    background: var(--teal-bg);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+  .op-toggle button.active-sub{
+    background: var(--coral-bg);
+    border-color: var(--coral);
+    color: var(--coral);
+  }
+  .legend{
+    display:flex;
+    justify-content:center;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .examples{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content:center;
+  }
+  .examples button{
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .examples button:hover{ background: var(--bg); }
+  .examples-title{
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Number line jumps</h1>
+  <p class="subtitle">Type your own numbers and watch the jump on the number line.</p>
+
+  <div class="card">
+    <div class="equation" id="equation">3 + (4) = 7</div>
+    <div id="note"></div>
+    <svg id="nl" viewBox="0 0 680 240" role="img" aria-label="Number line showing a jump from a starting number to a result">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke="context-stroke"/>
+        </marker>
+      </defs>
+      <g id="ticks"></g>
+      <line id="baseline" x1="40" y1="200" x2="640" y2="200" stroke="#b4b2a9" stroke-width="1"/>
+      <path id="arc" fill="none" stroke="#0f6e56" stroke-width="3" marker-end="url(#arrow)"/>
+      <circle id="startDot" r="8" fill="#185fa5" cx="220" cy="200" stroke="#fff" stroke-width="2"/>
+      <circle id="endDot" r="8" fill="#0f6e56" cx="340" cy="200" stroke="#fff" stroke-width="2"/>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#185fa5"></span> start</span>
+      <span><span class="dot" style="background:#0f6e56"></span> answer (jump right)</span>
+      <span><span class="dot" style="background:#993c1d"></span> answer (jump left)</span>
+    </div>
+
+    <div class="controls">
+      <div class="field">
+        <label for="startInput">Start at</label>
+        <input type="number" id="startInput" value="3" step="1">
+      </div>
+      <div class="field">
+        <label>Operation</label>
+        <div class="op-toggle">
+          <button id="opAdd" type="button">+ add</button>
+          <button id="opSub" type="button">− subtract</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="amtInput">Amount</label>
+        <input type="number" id="amtInput" value="4" step="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="examples-title">Try one</div>
+    <div class="examples">
+      <button data-s="3" data-o="add" data-a="4">3 + 4</button>
+      <button data-s="3" data-o="add" data-a="-4">3 + (−4)</button>
+      <button data-s="-2" data-o="sub" data-a="5">−2 − 5</button>
+      <button data-s="3" data-o="sub" data-a="-4">3 − (−4)</button>
+      <button data-s="-6" data-o="add" data-a="-3">−6 + (−3)</button>
+      <button data-s="10" data-o="sub" data-a="15">10 − 15</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var startInput = document.getElementById('startInput');
+  var amtInput = document.getElementById('amtInput');
+  var equation = document.getElementById('equation');
+  var note = document.getElementById('note');
+  var arc = document.getElementById('arc');
+  var startDot = document.getElementById('startDot');
+  var endDot = document.getElementById('endDot');
+  var opAdd = document.getElementById('opAdd');
+  var opSub = document.getElementById('opSub');
+  var ticksGroup = document.getElementById('ticks');
+  var svgns = 'http://www.w3.org/2000/svg';
+  var op = 'add';
+
+  function setOp(newOp){
+    op = newOp;
+    opAdd.className = op === 'add' ? 'active-add' : '';
+    opSub.className = op === 'sub' ? 'active-sub' : '';
+    update();
+  }
+
+  function niceStep(range){
+    if(range <= 24) return 1;
+    if(range <= 60) return 5;
+    if(range <= 150) return 10;
+    if(range <= 300) return 25;
+    return Math.ceil(range/20/10)*10;
+  }
+
+  function drawLine(R, step){
+    // R is the max absolute value shown on each side
+    while(ticksGroup.firstChild) ticksGroup.removeChild(ticksGroup.firstChild);
+    var x0 = 40, x1 = 640;
+    function xPos(v){ return x0 + ((v + R) / (2*R)) * (x1 - x0); }
+
+    for(var v = -R; v <= R; v += step){
+      var x = xPos(v);
+      var tick = document.createElementNS(svgns,'line');
+      tick.setAttribute('x1', x); tick.setAttribute('x2', x);
+      tick.setAttribute('y1', v === 0 ? 186 : 194);
+      tick.setAttribute('y2', v === 0 ? 214 : 206);
+      tick.setAttribute('stroke', '#8a8880');
+      tick.setAttribute('stroke-width', v === 0 ? '2' : '1');
+      ticksGroup.appendChild(tick);
+
+      var label = document.createElementNS(svgns,'text');
+      label.setAttribute('x', x);
+      label.setAttribute('y', 230);
+      label.setAttribute('text-anchor','middle');
+      label.setAttribute('font-size','13');
+      label.setAttribute('font-family','inherit');
+      label.setAttribute('fill','#6b6a63');
+      label.textContent = v;
+      ticksGroup.appendChild(label);
+    }
+    return xPos;
+  }
+
+  function update(){
+    var start = parseInt(startInput.value, 10);
+    var amt = parseInt(amtInput.value, 10);
+    if(isNaN(start)) start = 0;
+    if(isNaN(amt)) amt = 0;
+
+    var result = op === 'add' ? start + amt : start - amt;
+
+    equation.innerHTML =
+      '<span class="start">' + start + '</span> ' +
+      (op === 'add' ? '+' : '\u2212') +
+      ' (<span class="amt">' + amt + '</span>) = <span class="result">' + result + '</span>';
+    equation.className = 'equation' + (result < start === false && result < start ? '' : '');
+
+    var R = Math.max(10, Math.ceil(Math.max(Math.abs(start), Math.abs(amt), Math.abs(result)) * 1.15) + 2);
+    var step = niceStep(R);
+    var xPos = drawLine(R, step);
+
+    var sx = xPos(start), sy = 200;
+    var ex = xPos(result), ey = 200;
+    var dist = Math.abs(ex - sx);
+    var height = Math.min(95, 22 + dist * 0.32);
+    var midx = (sx + ex) / 2;
+    var cy = 200 - height;
+    var goingRight = ex >= sx;
+    var color = goingRight ? '#0f6e56' : '#993c1d';
+
+    if(dist < 1){
+      arc.setAttribute('d','');
+    } else {
+      arc.setAttribute('d', 'M ' + sx + ' ' + sy + ' Q ' + midx + ' ' + cy + ' ' + ex + ' ' + ey);
+    }
+    arc.setAttribute('stroke', color);
+    startDot.setAttribute('cx', sx); startDot.setAttribute('cy', sy);
+    endDot.setAttribute('cx', ex); endDot.setAttribute('cy', ey);
+    endDot.setAttribute('fill', color);
+
+    if(R > 40){
+      note.textContent = 'These are big numbers, so each mark on the line counts by ' + step + '.';
+    } else {
+      note.textContent = '';
+    }
+  }
+
+  startInput.addEventListener('input', update);
+  amtInput.addEventListener('input', update);
+  opAdd.addEventListener('click', function(){ setOp('add'); });
+  opSub.addEventListener('click', function(){ setOp('sub'); });
+
+  document.querySelectorAll('.examples button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      startInput.value = btn.getAttribute('data-s');
+      amtInput.value = btn.getAttribute('data-a');
+      setOp(btn.getAttribute('data-o'));
+    });
+  });
+
+  setOp('add');
+})();
+</script>
+</body>
+</html>
