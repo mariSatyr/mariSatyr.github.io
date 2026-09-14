@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factor Lab · Factoring x² + bx + c</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3F6FB;
+    --paper-line:rgba(22,35,61,0.07);
+    --ink:#16233D;
+    --ink-soft:#51607E;
+    --ink-faint:#8894AC;
+    --card:#FFFFFF;
+    --card-border:rgba(22,35,61,0.14);
+    --gold:#B8842B;
+    --gold-dark:#8F6620;
+    --gold-tint:#FBF1DF;
+    --teal:#1E7A63;
+    --teal-tint:#E4F3EE;
+    --brick:#B8503F;
+    --brick-tint:#FBEAE7;
+    --radius:6px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    margin:0;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+
+  .wrap{ max-width:760px; margin:0 auto; padding:0 22px 90px; }
+
+  h1,h2,h3{ font-family:'Source Serif 4', Georgia, serif; font-weight:700; color:var(--ink); margin:0; }
+
+  .eq{ font-family:'JetBrains Mono', monospace; }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(243,246,251,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--card-border);
+  }
+  .topbar-inner{
+    max-width:760px; margin:0 auto; padding:14px 22px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; font-family:'Source Serif 4',serif; font-weight:700; font-size:17px; }
+  .brand-mark{
+    width:24px; height:24px; border-radius:5px; background:var(--ink);
+    color:var(--paper); display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700;
+  }
+  .progress-track{
+    flex:1; max-width:220px; height:7px; background:var(--card-border);
+    border-radius:4px; overflow:hidden; position:relative;
+  }
+  .progress-fill{ height:100%; width:0%; background:var(--gold); transition:width .5s ease; }
+  .progress-label{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft); white-space:nowrap; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:52px 0 30px; }
+  .hero-eyebrow{ color:var(--ink-soft); font-size:14.5px; margin-bottom:10px; }
+  .hero h1{ font-size:clamp(30px,5vw,42px); line-height:1.12; letter-spacing:-0.5px; }
+  .hero p.lede{ color:var(--ink-soft); font-size:17px; max-width:52ch; margin-top:12px; }
+
+  .hero-equation{
+    margin-top:34px; background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); box-shadow:3px 3px 0 rgba(22,35,61,0.06);
+    padding:28px 24px; display:flex; align-items:center; justify-content:center;
+    gap:16px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace;
+    font-size:clamp(19px,4vw,27px); font-weight:600;
+  }
+  .hero-equation .arrow{ color:var(--ink-faint); font-size:20px; }
+  .hero-equation .pick{
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--gold-tint); color:var(--gold-dark);
+    border-radius:50%; width:1.5em; height:1.5em; font-weight:700;
+  }
+  .hero-caption{
+    text-align:center; margin-top:12px; font-size:13.5px; color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .hero-caption b{ color:var(--gold-dark); }
+
+  /* ---------- rule box ---------- */
+  .rulebox{
+    margin-top:36px; background:var(--card); border:1px solid var(--card-border);
+    border-left:4px solid var(--ink); border-radius:0 var(--radius) var(--radius) 0;
+    padding:18px 20px;
+  }
+  .rulebox h3{ font-size:15.5px; margin-bottom:8px; }
+  .rulebox ol{ margin:0; padding-left:20px; color:var(--ink-soft); }
+  .rulebox ol li{ margin-bottom:3px; }
+  .rulebox .form{
+    margin-top:12px; text-align:center; font-family:'JetBrains Mono',monospace;
+    font-weight:700; font-size:16px; background:var(--paper); border-radius:5px; padding:8px;
+  }
+
+  /* ---------- section heading ---------- */
+  .section-head{ margin:54px 0 18px; display:flex; align-items:baseline; gap:12px; }
+  .section-head h2{ font-size:22px; }
+  .section-head .tag{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-faint);
+    border:1px solid var(--card-border); border-radius:20px; padding:2px 10px;
+  }
+
+  /* ---------- problem card ---------- */
+  .problem{
+    position:relative;
+    background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+    box-shadow:3px 3px 0 rgba(22,35,61,0.05);
+    padding:0; overflow:hidden; margin-bottom:26px;
+    transition:opacity .3s ease;
+  }
+  .problem.locked{ opacity:1; }
+  .problem-top{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:20px 22px; border-bottom:1px solid var(--card-border); flex-wrap:wrap;
+  }
+  .problem-label{ font-size:13px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px; }
+  .problem-expr{ font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; margin-top:2px; }
+
+  .stepper{ display:flex; align-items:center; gap:6px; }
+  .stepper .dot{
+    width:24px; height:24px; border-radius:50%; border:1.5px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-faint);
+    background:var(--paper);
+  }
+  .stepper .dot.done{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .stepper .dot.active{ border-color:var(--gold); color:var(--gold-dark); background:var(--gold-tint); }
+  .stepper .bar{ width:14px; height:1.5px; background:var(--card-border); }
+
+  .problem-body{ padding:22px; }
+
+  .trail{ margin-bottom:18px; }
+  .trail-item{
+    display:flex; gap:10px; align-items:flex-start; padding:9px 0;
+    border-bottom:1px dashed var(--card-border); font-size:14.5px;
+  }
+  .trail-item:last-child{ border-bottom:none; }
+  .trail-check{
+    flex:none; width:19px; height:19px; border-radius:50%; background:var(--teal-tint);
+    color:var(--teal); display:flex; align-items:center; justify-content:center;
+    font-size:12px; margin-top:1px;
+  }
+  .trail-text b{ font-family:'JetBrains Mono',monospace; }
+  .trail-text .q{ color:var(--ink-soft); display:block; font-size:13px; margin-bottom:1px; }
+
+  .step-active .prompt{ font-size:16px; margin-bottom:14px; }
+  .field-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.grow{ flex:1; min-width:220px; }
+  .field label{ font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .field input{
+    font-family:'JetBrains Mono',monospace; font-size:16px; padding:9px 11px;
+    border:1.5px solid var(--card-border); border-radius:5px; background:var(--paper);
+    color:var(--ink); width:100%; max-width:220px;
+  }
+  .field.grow input{ max-width:none; }
+  .field input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .field input.narrow{ max-width:90px; }
+
+  .step-controls{ display:flex; align-items:center; gap:12px; margin-top:6px; flex-wrap:wrap; }
+
+  button{ font-family:'IBM Plex Sans', sans-serif; cursor:pointer; }
+  .btn{
+    border:none; border-radius:5px; padding:10px 18px; font-size:14.5px; font-weight:600;
+    background:var(--ink); color:#fff;
+  }
+  .btn:hover{ background:#243554; }
+  .btn.gold{ background:var(--gold); color:#fff; }
+  .btn.gold:hover{ background:var(--gold-dark); }
+  .btn.ghost{ background:transparent; color:var(--ink-soft); border:1.5px solid var(--card-border); }
+  .btn.ghost:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .feedback{ font-size:14px; padding:10px 12px; border-radius:5px; margin-top:4px; display:none; }
+  .feedback.show{ display:block; }
+  .feedback.err{ background:var(--brick-tint); color:var(--brick); }
+  .feedback.ok{ background:var(--teal-tint); color:var(--teal); }
+
+  .complete-banner{
+    background:var(--teal-tint); border-top:1px solid var(--card-border);
+    padding:20px 22px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;
+  }
+  .complete-banner .msg{ font-size:15px; color:#154F40; }
+  .complete-banner .msg .eq{ font-weight:700; }
+
+  .lock-overlay{
+    position:absolute; inset:0; background:rgba(243,246,251,0.88);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    text-align:center; padding:20px; backdrop-filter:blur(1.5px);
+  }
+  .lock-badge{
+    width:34px; height:34px; border-radius:50%; background:var(--card); border:1.5px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--ink-faint);
+  }
+  .lock-text{ font-size:13.5px; color:var(--ink-soft); max-width:26ch; }
+
+  /* ---------- independent practice ---------- */
+  .indep-grid{ display:grid; gap:14px; }
+  .indep-card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:2px 2px 0 rgba(22,35,61,0.04);
+  }
+  .indep-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .indep-expr{ font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; }
+  .indep-controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+  .indep-controls input{
+    font-family:'JetBrains Mono',monospace; font-size:14.5px; padding:8px 10px;
+    border:1.5px solid var(--card-border); border-radius:5px; background:var(--paper); width:190px;
+  }
+  .indep-controls input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .status-icon{
+    width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:13px; border:1.5px solid var(--card-border); color:var(--ink-faint); flex:none;
+  }
+  .status-icon.ok{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal); }
+  .status-icon.err{ background:var(--brick-tint); border-color:var(--brick); color:var(--brick); }
+  .indep-extra{ margin-top:10px; font-size:13.5px; color:var(--ink-soft); display:none; }
+  .indep-extra.show{ display:block; }
+  .indep-extra table{ border-collapse:collapse; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+  .indep-extra td,.indep-extra th{ border:1px solid var(--card-border); padding:3px 9px; }
+  .indep-extra th{ background:var(--paper); }
+
+  /* ---------- footer / summary ---------- */
+  .summary{
+    margin-top:50px; text-align:center; padding:30px 22px; border:1.5px dashed var(--card-border);
+    border-radius:var(--radius); background:var(--card);
+  }
+  .summary .big{ font-family:'Source Serif 4',serif; font-size:24px; margin-bottom:6px; }
+  .summary .small{ color:var(--ink-soft); font-size:14px; }
+
+  @media (max-width:600px){
+    .hero{ padding-top:34px; }
+    .problem-top{ padding:16px; }
+    .problem-body{ padding:16px; }
+    .field input{ max-width:none; }
+    .stepper .bar{ width:9px; }
+    .hero-equation{ gap:10px; padding:20px 14px; }
+  }
+
+  [aria-live]{ }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="brand-mark">x²</span> Factor Lab</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 15</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-eyebrow">A guided walkthrough</div>
+    <h1>Factoring x² + bx + c</h1>
+    <p class="lede">Work through three fully-guided problems, then try six on your own. Each step checks your answer before you move on — so you always know exactly where things went right or wrong.</p>
+
+    <div class="hero-equation">
+      <span>x² + 5x + 6</span>
+      <span class="arrow">=</span>
+      <span>(x + <span class="pick">2</span>)(x + <span class="pick">3</span>)</span>
+    </div>
+    <div class="hero-caption">2 × 3 = 6 &nbsp;&middot;&nbsp; 2 + 3 = <b>5</b></div>
+
+    <div class="rulebox">
+      <h3>The rule, every time</h3>
+      <ol>
+        <li>Find two numbers, <b>m</b> and <b>n</b>, that <b>multiply</b> to <b class="eq">c</b></li>
+        <li>...and <b>add</b> to <b class="eq">b</b></li>
+      </ol>
+      <div class="form">x² + bx + c &nbsp;=&nbsp; (x + m)(x + n)</div>
+    </div>
+  </section>
+
+  <div class="section-head">
+    <h2>Guided problems</h2>
+    <span class="tag">step by step</span>
+  </div>
+
+  <!-- PROBLEM 1 -->
+  <div class="problem" id="problem-0">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 1 of 3</div>
+        <div class="problem-expr">x² + 5x + 6</div>
+      </div>
+      <div class="stepper" id="stepper-0"></div>
+    </div>
+    <div class="problem-body" id="body-0"></div>
+  </div>
+
+  <!-- PROBLEM 2 -->
+  <div class="problem" id="problem-1">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 2 of 3</div>
+        <div class="problem-expr">x² − 7x + 10</div>
+      </div>
+      <div class="stepper" id="stepper-1"></div>
+    </div>
+    <div class="problem-body" id="body-1"></div>
+    <div class="lock-overlay" id="lock-1">
+      <div class="lock-badge">&#128274;</div>
+      <div class="lock-text">Finish Problem 1 to unlock this one</div>
+    </div>
+  </div>
+
+  <!-- PROBLEM 3 -->
+  <div class="problem" id="problem-2">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 3 of 3</div>
+        <div class="problem-expr">x² + x − 12</div>
+      </div>
+      <div class="stepper" id="stepper-2"></div>
+    </div>
+    <div class="problem-body" id="body-2"></div>
+    <div class="lock-overlay" id="lock-2">
+      <div class="lock-badge">&#128274;</div>
+      <div class="lock-text">Finish Problem 2 to unlock this one</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Now on your own</h2>
+    <span class="tag">no hints unless you ask</span>
+  </div>
+
+  <div class="indep-grid" id="indep-grid"></div>
+  <div class="lock-overlay" id="lock-indep" style="position:relative; border-radius:var(--radius); margin-top:-14px;">
+    <div class="lock-badge">&#128274;</div>
+    <div class="lock-text">Finish all three guided problems to unlock independent practice</div>
+  </div>
+
+  <div class="summary" id="summary" style="display:none;">
+    <div class="big">All fifteen, solved.</div>
+    <div class="small">You've worked through the full method — from spotting b and c to checking your own factoring by expanding it back out.</div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  /* ---------- helpers ---------- */
+  function parseIntStrict(v){
+    if(v===undefined || v===null) return NaN;
+    v = String(v).trim();
+    if(!/^[+-]?\d+$/.test(v)) return NaN;
+    return parseInt(v,10);
+  }
+  function pairMatches(a,b,ca,cb){
+    return (a===ca && b===cb) || (a===cb && b===ca);
+  }
+  function parseFactored(str){
+    if(!str) return null;
+    var s = str.replace(/\s+/g,'').replace(/−/g,'-');
+    var re = /^\(x([+-]\d+)\)\(x([+-]\d+)\)$/i;
+    var m = s.match(re);
+    if(!m) return null;
+    return [parseInt(m[1],10), parseInt(m[2],10)];
+  }
+  function factoredMatches(str, ca, cb){
+    var r = parseFactored(str);
+    if(!r) return false;
+    return pairMatches(r[0], r[1], ca, cb);
+  }
+  function fmtSigned(n){ return n>=0 ? '+ '+n : '\u2212 '+Math.abs(n); }
+
+  var TOTAL_UNITS = 15;
+  var completedUnits = 0;
+  function bumpProgress(){
+    completedUnits = Math.min(completedUnits+1, TOTAL_UNITS);
+    document.getElementById('progressFill').style.width = (completedUnits/TOTAL_UNITS*100)+'%';
+    document.getElementById('progressLabel').textContent = completedUnits+' / '+TOTAL_UNITS;
+    if(completedUnits>=TOTAL_UNITS){ document.getElementById('summary').style.display='block'; }
+  }
+
+  /* ---------- generic step-flow engine ---------- */
+  function ProblemFlow(idx, steps, onAllDone){
+    var problemEl = document.getElementById('problem-'+idx);
+    var bodyEl = document.getElementById('body-'+idx);
+    var stepperEl = document.getElementById('stepper-'+idx);
+    var current = 0;
+    var trail = [];
+
+    function renderStepper(){
+      stepperEl.innerHTML='';
+      steps.forEach(function(s,i){
+        if(i>0){
+          var bar = document.createElement('div');
+          bar.className='bar';
+          stepperEl.appendChild(bar);
+        }
+        var dot = document.createElement('div');
+        dot.className='dot' + (i<current ? ' done' : (i===current ? ' active':''));
+        dot.textContent = i<current ? '\u2713' : (i+1);
+        stepperEl.appendChild(dot);
+      });
+    }
+
+    function renderTrail(){
+      var wrap = document.createElement('div');
+      wrap.className='trail';
+      trail.forEach(function(t){
+        var item = document.createElement('div');
+        item.className='trail-item';
+        item.innerHTML = '<span class="trail-check">\u2713</span><span class="trail-text"><span class="q">'+t.q+'</span><b>'+t.a+'</b></span>';
+        wrap.appendChild(item);
+      });
+      return wrap;
+    }
+
+    function renderStep(){
+      renderStepper();
+      bodyEl.innerHTML='';
+      bodyEl.appendChild(renderTrail());
+
+      if(current >= steps.length){
+        var done = document.createElement('div');
+        done.className='feedback ok show';
+        done.style.marginTop='2px';
+        done.textContent = 'Problem complete.';
+        bodyEl.appendChild(done);
+        if(onAllDone) onAllDone();
+        return;
+      }
+
+      var step = steps[current];
+      var active = document.createElement('div');
+      active.className='step-active';
+
+      var prompt = document.createElement('div');
+      prompt.className='prompt';
+      prompt.textContent = step.prompt;
+      active.appendChild(prompt);
+
+      var row = document.createElement('div');
+      row.className='field-row';
+      var inputEls = {};
+      step.inputs.forEach(function(inp){
+        var f = document.createElement('div');
+        f.className = 'field' + (inp.grow ? ' grow':'');
+        var label = document.createElement('label');
+        label.textContent = inp.label;
+        label.setAttribute('for','in-'+idx+'-'+current+'-'+inp.id);
+        var input = document.createElement('input');
+        input.type='text';
+        input.id = 'in-'+idx+'-'+current+'-'+inp.id;
+        input.autocomplete='off';
+        if(inp.placeholder) input.placeholder = inp.placeholder;
+        if(inp.narrow) input.className='narrow';
+        f.appendChild(label);
+        f.appendChild(input);
+        row.appendChild(f);
+        inputEls[inp.id]=input;
+      });
+      active.appendChild(row);
+
+      var controls = document.createElement('div');
+      controls.className='step-controls';
+      var checkBtn = document.createElement('button');
+      checkBtn.className='btn gold';
+      checkBtn.textContent='Check';
+      controls.appendChild(checkBtn);
+      active.appendChild(controls);
+
+      var feedback = document.createElement('div');
+      feedback.className='feedback';
+      feedback.setAttribute('aria-live','polite');
+      active.appendChild(feedback);
+
+      function doCheck(){
+        var values={};
+        Object.keys(inputEls).forEach(function(k){ values[k]=inputEls[k].value; });
+        var result = step.validate(values);
+        if(result.ok){
+          feedback.className='feedback ok show';
+          feedback.textContent = result.message || 'Correct.';
+          checkBtn.disabled = true;
+          Object.keys(inputEls).forEach(function(k){ inputEls[k].disabled = true; });
+          var cont = document.createElement('button');
+          cont.className='btn';
+          cont.textContent = (current === steps.length-1) ? 'Finish problem' : 'Continue';
+          cont.style.marginLeft='4px';
+          controls.appendChild(cont);
+          cont.addEventListener('click', function(){
+            trail.push({ q: step.prompt, a: step.summary(values) });
+            current++;
+            bumpProgress();
+            renderStep();
+          });
+        } else {
+          feedback.className='feedback err show';
+          feedback.textContent = result.message || 'Not quite — try again.';
+        }
+      }
+
+      checkBtn.addEventListener('click', doCheck);
+      Object.keys(inputEls).forEach(function(k){
+        inputEls[k].addEventListener('keydown', function(e){
+          if(e.key==='Enter'){ e.preventDefault(); doCheck(); }
+        });
+      });
+
+      bodyEl.appendChild(active);
+      var firstInput = row.querySelector('input');
+    }
+
+    renderStep();
+  }
+
+  /* ================= PROBLEM 1 : x^2+5x+6 ================= */
+  ProblemFlow(0, [
+    {
+      prompt: 'This trinomial is x² + 5x + 6. In the form x² + bx + c, what are b and c?',
+      inputs: [ {id:'b', label:'b =', narrow:true}, {id:'c', label:'c =', narrow:true} ],
+      validate: function(v){
+        var b=parseIntStrict(v.b), c=parseIntStrict(v.c);
+        if(b===5 && c===6) return {ok:true, message:'Right — b is the number in front of x, c is the constant.'};
+        return {ok:false, message:'Remember: b is the coefficient of x, and c is the constant term at the end.'};
+      },
+      summary: function(v){ return 'b = '+v.b+', c = '+v.c; }
+    },
+    {
+      prompt: 'Find two numbers that multiply to 6 and add to 5.',
+      inputs: [ {id:'m', label:'First number', narrow:true}, {id:'n', label:'Second number', narrow:true} ],
+      validate: function(v){
+        var m=parseIntStrict(v.m), n=parseIntStrict(v.n);
+        if(pairMatches(m,n,2,3)) return {ok:true, message:'2 and 3 — they multiply to 6 and add to 5.'};
+        return {ok:false, message:'List the factor pairs of 6 first: 1 & 6, 2 & 3. Which pair adds to 5?'};
+      },
+      summary: function(v){ return v.m+' and '+v.n; }
+    },
+    {
+      prompt: 'Write the fully factored form using those two numbers.',
+      inputs: [ {id:'f', label:'Factored form', grow:true, placeholder:'(x + 2)(x + 3)'} ],
+      validate: function(v){
+        if(factoredMatches(v.f,2,3)) return {ok:true, message:'x² + 5x + 6 = (x + 2)(x + 3)'};
+        return {ok:false, message:'Format it like (x + 2)(x + 3), using the two numbers from the last step.'};
+      },
+      summary: function(v){ return v.f; }
+    },
+    {
+      prompt: 'Check your work: expand (x + 2)(x + 3) with FOIL. What is the coefficient of the x term — the outer product plus the inner product?',
+      inputs: [ {id:'chk', label:'Coefficient of x', narrow:true} ],
+      validate: function(v){
+        var chk=parseIntStrict(v.chk);
+        if(chk===5) return {ok:true, message:'3x + 2x = 5x — matches the original 5x. Your factoring checks out.'};
+        return {ok:false, message:'Outer term: 3x. Inner term: 2x. What do those add to?'};
+      },
+      summary: function(v){ return v.chk+'x — matches the original 5x'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-1');
+    if(lock) lock.remove();
+  });
+
+  /* ================= PROBLEM 2 : x^2-7x+10 ================= */
+  ProblemFlow(1, [
+    {
+      prompt: 'Identify b and c, then find the two numbers that multiply to c and add to b.',
+      inputs: [
+        {id:'b', label:'b =', narrow:true}, {id:'c', label:'c =', narrow:true},
+        {id:'m', label:'First number', narrow:true}, {id:'n', label:'Second number', narrow:true}
+      ],
+      validate: function(v){
+        var b=parseIntStrict(v.b), c=parseIntStrict(v.c), m=parseIntStrict(v.m), n=parseIntStrict(v.n);
+        if(b===-7 && c===10 && pairMatches(m,n,-2,-5)) return {ok:true, message:'b = −7, c = 10, and −2, −5 both multiply to 10 and add to −7.'};
+        var msg = 'Check each piece — ';
+        if(b!==-7 || c!==10) msg += 'b and c come straight from the trinomial (watch the signs). ';
+        if(!pairMatches(m,n,-2,-5)) msg += 'If c is positive but b is negative, both numbers should be negative.';
+        return {ok:false, message: msg};
+      },
+      summary: function(v){ return 'b = '+v.b+', c = '+v.c+' &nbsp;&middot;&nbsp; '+v.m+' and '+v.n; }
+    },
+    {
+      prompt: 'Write the fully factored form.',
+      inputs: [ {id:'f', label:'Factored form', grow:true, placeholder:'(x − 2)(x − 5)'} ],
+      validate: function(v){
+        if(factoredMatches(v.f,-2,-5)) return {ok:true, message:'x² − 7x + 10 = (x − 2)(x − 5)'};
+        return {ok:false, message:'Use minus signs directly, like (x - 2)(x - 5), not (x + -2).'};
+      },
+      summary: function(v){ return v.f; }
+    },
+    {
+      prompt: 'Check: expand your answer. What is the coefficient of x (outer product plus inner product)?',
+      inputs: [ {id:'chk', label:'Coefficient of x', narrow:true} ],
+      validate: function(v){
+        var chk=parseIntStrict(v.chk);
+        if(chk===-7) return {ok:true, message:'−5x + −2x = −7x — it checks out.'};
+        return {ok:false, message:'Outer term: −5x. Inner term: −2x. What do those add to?'};
+      },
+      summary: function(v){ return v.chk+'x — matches the original −7x'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-2');
+    if(lock) lock.remove();
+  });
+
+  /* ================= PROBLEM 3 : x^2+x-12 ================= */
+  ProblemFlow(2, [
+    {
+      prompt: 'Factor this trinomial completely. First find your two numbers, then write the factored form.',
+      inputs: [
+        {id:'m', label:'First number', narrow:true}, {id:'n', label:'Second number', narrow:true},
+        {id:'f', label:'Factored form', grow:true, placeholder:'(x + 4)(x − 3)'}
+      ],
+      validate: function(v){
+        var m=parseIntStrict(v.m), n=parseIntStrict(v.n);
+        var numsOk = pairMatches(m,n,4,-3);
+        var formOk = factoredMatches(v.f,4,-3);
+        if(numsOk && formOk) return {ok:true, message:'4 and −3 multiply to −12 and add to 1. (x + 4)(x − 3) is correct.'};
+        if(!numsOk) return {ok:false, message:'Factor pairs of −12: 1 & −12, −1 & 12, 2 & −6, −2 & 6, 3 & −4, −3 & 4. Which pair adds to 1?'};
+        return {ok:false, message:'Your numbers are right — check that the factored form matches them exactly.'};
+      },
+      summary: function(v){ return v.m+' and '+v.n+' &nbsp;&rarr;&nbsp; '+v.f; }
+    },
+    {
+      prompt: 'Check by expanding — what is the coefficient of x?',
+      inputs: [ {id:'chk', label:'Coefficient of x', narrow:true} ],
+      validate: function(v){
+        var chk=parseIntStrict(v.chk);
+        if(chk===1) return {ok:true, message:'−3x + 4x = 1x — it checks out.'};
+        return {ok:false, message:'Outer term: −3x. Inner term: 4x. What do those add to?'};
+      },
+      summary: function(v){ return v.chk+'x — matches the original x'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-indep');
+    if(lock) lock.remove();
+    buildIndependent();
+  });
+
+  /* ================= INDEPENDENT PRACTICE ================= */
+  var indepProblems = [
+    { expr:'x² + 8x + 15', pair:[3,5], hint:[[1,15],[3,5]] },
+    { expr:'x² − 5x + 6', pair:[-2,-3], hint:[[-1,-6],[-2,-3]] },
+    { expr:'x² + 3x − 10', pair:[5,-2], hint:[[1,-10],[2,-5],[5,-2]] },
+    { expr:'x² − 4x − 21', pair:[-7,3], hint:[[1,-21],[3,-7],[7,-3]] },
+    { expr:'x² − 6x + 9', pair:[-3,-3], hint:[[-1,-9],[-3,-3]] },
+    { expr:'x² + 11x + 24', pair:[3,8], hint:[[1,24],[2,12],[3,8]] }
+  ];
+
+  function buildIndependent(){
+    var grid = document.getElementById('indep-grid');
+    grid.innerHTML='';
+    indepProblems.forEach(function(p, i){
+      var solved = false, revealed = false;
+      var card = document.createElement('div');
+      card.className='indep-card';
+
+      var top = document.createElement('div');
+      top.className='indep-top';
+      var expr = document.createElement('div');
+      expr.className='indep-expr';
+      expr.textContent = p.expr;
+      var status = document.createElement('div');
+      status.className='status-icon';
+      status.textContent='?';
+      top.appendChild(expr); top.appendChild(status);
+      card.appendChild(top);
+
+      var controls = document.createElement('div');
+      controls.className='indep-controls';
+      var input = document.createElement('input');
+      input.type='text';
+      input.placeholder='(x + m)(x + n)';
+      var checkBtn = document.createElement('button');
+      checkBtn.className='btn gold'; checkBtn.textContent='Check';
+      var hintBtn = document.createElement('button');
+      hintBtn.className='btn ghost'; hintBtn.textContent='Hint';
+      var revealBtn = document.createElement('button');
+      revealBtn.className='btn ghost'; revealBtn.textContent='Show answer';
+      controls.appendChild(input); controls.appendChild(checkBtn); controls.appendChild(hintBtn); controls.appendChild(revealBtn);
+      card.appendChild(controls);
+
+      var extra = document.createElement('div');
+      extra.className='indep-extra';
+      card.appendChild(extra);
+
+      function markSolved(msg){
+        if(solved) return;
+        solved = true;
+        status.className='status-icon ok';
+        status.textContent='\u2713';
+        bumpProgress();
+      }
+
+      checkBtn.addEventListener('click', function(){
+        if(factoredMatches(input.value, p.pair[0], p.pair[1])){
+          status.className='status-icon ok';
+          status.textContent='\u2713';
+          markSolved();
+        } else {
+          status.className='status-icon err';
+          status.textContent='!';
+        }
+      });
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); } });
+
+      hintBtn.addEventListener('click', function(){
+        extra.classList.toggle('show');
+        if(extra.classList.contains('show') && !extra.dataset.built){
+          var tbl = '<table><tr><th>Factor pair</th><th>Sum</th></tr>';
+          p.hint.forEach(function(pr){
+            var sum = pr[0]+pr[1];
+            var hit = (sum === (p.pair[0]+p.pair[1]));
+            tbl += '<tr><td>'+pr[0]+' , '+pr[1]+'</td><td>'+sum+(hit?' \u2713':'')+'</td></tr>';
+          });
+          tbl += '</table>';
+          extra.innerHTML = 'Factor pairs of '+ (p.pair[0]*p.pair[1]) +':' + tbl;
+          extra.dataset.built='1';
+        }
+      });
+
+      revealBtn.addEventListener('click', function(){
+        if(!revealed){
+          revealed = true;
+          var m=p.pair[0], n=p.pair[1];
+          input.value = '(x '+(m>=0?'+ '+m:'\u2212 '+Math.abs(m))+')(x '+(n>=0?'+ '+n:'\u2212 '+Math.abs(n))+')';
+          markSolved();
+        }
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
