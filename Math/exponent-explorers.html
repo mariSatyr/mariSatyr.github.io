@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exponent Explorers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFFBF2;
+    --band:#EFF6F3;
+    --ink:#1E2A4A;
+    --ink-soft:#4B5876;
+    --coral:#FF6B4A;
+    --coral-dark:#E4552F;
+    --teal:#0E9E8C;
+    --teal-dark:#0A7A6C;
+    --yellow:#FFC93C;
+    --purple:#7B61FF;
+    --card-bg:#FFFFFF;
+    --shadow-color: 30,42,74;
+    --font-display:'Baloo 2', ui-rounded, 'Segoe UI', sans-serif;
+    --font-body:'Nunito', ui-sans-serif, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --cream:#141826; --band:#191F30; --ink:#F3F0E6; --ink-soft:#B9C0D4;
+      --card-bg:#1F2536; --shadow-color: 0,0,0;
+    }
+  }
+  :root[data-theme="dark"]{
+    --cream:#141826; --band:#191F30; --ink:#F3F0E6; --ink-soft:#B9C0D4;
+    --card-bg:#1F2536; --shadow-color: 0,0,0;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--font-body);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px;}
+
+  .hero{padding:52px 22px 40px;text-align:center;
+    background:
+      radial-gradient(600px 300px at 20% -10%, rgba(255,201,60,0.25), transparent 60%),
+      radial-gradient(600px 300px at 90% 0%, rgba(123,97,255,0.18), transparent 60%);}
+  .hero h1{font-family:var(--font-display);font-weight:800;font-size:clamp(2.1rem, 6vw, 3.2rem);margin:0 0 10px;letter-spacing:0.3px;}
+  .hero p.sub{font-size:1.1rem;color:var(--ink-soft);max-width:500px;margin:0 auto 30px;}
+
+  /* live power builder */
+  .builder{
+    background:var(--card-bg);border-radius:20px;padding:26px 22px;
+    box-shadow:0 14px 34px rgba(var(--shadow-color),0.1);
+    max-width:520px;margin:0 auto;
+  }
+  .builder .power-display{
+    font-family:var(--font-display);font-size:2.6rem;font-weight:800;text-align:center;margin-bottom:4px;
+  }
+  .builder .power-display .exp{font-size:0.5em;color:var(--coral);margin-left:2px;position:relative;top:-0.9em;}
+  .builder .power-display .eq-result{color:var(--teal-dark);}
+  .steppers{display:flex;justify-content:center;gap:28px;margin:18px 0 6px;flex-wrap:wrap;}
+  .stepper{text-align:center;}
+  .stepper-label{font-family:var(--font-display);font-size:0.75rem;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+  .stepper-row{display:flex;align-items:center;gap:10px;}
+  .step-btn{
+    width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--purple);color:#fff;font-family:var(--font-display);font-weight:800;font-size:1.2rem;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  .step-btn:active{transform:scale(0.92);}
+  .step-btn:disabled{opacity:0.35;cursor:not-allowed;}
+  .step-btn:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;}
+  .stepper-val{
+    font-family:var(--font-display);font-weight:800;font-size:1.3rem;min-width:34px;text-align:center;
+  }
+  .builder .block-row{margin-top:16px;}
+
+  /* step sections */
+  section.step{padding:50px 0;}
+  section.step.tint{background:var(--band);}
+  .step-head{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .step-num{font-family:var(--font-display);font-weight:700;font-size:0.95rem;color:#fff;background:var(--coral);
+    width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  h2{font-family:var(--font-display);font-weight:700;font-size:1.5rem;margin:0;}
+  .step p.lead{color:var(--ink-soft);font-size:1.05rem;margin:6px 0 22px;}
+
+  .rule-box{background:var(--card-bg);border-radius:18px;padding:22px 24px;
+    box-shadow:0 10px 30px rgba(var(--shadow-color),0.08);margin-bottom:20px;}
+  .rule-formula{font-family:var(--font-display);font-size:1.4rem;font-weight:700;text-align:center;color:var(--purple);margin:4px 0 14px;}
+
+  .mini-steppers{display:flex;justify-content:center;gap:30px;margin-bottom:18px;flex-wrap:wrap;}
+
+  .block-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin:14px 0;min-height:44px;}
+  .block{min-width:40px;height:40px;padding:0 6px;background:var(--teal);color:#fff;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:0.95rem;}
+  .block.b2{background:var(--coral);}
+  .block.b3{background:var(--purple);}
+  .block.ghost{background:transparent;border:2px dashed var(--ink-soft);color:var(--ink-soft);opacity:0.55;text-decoration:line-through;}
+  .times{font-family:var(--font-display);font-weight:700;color:var(--ink-soft);font-size:1.1rem;}
+  .group-tag{font-family:var(--font-body);font-weight:700;font-size:0.75rem;color:var(--ink-soft);text-align:center;margin-top:4px;}
+  .group{display:flex;flex-direction:column;align-items:center;padding:10px;border-radius:12px;}
+  .group.outline{border:2px solid var(--teal);}
+  .group.outline2{border:2px solid var(--coral);}
+  .arrow-down{text-align:center;font-size:1.4rem;color:var(--ink-soft);margin:6px 0;}
+  .result-line{text-align:center;font-family:var(--font-display);font-weight:700;font-size:1.25rem;color:var(--teal-dark);margin-top:10px;}
+  .why-box{margin-top:14px;background:rgba(255,201,60,0.14);border-left:4px solid var(--yellow);padding:12px 16px;
+    border-radius:8px;font-size:0.95rem;color:var(--ink);}
+
+  .fraction{display:inline-flex;flex-direction:column;align-items:center;font-family:var(--font-display);font-weight:700;font-size:1.2rem;vertical-align:middle;}
+  .fraction .num,.fraction .den{padding:2px 10px;}
+  .fraction .bar{width:100%;height:3px;background:var(--ink);border-radius:2px;}
+
+  .quiz-card{background:var(--card-bg);border-radius:18px;padding:20px 22px;box-shadow:0 10px 30px rgba(var(--shadow-color),0.08);margin-bottom:16px;}
+  .quiz-q{font-family:var(--font-display);font-weight:700;font-size:1.15rem;margin-bottom:10px;text-align:center;}
+  .quiz-options{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+  .quiz-opt{background:var(--band);border:2px solid transparent;color:var(--ink);font-family:var(--font-body);font-weight:700;
+    padding:10px 18px;border-radius:12px;cursor:pointer;font-size:1rem;}
+  .quiz-opt:hover{border-color:var(--purple);}
+  .quiz-opt.correct{background:rgba(14,158,140,0.2);border-color:var(--teal);}
+  .quiz-opt.wrong{background:rgba(255,107,74,0.2);border-color:var(--coral);}
+  .quiz-feedback{text-align:center;margin-top:12px;font-weight:700;min-height:1.4em;}
+
+  .recap{width:100%;border-collapse:collapse;margin-top:10px;}
+  .recap th,.recap td{padding:12px 10px;text-align:left;border-bottom:1px solid rgba(var(--shadow-color),0.12);font-size:0.95rem;}
+  .recap th{font-family:var(--font-display);font-weight:700;color:var(--ink-soft);font-size:0.8rem;}
+  .recap td.rule{font-family:var(--font-display);font-weight:700;color:var(--purple);white-space:nowrap;}
+
+  footer{text-align:center;padding:40px 22px 60px;color:var(--ink-soft);font-size:0.9rem;}
+  @media (max-width:480px){.block{min-width:34px;height:34px;font-size:0.82rem;} .steppers{gap:18px;}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Exponent Explorers</h1>
+    <p class="sub">Change the numbers, watch the blocks change. Every rule below is something you can play with, not just read.</p>
+
+    <div class="builder">
+      <div class="power-display" id="heroDisplay"></div>
+      <div class="steppers">
+        <div class="stepper">
+          <div class="stepper-label">BASE</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="heroBaseDown" aria-label="decrease base">&minus;</button>
+            <div class="stepper-val" id="heroBaseVal">2</div>
+            <button class="step-btn" id="heroBaseUp" aria-label="increase base">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">EXPONENT</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="heroExpDown" aria-label="decrease exponent">&minus;</button>
+            <div class="stepper-val" id="heroExpVal">4</div>
+            <button class="step-btn" id="heroExpUp" aria-label="increase exponent">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="block-row" id="heroBlocks"></div>
+    </div>
+  </div>
+</header>
+
+<section class="step">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">1</div><h2>The parts of a power</h2></div>
+    <p class="lead">The base is the number getting multiplied. The exponent says how many times. Try the buttons above &mdash; the blocks always match the exponent, and every block shows the base.</p>
+  </div>
+</section>
+
+<section class="step tint">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">2</div><h2>Multiplying the same base</h2></div>
+    <p class="lead">Same base, multiplied together &rarr; <strong>add the exponents</strong>. Set both exponents and watch the two piles merge.</p>
+    <div class="rule-box">
+      <div class="rule-formula" id="prodFormula"></div>
+      <div class="mini-steppers">
+        <div class="stepper">
+          <div class="stepper-label">EXPONENT A</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="prodADown">&minus;</button>
+            <div class="stepper-val" id="prodAVal">3</div>
+            <button class="step-btn" id="prodAUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">EXPONENT B</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="prodBDown">&minus;</button>
+            <div class="stepper-val" id="prodBVal">2</div>
+            <button class="step-btn" id="prodBUp">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="block-row" id="prodGroups"></div>
+      <div class="arrow-down">&#8595;</div>
+      <div class="block-row" id="prodCombined"></div>
+      <div class="result-line" id="prodResult"></div>
+      <div class="why-box" id="prodWhy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">3</div><h2>Dividing the same base</h2></div>
+    <p class="lead">Same base, divided &rarr; <strong>subtract the exponents</strong>. The bottom exponent cancels out blocks from the top.</p>
+    <div class="rule-box">
+      <div class="rule-formula" id="quotFormula"></div>
+      <div class="mini-steppers">
+        <div class="stepper">
+          <div class="stepper-label">TOP EXPONENT</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="quotADown">&minus;</button>
+            <div class="stepper-val" id="quotAVal">5</div>
+            <button class="step-btn" id="quotAUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">BOTTOM EXPONENT</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="quotBDown">&minus;</button>
+            <div class="stepper-val" id="quotBVal">2</div>
+            <button class="step-btn" id="quotBUp">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="block-row" id="quotBlocks"></div>
+      <div class="result-line" id="quotResult"></div>
+      <div class="why-box" id="quotWhy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="step tint">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">4</div><h2>A power raised to a power</h2></div>
+    <p class="lead">A power inside another power &rarr; <strong>multiply the exponents</strong>. Set how many blocks per group, and how many groups.</p>
+    <div class="rule-box">
+      <div class="rule-formula" id="powFormula"></div>
+      <div class="mini-steppers">
+        <div class="stepper">
+          <div class="stepper-label">BLOCKS PER GROUP</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="powADown">&minus;</button>
+            <div class="stepper-val" id="powAVal">2</div>
+            <button class="step-btn" id="powAUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">NUMBER OF GROUPS</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="powBDown">&minus;</button>
+            <div class="stepper-val" id="powBVal">3</div>
+            <button class="step-btn" id="powBUp">+</button>
+          </div>
+        </div>
+      </div>
+      <div id="powGroups"></div>
+      <div class="result-line" id="powResult"></div>
+      <div class="why-box" id="powWhy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">5</div><h2>Zero &mdash; and negative &mdash; exponents</h2></div>
+    <p class="lead">Keep lowering the exponent past zero. Watch the value keep dividing by the base, right through 1 and into fractions.</p>
+    <div class="rule-box">
+      <div class="mini-steppers">
+        <div class="stepper">
+          <div class="stepper-label">BASE</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="zeroBaseDown">&minus;</button>
+            <div class="stepper-val" id="zeroBaseVal">6</div>
+            <button class="step-btn" id="zeroBaseUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">EXPONENT</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="zeroExpDown">&minus;</button>
+            <div class="stepper-val" id="zeroExpVal">3</div>
+            <button class="step-btn" id="zeroExpUp">+</button>
+          </div>
+        </div>
+      </div>
+      <table class="recap" id="zeroTable" style="max-width:320px;margin:0 auto;"></table>
+      <div class="why-box" id="zeroWhy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="step tint">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">6</div><h2>A power over a multiplication</h2></div>
+    <p class="lead">If two numbers are multiplied inside the parentheses, the exponent hands out to <strong>both</strong>.</p>
+    <div class="rule-box">
+      <div class="rule-formula" id="distFormula"></div>
+      <div class="mini-steppers">
+        <div class="stepper">
+          <div class="stepper-label">FIRST NUMBER</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="distXDown">&minus;</button>
+            <div class="stepper-val" id="distXVal">2</div>
+            <button class="step-btn" id="distXUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">SECOND NUMBER</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="distYDown">&minus;</button>
+            <div class="stepper-val" id="distYVal">3</div>
+            <button class="step-btn" id="distYUp">+</button>
+          </div>
+        </div>
+        <div class="stepper">
+          <div class="stepper-label">EXPONENT</div>
+          <div class="stepper-row">
+            <button class="step-btn" id="distEDown">&minus;</button>
+            <div class="stepper-val" id="distEVal">2</div>
+            <button class="step-btn" id="distEUp">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="block-row" id="distGroups"></div>
+      <div class="result-line" id="distResult"></div>
+      <div class="why-box" id="distWhy"></div>
+    </div>
+  </div>
+</section>
+
+<section class="step">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">&#9733;</div><h2>Quick reference</h2></div>
+    <div class="rule-box">
+      <table class="recap">
+        <tr><th>Rule</th><th>What it does</th></tr>
+        <tr><td class="rule">x&sup1; = x</td><td>anything to the power 1 is itself</td></tr>
+        <tr><td class="rule">x&#8304; = 1</td><td>anything (except 0) to the power 0 is 1</td></tr>
+        <tr><td class="rule">x&#7491;&times;x&#7495; = x&#7491;&#8314;&#7495;</td><td>same base multiplied &rarr; add exponents</td></tr>
+        <tr><td class="rule">x&#7491;&divide;x&#7495; = x&#7491;&#8315;&#7495;</td><td>same base divided &rarr; subtract exponents</td></tr>
+        <tr><td class="rule">(x&#7491;)&#7495; = x&#7491;&#7495;</td><td>power of a power &rarr; multiply exponents</td></tr>
+        <tr><td class="rule">x&#8315;&#7491; = 1/x&#7491;</td><td>negative exponent &rarr; flip to a fraction</td></tr>
+        <tr><td class="rule">(xy)&#7491; = x&#7491;y&#7491;</td><td>power of a product &rarr; both get the exponent</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="step tint">
+  <div class="wrap">
+    <div class="step-head"><div class="step-num">?</div><h2>Try it yourself</h2></div>
+    <p class="lead">Tap an answer for each one.</p>
+
+    <div class="quiz-card">
+      <div class="quiz-q">3&sup2; &times; 3&sup3; = ?</div>
+      <div class="quiz-options" data-answer="3^5">
+        <button class="quiz-opt" data-value="3^5">3&#8309;</button>
+        <button class="quiz-opt" data-value="3^6">3&#8310;</button>
+        <button class="quiz-opt" data-value="9^5">9&#8309;</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">7&#8309; &divide; 7&sup2; = ?</div>
+      <div class="quiz-options" data-answer="7^3">
+        <button class="quiz-opt" data-value="7^3">7&sup3;</button>
+        <button class="quiz-opt" data-value="7^7">7&#8309;</button>
+        <button class="quiz-opt" data-value="7^10">7&#185;&#8304;</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">(5&sup2;)&sup3; = ?</div>
+      <div class="quiz-options" data-answer="5^6">
+        <button class="quiz-opt" data-value="5^5">5&#8309;</button>
+        <button class="quiz-opt" data-value="5^6">5&#8310;</button>
+        <button class="quiz-opt" data-value="5^23">5&#178;&#179;</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-q">9&#8304; = ?</div>
+      <div class="quiz-options" data-answer="1">
+        <button class="quiz-opt" data-value="1">1</button>
+        <button class="quiz-opt" data-value="0">0</button>
+        <button class="quiz-opt" data-value="9">9</button>
+      </div>
+      <div class="quiz-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<footer>Exponents: little numbers, big jobs. Keep playing with the numbers above until the rules feel obvious.</footer>
+
+<script>
+  function sup(n){
+    var map={'0':'\u2070','1':'\u00B9','2':'\u00B2','3':'\u00B3','4':'\u2074','5':'\u2075','6':'\u2076','7':'\u2077','8':'\u2078','9':'\u2079','-':'\u207B'};
+    return String(n).split('').map(function(c){return map[c]||c;}).join('');
+  }
+  function powVal(base, exp){
+    if (exp >= 0) return Math.pow(base, exp);
+    return 1 / Math.pow(base, -exp);
+  }
+  function fmt(n){
+    if (Number.isInteger(n)) return n.toString();
+    // reduce to a simple fraction display for negative-exponent results
+    return n.toString();
+  }
+  function makeBlocks(container, count, base, colorClass){
+    container.innerHTML='';
+    var n = Math.max(0, count);
+    for (var i=0;i<n;i++){
+      var d=document.createElement('div');
+      d.className='block'+(colorClass?(' '+colorClass):'');
+      d.textContent=base;
+      container.appendChild(d);
+    }
+    if (n===0){
+      var e=document.createElement('div');
+      e.className='group-tag';
+      e.textContent='(no blocks — that leaves just 1)';
+      container.appendChild(e);
+    }
+  }
+  function bindStepper(downId, upId, valId, min, max, onChange, init){
+    var val = init;
+    var valEl = document.getElementById(valId);
+    var downBtn = document.getElementById(downId);
+    var upBtn = document.getElementById(upId);
+    function render(){
+      valEl.textContent = val;
+      downBtn.disabled = val<=min;
+      upBtn.disabled = val>=max;
+      onChange(val);
+    }
+    downBtn.addEventListener('click', function(){ if(val>min){val--; render();} });
+    upBtn.addEventListener('click', function(){ if(val<max){val++; render();} });
+    render();
+    return { get:function(){return val;} };
+  }
+
+  /* ---- HERO BUILDER ---- */
+  var heroBase, heroExp;
+  function renderHero(){
+    var b = heroBase.get(), e = heroExp.get();
+    var disp = document.getElementById('heroDisplay');
+    disp.innerHTML = b + '<span class="exp">' + e + '</span> &nbsp;=&nbsp; <span class="eq-result">' + fmt(powVal(b,e)) + '</span>';
+    makeBlocks(document.getElementById('heroBlocks'), e, b, null);
+  }
+  heroBase = bindStepper('heroBaseDown','heroBaseUp','heroBaseVal',2,9, function(){ if(heroExp) renderHero(); }, 2);
+  heroExp  = bindStepper('heroExpDown','heroExpUp','heroExpVal',0,8, function(){ if(heroBase) renderHero(); }, 4);
+  renderHero();
+
+  /* ---- PRODUCT RULE ---- */
+  var prodA, prodB;
+  function renderProd(){
+    var a=prodA.get(), b=prodB.get(), base=2;
+    document.getElementById('prodFormula').innerHTML = '2'+sup(a)+' &times; 2'+sup(b)+' = 2'+sup(a+b);
+    var groups=document.getElementById('prodGroups');
+    groups.innerHTML='';
+    var g1=document.createElement('div'); g1.className='group outline';
+    var r1=document.createElement('div'); r1.className='block-row'; r1.style.margin='0';
+    makeBlocks(r1,a,base,null); g1.appendChild(r1);
+    var tag1=document.createElement('div'); tag1.className='group-tag'; tag1.textContent='2'+sup(a);
+    g1.appendChild(tag1);
+    var t=document.createElement('span'); t.className='times'; t.textContent='\u00D7';
+    var g2=document.createElement('div'); g2.className='group outline2';
+    var r2=document.createElement('div'); r2.className='block-row'; r2.style.margin='0';
+    makeBlocks(r2,b,base,'b2'); g2.appendChild(r2);
+    var tag2=document.createElement('div'); tag2.className='group-tag'; tag2.textContent='2'+sup(b);
+    g2.appendChild(tag2);
+    groups.appendChild(g1); groups.appendChild(t); groups.appendChild(g2);
+
+    var combined=document.getElementById('prodCombined');
+    combined.innerHTML='';
+    makeBlocks(combined,a,base,null);
+    var second=document.createElement('div'); second.className='block-row'; second.style.margin='0';
+    makeBlocks(second,b,base,'b2');
+    Array.from(second.children).forEach(function(c){combined.appendChild(c);});
+
+    document.getElementById('prodResult').textContent = (a+b)+' blocks total = 2'+sup(a+b)+' = '+powVal(base,a+b);
+    document.getElementById('prodWhy').textContent = 'You pushed the two piles together into one longer pile. Count it: '+a+' + '+b+' = '+(a+b)+'.';
+  }
+  prodA = bindStepper('prodADown','prodAUp','prodAVal',0,6, function(){ if(prodB) renderProd(); }, 3);
+  prodB = bindStepper('prodBDown','prodBUp','prodBVal',0,6, function(){ if(prodA) renderProd(); }, 2);
+  renderProd();
+
+  /* ---- QUOTIENT RULE ---- */
+  var quotA, quotB;
+  function renderQuot(){
+    var a=quotA.get(), base=3;
+    var maxB = a;
+    var bEl=document.getElementById('quotBVal');
+    var upBtn=document.getElementById('quotBUp');
+    if (quotB.get()>maxB){ /* clamp handled below */ }
+    var b = Math.min(quotB.get(), maxB);
+    document.getElementById('quotFormula').innerHTML = '3'+sup(a)+' \u00F7 3'+sup(b)+' = 3'+sup(a-b);
+    var row=document.getElementById('quotBlocks');
+    row.innerHTML='';
+    for(var i=0;i<a;i++){
+      var d=document.createElement('div');
+      if (i < a-b){ d.className='block'; } else { d.className='block ghost'; }
+      d.textContent=base;
+      row.appendChild(d);
+    }
+    document.getElementById('quotResult').textContent = (a-b)+' left = 3'+sup(a-b)+' = '+powVal(base,a-b);
+    document.getElementById('quotWhy').textContent = 'Dividing by 3'+sup(b)+' cancels out '+b+' of the 3\'s from the top pile. What is left is '+a+' \u2212 '+b+' = '+(a-b)+' of them.';
+  }
+  quotA = bindStepper('quotADown','quotAUp','quotAVal',1,7, function(){
+    if (quotB && quotB.get() > quotA.get()){ /* will be clamped in render */ }
+    if (quotB) renderQuot();
+  }, 5);
+  quotB = bindStepper('quotBDown','quotBUp','quotBVal',0,7, function(){ if(quotA) renderQuot(); }, 2);
+  renderQuot();
+
+  /* ---- POWER OF A POWER ---- */
+  var powA, powB;
+  function renderPow(){
+    var a=powA.get(), b=powB.get(), base=4;
+    document.getElementById('powFormula').innerHTML = '(4'+sup(a)+')'+sup(b)+' = 4'+sup(a*b);
+    var wrap=document.getElementById('powGroups');
+    wrap.innerHTML='';
+    var colors=['','b2','b3'];
+    for (var g=0; g<b; g++){
+      var tag=document.createElement('div'); tag.className='group-tag'; tag.textContent='group '+(g+1);
+      var row=document.createElement('div'); row.className='block-row'; row.style.marginTop='2px';
+      makeBlocks(row, a, base, colors[g%3]);
+      wrap.appendChild(tag); wrap.appendChild(row);
+    }
+    document.getElementById('powResult').textContent = b+' groups of '+a+' = '+(a*b)+' blocks total = 4'+sup(a*b)+' = '+powVal(base,a*b);
+    document.getElementById('powWhy').textContent = a+' blocks in each group, times '+b+' groups, is '+a+' \u00D7 '+b+' = '+(a*b)+' blocks altogether.';
+  }
+  powA = bindStepper('powADown','powAUp','powAVal',1,4, function(){ if(powB) renderPow(); }, 2);
+  powB = bindStepper('powBDown','powBUp','powBVal',1,4, function(){ if(powA) renderPow(); }, 3);
+  renderPow();
+
+  /* ---- ZERO / NEGATIVE EXPONENTS ---- */
+  var zeroBase, zeroExp;
+  function renderZero(){
+    var base=zeroBase.get(), top=zeroExp.get();
+    var table=document.getElementById('zeroTable');
+    table.innerHTML='<tr><th>Power</th><th>Value</th></tr>';
+    for (var e=top; e>=top-4; e--){
+      var tr=document.createElement('tr');
+      var td1=document.createElement('td'); td1.className='rule';
+      td1.textContent = base+(e===1?'':sup(e))==base ? base+sup(e) : base+sup(e);
+      var v = powVal(base,e);
+      var td2=document.createElement('td');
+      if (e===0){
+        td2.textContent='1'; td2.style.color='var(--teal-dark)'; td2.style.fontWeight='800';
+      } else if (e<0){
+        td2.textContent='1/'+Math.pow(base,-e);
+        td2.style.color='var(--coral)'; td2.style.fontWeight='800';
+      } else {
+        td2.textContent=v;
+      }
+      tr.appendChild(td1); tr.appendChild(td2);
+      table.appendChild(tr);
+    }
+    document.getElementById('zeroWhy').textContent = 'Each row divides by '+base+' again. Dividing '+base+sup(1)+' by '+base+' more time gives '+base+sup(0)+' = 1 (anything over itself). Keep dividing by '+base+' and it flips into a fraction: 1/'+base+', then 1/'+base*base+', and so on.';
+  }
+  zeroBase = bindStepper('zeroBaseDown','zeroBaseUp','zeroBaseVal',2,9, function(){ if(zeroExp) renderZero(); }, 6);
+  zeroExp = bindStepper('zeroExpDown','zeroExpUp','zeroExpVal',0,5, function(){ if(zeroBase) renderZero(); }, 3);
+  renderZero();
+
+  /* ---- POWER OF A PRODUCT ---- */
+  var distX, distY, distE;
+  function renderDist(){
+    var x=distX.get(), y=distY.get(), e=distE.get();
+    document.getElementById('distFormula').innerHTML = '('+x+'\u00D7'+y+')'+sup(e)+' = '+x+sup(e)+' \u00D7 '+y+sup(e);
+    var wrap=document.getElementById('distGroups');
+    wrap.innerHTML='';
+    for (var g=0; g<e; g++){
+      var grp=document.createElement('div'); grp.className='group '+(g%2===0?'outline':'outline2');
+      var row=document.createElement('div'); row.className='block-row'; row.style.margin='0';
+      var d1=document.createElement('div'); d1.className='block'; d1.textContent=x;
+      var d2=document.createElement('div'); d2.className='block b2'; d2.textContent=y;
+      row.appendChild(d1); row.appendChild(d2);
+      grp.appendChild(row);
+      wrap.appendChild(grp);
+      if (g<e-1){ var t=document.createElement('span'); t.className='times'; t.textContent='\u00D7'; wrap.appendChild(t); }
+    }
+    var xTot=Math.pow(x,e), yTot=Math.pow(y,e);
+    document.getElementById('distResult').textContent = '('+x+sup(e)+') \u00D7 ('+y+sup(e)+') = '+xTot+' \u00D7 '+yTot+' = '+(xTot*yTot);
+    document.getElementById('distWhy').textContent = 'Multiplication can be reordered, so all the '+x+'\'s pair up together and all the '+y+'\'s pair up together \u2014 same total answer either way.';
+  }
+  distX = bindStepper('distXDown','distXUp','distXVal',2,9, function(){ if(distY && distE) renderDist(); }, 2);
+  distY = bindStepper('distYDown','distYUp','distYVal',2,9, function(){ if(distX && distE) renderDist(); }, 3);
+  distE = bindStepper('distEDown','distEUp','distEVal',1,4, function(){ if(distX && distY) renderDist(); }, 2);
+  renderDist();
+
+  /* clamp quotient B whenever A changes below it, by re-binding a watcher */
+  (function(){
+    var origADown=document.getElementById('quotADown');
+    var origAUp=document.getElementById('quotAUp');
+    function clamp(){
+      if (quotB.get() > quotA.get()){
+        document.getElementById('quotBDown').click();
+        clamp();
+      }
+    }
+    origADown.addEventListener('click', clamp);
+    origAUp.addEventListener('click', clamp);
+  })();
+
+  /* ---- QUIZ ---- */
+  document.querySelectorAll('.quiz-options').forEach(function(group){
+    var answer = group.getAttribute('data-answer');
+    var feedback = group.parentElement.querySelector('.quiz-feedback');
+    group.querySelectorAll('.quiz-opt').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        if (group.dataset.answered) return;
+        group.dataset.answered = 'true';
+        var chosen = btn.getAttribute('data-value');
+        group.querySelectorAll('.quiz-opt').forEach(function(b){
+          if (b.getAttribute('data-value') === answer){ b.classList.add('correct'); }
+          else if (b === btn){ b.classList.add('wrong'); }
+        });
+        feedback.textContent = (chosen === answer) ? 'Yes! Nicely done.' : 'Not quite — the correct one is now highlighted.';
+        feedback.style.color = (chosen === answer) ? 'var(--teal-dark)' : 'var(--coral-dark)';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
