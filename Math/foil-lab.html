@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOIL Lab · Multiplying Binomials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3F6FB;
+    --paper-line:rgba(22,35,61,0.07);
+    --ink:#16233D;
+    --ink-soft:#51607E;
+    --ink-faint:#8894AC;
+    --card:#FFFFFF;
+    --card-border:rgba(22,35,61,0.14);
+    --gold:#B8842B;
+    --gold-dark:#8F6620;
+    --gold-tint:#FBF1DF;
+    --teal:#1E7A63;
+    --teal-tint:#E4F3EE;
+    --brick:#B8503F;
+    --brick-tint:#FBEAE7;
+    --radius:6px;
+  }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background-color:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size:26px 26px;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.55;
+  }
+  .wrap{ max-width:760px; margin:0 auto; padding:0 22px 90px; }
+  h1,h2,h3{ font-family:'Source Serif 4', Georgia, serif; font-weight:700; color:var(--ink); margin:0; }
+  .eq{ font-family:'JetBrains Mono', monospace; }
+
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(243,246,251,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--card-border);
+  }
+  .topbar-inner{
+    max-width:760px; margin:0 auto; padding:14px 22px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:9px; font-family:'Source Serif 4',serif; font-weight:700; font-size:17px; }
+  .brand-mark{
+    width:24px; height:24px; border-radius:5px; background:var(--ink);
+    color:var(--paper); display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+  }
+  .progress-track{
+    flex:1; max-width:220px; height:7px; background:var(--card-border);
+    border-radius:4px; overflow:hidden; position:relative;
+  }
+  .progress-fill{ height:100%; width:0%; background:var(--gold); transition:width .5s ease; }
+  .progress-label{ font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft); white-space:nowrap; }
+
+  .hero{ padding:52px 0 30px; }
+  .hero-eyebrow{ color:var(--ink-soft); font-size:14.5px; margin-bottom:10px; }
+  .hero h1{ font-size:clamp(28px,5vw,40px); line-height:1.14; letter-spacing:-0.5px; }
+  .hero p.lede{ color:var(--ink-soft); font-size:17px; max-width:54ch; margin-top:12px; }
+
+  .hero-equation{
+    margin-top:34px; background:var(--card); border:1px solid var(--card-border);
+    border-radius:var(--radius); box-shadow:3px 3px 0 rgba(22,35,61,0.06);
+    padding:26px 20px; display:flex; align-items:center; justify-content:center;
+    gap:14px; flex-wrap:wrap; font-family:'JetBrains Mono',monospace;
+    font-size:clamp(18px,4vw,25px); font-weight:600;
+  }
+  .hero-equation .arrow{ color:var(--ink-faint); font-size:20px; }
+
+  .foil-legend{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-top:14px; }
+  .foil-chip{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    border-radius:20px; padding:4px 12px; display:flex; align-items:center; gap:6px;
+  }
+  .foil-chip .sw{ width:9px; height:9px; border-radius:50%; }
+  .chip-f{ background:#EAF1FE; color:#2452A6; } .chip-f .sw{ background:#2452A6; }
+  .chip-o{ background:var(--gold-tint); color:var(--gold-dark); } .chip-o .sw{ background:var(--gold-dark); }
+  .chip-i{ background:var(--teal-tint); color:var(--teal); } .chip-i .sw{ background:var(--teal); }
+  .chip-l{ background:var(--brick-tint); color:var(--brick); } .chip-l .sw{ background:var(--brick); }
+
+  .rulebox{
+    margin-top:36px; background:var(--card); border:1px solid var(--card-border);
+    border-left:4px solid var(--ink); border-radius:0 var(--radius) var(--radius) 0;
+    padding:18px 20px;
+  }
+  .rulebox h3{ font-size:15.5px; margin-bottom:8px; }
+  .rulebox .rows{ color:var(--ink-soft); font-size:14.5px; }
+  .rulebox .rows div{ margin-bottom:4px; }
+  .rulebox .rows b{ color:var(--ink); font-family:'JetBrains Mono',monospace; }
+  .rulebox .form{
+    margin-top:12px; text-align:center; font-family:'JetBrains Mono',monospace;
+    font-weight:700; font-size:14.5px; background:var(--paper); border-radius:5px; padding:8px;
+  }
+
+  .section-head{ margin:54px 0 18px; display:flex; align-items:baseline; gap:12px; }
+  .section-head h2{ font-size:22px; }
+  .section-head .tag{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--ink-faint);
+    border:1px solid var(--card-border); border-radius:20px; padding:2px 10px;
+  }
+
+  .problem{
+    position:relative;
+    background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+    box-shadow:3px 3px 0 rgba(22,35,61,0.05);
+    padding:0; overflow:hidden; margin-bottom:26px;
+  }
+  .problem-top{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:20px 22px; border-bottom:1px solid var(--card-border); flex-wrap:wrap;
+  }
+  .problem-label{ font-size:13px; color:var(--ink-soft); font-weight:600; letter-spacing:.2px; }
+  .problem-expr{ font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; margin-top:2px; }
+
+  .stepper{ display:flex; align-items:center; gap:6px; }
+  .stepper .dot{
+    width:24px; height:24px; border-radius:50%; border:1.5px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-faint);
+    background:var(--paper);
+  }
+  .stepper .dot.done{ background:var(--teal); border-color:var(--teal); color:#fff; }
+  .stepper .dot.active{ border-color:var(--gold); color:var(--gold-dark); background:var(--gold-tint); }
+  .stepper .bar{ width:14px; height:1.5px; background:var(--card-border); }
+
+  .problem-body{ padding:22px; }
+
+  .trail{ margin-bottom:18px; }
+  .trail-item{
+    display:flex; gap:10px; align-items:flex-start; padding:9px 0;
+    border-bottom:1px dashed var(--card-border); font-size:14.5px;
+  }
+  .trail-item:last-child{ border-bottom:none; }
+  .trail-check{
+    flex:none; width:19px; height:19px; border-radius:50%; background:var(--teal-tint);
+    color:var(--teal); display:flex; align-items:center; justify-content:center;
+    font-size:12px; margin-top:1px;
+  }
+  .trail-text b{ font-family:'JetBrains Mono',monospace; }
+  .trail-text .q{ color:var(--ink-soft); display:block; font-size:13px; margin-bottom:1px; }
+
+  .step-active .prompt{ font-size:16px; margin-bottom:14px; }
+  .field-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.grow{ flex:1; min-width:220px; }
+  .field label{ font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .field input{
+    font-family:'JetBrains Mono',monospace; font-size:16px; padding:9px 11px;
+    border:1.5px solid var(--card-border); border-radius:5px; background:var(--paper);
+    color:var(--ink); width:100%; max-width:220px;
+  }
+  .field.grow input{ max-width:none; }
+  .field input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .field input.narrow{ max-width:90px; }
+
+  .step-controls{ display:flex; align-items:center; gap:12px; margin-top:6px; flex-wrap:wrap; }
+
+  button{ font-family:'IBM Plex Sans', sans-serif; cursor:pointer; }
+  .btn{
+    border:none; border-radius:5px; padding:10px 18px; font-size:14.5px; font-weight:600;
+    background:var(--ink); color:#fff;
+  }
+  .btn:hover{ background:#243554; }
+  .btn.gold{ background:var(--gold); color:#fff; }
+  .btn.gold:hover{ background:var(--gold-dark); }
+  .btn.ghost{ background:transparent; color:var(--ink-soft); border:1.5px solid var(--card-border); }
+  .btn.ghost:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+  .feedback{ font-size:14px; padding:10px 12px; border-radius:5px; margin-top:4px; display:none; }
+  .feedback.show{ display:block; }
+  .feedback.err{ background:var(--brick-tint); color:var(--brick); }
+  .feedback.ok{ background:var(--teal-tint); color:var(--teal); }
+
+  .lock-overlay{
+    position:absolute; inset:0; background:rgba(243,246,251,0.88);
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    text-align:center; padding:20px; backdrop-filter:blur(1.5px);
+  }
+  .lock-badge{
+    width:34px; height:34px; border-radius:50%; background:var(--card); border:1.5px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center; font-size:15px; color:var(--ink-faint);
+  }
+  .lock-text{ font-size:13.5px; color:var(--ink-soft); max-width:26ch; }
+
+  .indep-grid{ display:grid; gap:14px; }
+  .indep-card{
+    background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius);
+    padding:16px 18px; box-shadow:2px 2px 0 rgba(22,35,61,0.04);
+  }
+  .indep-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .indep-expr{ font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; }
+  .indep-controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px; }
+  .indep-controls input{
+    font-family:'JetBrains Mono',monospace; font-size:14.5px; padding:8px 10px;
+    border:1.5px solid var(--card-border); border-radius:5px; background:var(--paper); width:190px;
+  }
+  .indep-controls input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .status-icon{
+    width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:13px; border:1.5px solid var(--card-border); color:var(--ink-faint); flex:none;
+  }
+  .status-icon.ok{ background:var(--teal-tint); border-color:var(--teal); color:var(--teal); }
+  .status-icon.err{ background:var(--brick-tint); border-color:var(--brick); color:var(--brick); }
+  .indep-extra{ margin-top:10px; font-size:13.5px; color:var(--ink-soft); display:none; }
+  .indep-extra.show{ display:block; }
+  .indep-extra table{ border-collapse:collapse; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+  .indep-extra td,.indep-extra th{ border:1px solid var(--card-border); padding:3px 9px; }
+  .indep-extra th{ background:var(--paper); }
+
+  .summary{
+    margin-top:50px; text-align:center; padding:30px 22px; border:1.5px dashed var(--card-border);
+    border-radius:var(--radius); background:var(--card);
+  }
+  .summary .big{ font-family:'Source Serif 4',serif; font-size:24px; margin-bottom:6px; }
+  .summary .small{ color:var(--ink-soft); font-size:14px; }
+
+  @media (max-width:600px){
+    .hero{ padding-top:34px; }
+    .problem-top{ padding:16px; }
+    .problem-body{ padding:16px; }
+    .field input{ max-width:none; }
+    .stepper .bar{ width:9px; }
+    .hero-equation{ gap:10px; padding:20px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="brand-mark">FO<br>IL</span> FOIL Lab</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 15</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-eyebrow">A guided walkthrough</div>
+    <h1>Multiplying Binomials with FOIL</h1>
+    <p class="lede">Work through three fully-guided problems, then try six on your own. Each step checks your answer before you move on, so you always know exactly where things went right or wrong.</p>
+
+    <div class="hero-equation">
+      <span>(x + 2)(x + 3)</span>
+      <span class="arrow">=</span>
+      <span>x&sup2; + 5x + 6</span>
+    </div>
+    <div class="foil-legend">
+      <span class="foil-chip chip-f"><span class="sw"></span>First: x &middot; x</span>
+      <span class="foil-chip chip-o"><span class="sw"></span>Outer: x &middot; 3</span>
+      <span class="foil-chip chip-i"><span class="sw"></span>Inner: 2 &middot; x</span>
+      <span class="foil-chip chip-l"><span class="sw"></span>Last: 2 &middot; 3</span>
+    </div>
+
+    <div class="rulebox">
+      <h3>FOIL, every time</h3>
+      <div class="rows">
+        <div><b>F</b>irst &nbsp;&middot;&nbsp; multiply the first term in each binomial</div>
+        <div><b>O</b>uter &nbsp;&middot;&nbsp; multiply the two outer terms</div>
+        <div><b>I</b>nner &nbsp;&middot;&nbsp; multiply the two inner terms</div>
+        <div><b>L</b>ast &nbsp;&middot;&nbsp; multiply the last term in each binomial</div>
+      </div>
+      <div class="form">Then combine Outer + Inner (the like terms) into one middle term.</div>
+    </div>
+  </section>
+
+  <div class="section-head">
+    <h2>Guided problems</h2>
+    <span class="tag">step by step</span>
+  </div>
+
+  <div class="problem" id="problem-0">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 1 of 3</div>
+        <div class="problem-expr">(x + 2)(x + 3)</div>
+      </div>
+      <div class="stepper" id="stepper-0"></div>
+    </div>
+    <div class="problem-body" id="body-0"></div>
+  </div>
+
+  <div class="problem" id="problem-1">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 2 of 3</div>
+        <div class="problem-expr">(x &minus; 2)(x &minus; 5)</div>
+      </div>
+      <div class="stepper" id="stepper-1"></div>
+    </div>
+    <div class="problem-body" id="body-1"></div>
+    <div class="lock-overlay" id="lock-1">
+      <div class="lock-badge">&#128274;</div>
+      <div class="lock-text">Finish Problem 1 to unlock this one</div>
+    </div>
+  </div>
+
+  <div class="problem" id="problem-2">
+    <div class="problem-top">
+      <div>
+        <div class="problem-label">Problem 3 of 3</div>
+        <div class="problem-expr">(x + 4)(x &minus; 3)</div>
+      </div>
+      <div class="stepper" id="stepper-2"></div>
+    </div>
+    <div class="problem-body" id="body-2"></div>
+    <div class="lock-overlay" id="lock-2">
+      <div class="lock-badge">&#128274;</div>
+      <div class="lock-text">Finish Problem 2 to unlock this one</div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <h2>Now on your own</h2>
+    <span class="tag">no hints unless you ask</span>
+  </div>
+
+  <div class="indep-grid" id="indep-grid"></div>
+  <div class="lock-overlay" id="lock-indep" style="position:relative; border-radius:var(--radius); margin-top:-14px;">
+    <div class="lock-badge">&#128274;</div>
+    <div class="lock-text">Finish all three guided problems to unlock independent practice</div>
+  </div>
+
+  <div class="summary" id="summary" style="display:none;">
+    <div class="big">All fifteen, solved.</div>
+    <div class="small">You've worked through FOIL from breaking a product into four pieces to writing the finished trinomial and checking it by substitution.</div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+  /* ---------- helpers ---------- */
+  function normalize(str){
+    if(str===undefined || str===null) return '';
+    var s = String(str).trim().toLowerCase();
+    s = s.replace(/\s+/g,'');
+    s = s.replace(/\^2/g,'\u00b2');
+    s = s.replace(/\u2212/g,'-');
+    s = s.replace(/\*/g,'');
+    return s;
+  }
+  function coeffFromGroup(g){
+    if(g===''||g==='+') return 1;
+    if(g==='-') return -1;
+    var n = parseInt(g,10);
+    return isNaN(n) ? NaN : n;
+  }
+  function parseX2Coeff(str){
+    var s = normalize(str);
+    var m = s.match(/^([+-]?\d*)x\u00b2$/);
+    if(!m) return NaN;
+    return coeffFromGroup(m[1]);
+  }
+  function parseXCoeff(str){
+    var s = normalize(str);
+    var m = s.match(/^([+-]?\d*)x$/);
+    if(!m) return NaN;
+    return coeffFromGroup(m[1]);
+  }
+  function parseConstInt(str){
+    var s = normalize(str);
+    if(!/^[+-]?\d+$/.test(s)) return NaN;
+    return parseInt(s,10);
+  }
+  function parseTrinomial(str){
+    var s = normalize(str);
+    s = s.replace(/^\+/, '');
+    var re = /^x\u00b2([+-])(\d*)x([+-]\d+)$/;
+    var m = s.match(re);
+    if(!m) return null;
+    var digits = m[2];
+    var bcoeff = digits==='' ? 1 : parseInt(digits,10);
+    if(m[1]==='-') bcoeff = -bcoeff;
+    var c = parseInt(m[3],10);
+    return { b: bcoeff, c: c };
+  }
+  function trinomialMatches(str, b, c){
+    var r = parseTrinomial(str);
+    if(!r) return false;
+    return r.b===b && r.c===c;
+  }
+
+  var TOTAL_UNITS = 15;
+  var completedUnits = 0;
+  function bumpProgress(){
+    completedUnits = Math.min(completedUnits+1, TOTAL_UNITS);
+    document.getElementById('progressFill').style.width = (completedUnits/TOTAL_UNITS*100)+'%';
+    document.getElementById('progressLabel').textContent = completedUnits+' / '+TOTAL_UNITS;
+    if(completedUnits>=TOTAL_UNITS){ document.getElementById('summary').style.display='block'; }
+  }
+
+  /* ---------- generic step-flow engine ---------- */
+  function ProblemFlow(idx, steps, onAllDone){
+    var bodyEl = document.getElementById('body-'+idx);
+    var stepperEl = document.getElementById('stepper-'+idx);
+    var current = 0;
+    var trail = [];
+
+    function renderStepper(){
+      stepperEl.innerHTML='';
+      steps.forEach(function(s,i){
+        if(i>0){
+          var bar = document.createElement('div');
+          bar.className='bar';
+          stepperEl.appendChild(bar);
+        }
+        var dot = document.createElement('div');
+        dot.className='dot' + (i<current ? ' done' : (i===current ? ' active':''));
+        dot.textContent = i<current ? '\u2713' : (i+1);
+        stepperEl.appendChild(dot);
+      });
+    }
+
+    function renderTrail(){
+      var wrap = document.createElement('div');
+      wrap.className='trail';
+      trail.forEach(function(t){
+        var item = document.createElement('div');
+        item.className='trail-item';
+        item.innerHTML = '<span class="trail-check">\u2713</span><span class="trail-text"><span class="q">'+t.q+'</span><b>'+t.a+'</b></span>';
+        wrap.appendChild(item);
+      });
+      return wrap;
+    }
+
+    function renderStep(){
+      renderStepper();
+      bodyEl.innerHTML='';
+      bodyEl.appendChild(renderTrail());
+
+      if(current >= steps.length){
+        var done = document.createElement('div');
+        done.className='feedback ok show';
+        done.style.marginTop='2px';
+        done.textContent = 'Problem complete.';
+        bodyEl.appendChild(done);
+        if(onAllDone) onAllDone();
+        return;
+      }
+
+      var step = steps[current];
+      var active = document.createElement('div');
+      active.className='step-active';
+
+      var prompt = document.createElement('div');
+      prompt.className='prompt';
+      prompt.textContent = step.prompt;
+      active.appendChild(prompt);
+
+      var row = document.createElement('div');
+      row.className='field-row';
+      var inputEls = {};
+      step.inputs.forEach(function(inp){
+        var f = document.createElement('div');
+        f.className = 'field' + (inp.grow ? ' grow':'');
+        var label = document.createElement('label');
+        label.textContent = inp.label;
+        label.setAttribute('for','in-'+idx+'-'+current+'-'+inp.id);
+        var input = document.createElement('input');
+        input.type='text';
+        input.id = 'in-'+idx+'-'+current+'-'+inp.id;
+        input.autocomplete='off';
+        if(inp.placeholder) input.placeholder = inp.placeholder;
+        if(inp.narrow) input.className='narrow';
+        f.appendChild(label);
+        f.appendChild(input);
+        row.appendChild(f);
+        inputEls[inp.id]=input;
+      });
+      active.appendChild(row);
+
+      var controls = document.createElement('div');
+      controls.className='step-controls';
+      var checkBtn = document.createElement('button');
+      checkBtn.className='btn gold';
+      checkBtn.textContent='Check';
+      controls.appendChild(checkBtn);
+      active.appendChild(controls);
+
+      var feedback = document.createElement('div');
+      feedback.className='feedback';
+      feedback.setAttribute('aria-live','polite');
+      active.appendChild(feedback);
+
+      function doCheck(){
+        var values={};
+        Object.keys(inputEls).forEach(function(k){ values[k]=inputEls[k].value; });
+        var result = step.validate(values);
+        if(result.ok){
+          feedback.className='feedback ok show';
+          feedback.textContent = result.message || 'Correct.';
+          checkBtn.disabled = true;
+          Object.keys(inputEls).forEach(function(k){ inputEls[k].disabled = true; });
+          var cont = document.createElement('button');
+          cont.className='btn';
+          cont.textContent = (current === steps.length-1) ? 'Finish problem' : 'Continue';
+          cont.style.marginLeft='4px';
+          controls.appendChild(cont);
+          cont.addEventListener('click', function(){
+            trail.push({ q: step.prompt, a: step.summary(values) });
+            current++;
+            bumpProgress();
+            renderStep();
+          });
+        } else {
+          feedback.className='feedback err show';
+          feedback.textContent = result.message || 'Not quite — try again.';
+        }
+      }
+
+      checkBtn.addEventListener('click', doCheck);
+      Object.keys(inputEls).forEach(function(k){
+        inputEls[k].addEventListener('keydown', function(e){
+          if(e.key==='Enter'){ e.preventDefault(); doCheck(); }
+        });
+      });
+
+      bodyEl.appendChild(active);
+    }
+
+    renderStep();
+  }
+
+  /* ================= PROBLEM 1 : (x+2)(x+3) ================= */
+  ProblemFlow(0, [
+    {
+      prompt: 'Multiply the First, Outer, Inner, and Last terms of (x + 2)(x + 3).',
+      inputs: [
+        {id:'f', label:'First (x&middot;x)', placeholder:'x\u00b2', narrow:true},
+        {id:'o', label:'Outer (x&middot;3)', placeholder:'3x', narrow:true},
+        {id:'i', label:'Inner (2&middot;x)', placeholder:'2x', narrow:true},
+        {id:'l', label:'Last (2&middot;3)', placeholder:'6', narrow:true}
+      ],
+      validate: function(v){
+        var f=parseX2Coeff(v.f), o=parseXCoeff(v.o), i=parseXCoeff(v.i), l=parseConstInt(v.l);
+        if(f===1 && o===3 && i===2 && l===6) return {ok:true, message:'F = x\u00b2, O = 3x, I = 2x, L = 6.'};
+        return {ok:false, message:'First: x\u00b7x = x\u00b2. Outer: x\u00b73. Inner: 2\u00b7x. Last: 2\u00b73. Check each one.'};
+      },
+      summary: function(v){ return v.f+' , '+v.o+' , '+v.i+' , '+v.l; }
+    },
+    {
+      prompt: 'Outer and Inner are like terms. Combine them into a single middle term.',
+      inputs: [ {id:'mid', label:'Middle term', narrow:true, placeholder:'5x'} ],
+      validate: function(v){
+        var mid = parseXCoeff(v.mid);
+        if(mid===5) return {ok:true, message:'3x + 2x = 5x'};
+        return {ok:false, message:'3x + 2x = ? Add the coefficients.'};
+      },
+      summary: function(v){ return v.mid; }
+    },
+    {
+      prompt: 'Write the fully expanded trinomial in standard form.',
+      inputs: [ {id:'tri', label:'Expanded form', grow:true, placeholder:'x\u00b2 + 5x + 6'} ],
+      validate: function(v){
+        if(trinomialMatches(v.tri,5,6)) return {ok:true, message:'(x + 2)(x + 3) = x\u00b2 + 5x + 6'};
+        return {ok:false, message:'Put F, your combined middle term, and L together: x\u00b2 + 5x + 6.'};
+      },
+      summary: function(v){ return v.tri; }
+    },
+    {
+      prompt: 'Check your work: substitute x = 1 into the original expression (x + 2)(x + 3). What value do you get?',
+      inputs: [ {id:'val', label:'Value at x = 1', narrow:true} ],
+      validate: function(v){
+        var val = parseConstInt(v.val);
+        if(val===12) return {ok:true, message:'(1+2)(1+3) = 3\u00d74 = 12, and 1\u00b2+5(1)+6 = 12 too — they match.'};
+        return {ok:false, message:'(1 + 2)(1 + 3) = ? Multiply it out.'};
+      },
+      summary: function(v){ return v.val+' — matches the trinomial at x = 1'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-1');
+    if(lock) lock.remove();
+  });
+
+  /* ================= PROBLEM 2 : (x-2)(x-5) ================= */
+  ProblemFlow(1, [
+    {
+      prompt: 'Find F, O, I, and L for (x \u2212 2)(x \u2212 5), then combine O and I into the middle term.',
+      inputs: [
+        {id:'f', label:'First', narrow:true, placeholder:'x\u00b2'},
+        {id:'o', label:'Outer', narrow:true, placeholder:'-5x'},
+        {id:'i', label:'Inner', narrow:true, placeholder:'-2x'},
+        {id:'l', label:'Last', narrow:true, placeholder:'10'},
+        {id:'mid', label:'Middle term', narrow:true, placeholder:'-7x'}
+      ],
+      validate: function(v){
+        var f=parseX2Coeff(v.f), o=parseXCoeff(v.o), i=parseXCoeff(v.i), l=parseConstInt(v.l), mid=parseXCoeff(v.mid);
+        if(f===1 && o===-5 && i===-2 && l===10 && mid===-7) return {ok:true, message:'F=x\u00b2, O=\u22125x, I=\u22122x, L=10, and \u22125x+\u22122x=\u22127x.'};
+        return {ok:false, message:'Watch your signs: Outer is x\u00b7(\u22125), Inner is (\u22122)\u00b7x, Last is (\u22122)\u00b7(\u22125).'};
+      },
+      summary: function(v){ return v.f+', '+v.o+', '+v.i+', '+v.l+' \u2192 mid '+v.mid; }
+    },
+    {
+      prompt: 'Write the fully expanded trinomial.',
+      inputs: [ {id:'tri', label:'Expanded form', grow:true, placeholder:'x\u00b2 - 7x + 10'} ],
+      validate: function(v){
+        if(trinomialMatches(v.tri,-7,10)) return {ok:true, message:'(x \u2212 2)(x \u2212 5) = x\u00b2 \u2212 7x + 10'};
+        return {ok:false, message:'Use minus signs directly, like x\u00b2 - 7x + 10, not x\u00b2 + -7x.'};
+      },
+      summary: function(v){ return v.tri; }
+    },
+    {
+      prompt: 'Check: substitute x = 1 into the original expression (x \u2212 2)(x \u2212 5). What value do you get?',
+      inputs: [ {id:'val', label:'Value at x = 1', narrow:true} ],
+      validate: function(v){
+        var val = parseConstInt(v.val);
+        if(val===4) return {ok:true, message:'(1\u22122)(1\u22125) = (\u22121)(\u22124) = 4, and 1\u00b2\u22127(1)+10 = 4 too.'};
+        return {ok:false, message:'(1 \u2212 2)(1 \u2212 5) = ? Multiply the two negative numbers first.'};
+      },
+      summary: function(v){ return v.val+' — matches the trinomial at x = 1'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-2');
+    if(lock) lock.remove();
+  });
+
+  /* ================= PROBLEM 3 : (x+4)(x-3) ================= */
+  ProblemFlow(2, [
+    {
+      prompt: 'FOIL (x + 4)(x \u2212 3) completely. Give the combined middle term and the full trinomial.',
+      inputs: [
+        {id:'mid', label:'Middle term', narrow:true, placeholder:'x'},
+        {id:'tri', label:'Expanded form', grow:true, placeholder:'x\u00b2 + x - 12'}
+      ],
+      validate: function(v){
+        var mid = parseXCoeff(v.mid);
+        var triOk = trinomialMatches(v.tri,1,-12);
+        if(mid===1 && triOk) return {ok:true, message:'Outer \u22123x, Inner 4x, combine to x. Full trinomial: x\u00b2 + x \u2212 12.'};
+        if(mid!==1) return {ok:false, message:'Outer is x\u00b7(\u22123) = \u22123x. Inner is 4\u00b7x = 4x. What do those add to?'};
+        return {ok:false, message:'Your middle term is right — check that the full trinomial matches it exactly.'};
+      },
+      summary: function(v){ return 'mid '+v.mid+' \u2192 '+v.tri; }
+    },
+    {
+      prompt: 'Check: substitute x = 1 into the original expression (x + 4)(x \u2212 3). What value do you get?',
+      inputs: [ {id:'val', label:'Value at x = 1', narrow:true} ],
+      validate: function(v){
+        var val = parseConstInt(v.val);
+        if(val===-10) return {ok:true, message:'(1+4)(1\u22123) = 5\u00d7(\u22122) = \u221210, and 1\u00b2+1\u221212 = \u221210 too.'};
+        return {ok:false, message:'(1 + 4)(1 \u2212 3) = ? Multiply it out, minding the sign.'};
+      },
+      summary: function(v){ return v.val+' — matches the trinomial at x = 1'; }
+    }
+  ], function(){
+    var lock = document.getElementById('lock-indep');
+    if(lock) lock.remove();
+    buildIndependent();
+  });
+
+  /* ================= INDEPENDENT PRACTICE ================= */
+  var indepProblems = [
+    { expr:'(x + 3)(x + 5)', m:3, n:5 },
+    { expr:'(x \u2212 2)(x \u2212 3)', m:-2, n:-3 },
+    { expr:'(x + 5)(x \u2212 2)', m:5, n:-2 },
+    { expr:'(x \u2212 7)(x + 3)', m:-7, n:3 },
+    { expr:'(x \u2212 3)(x \u2212 3)', m:-3, n:-3 },
+    { expr:'(x + 3)(x + 8)', m:3, n:8 }
+  ];
+
+  function buildIndependent(){
+    var grid = document.getElementById('indep-grid');
+    grid.innerHTML='';
+    indepProblems.forEach(function(p){
+      var solved = false;
+      var b = p.m+p.n, c = p.m*p.n;
+      var card = document.createElement('div');
+      card.className='indep-card';
+
+      var top = document.createElement('div');
+      top.className='indep-top';
+      var expr = document.createElement('div');
+      expr.className='indep-expr';
+      expr.textContent = p.expr;
+      var status = document.createElement('div');
+      status.className='status-icon';
+      status.textContent='?';
+      top.appendChild(expr); top.appendChild(status);
+      card.appendChild(top);
+
+      var controls = document.createElement('div');
+      controls.className='indep-controls';
+      var input = document.createElement('input');
+      input.type='text';
+      input.placeholder='x\u00b2 + bx + c';
+      var checkBtn = document.createElement('button');
+      checkBtn.className='btn gold'; checkBtn.textContent='Check';
+      var hintBtn = document.createElement('button');
+      hintBtn.className='btn ghost'; hintBtn.textContent='Hint';
+      var revealBtn = document.createElement('button');
+      revealBtn.className='btn ghost'; revealBtn.textContent='Show answer';
+      controls.appendChild(input); controls.appendChild(checkBtn); controls.appendChild(hintBtn); controls.appendChild(revealBtn);
+      card.appendChild(controls);
+
+      var extra = document.createElement('div');
+      extra.className='indep-extra';
+      card.appendChild(extra);
+
+      function markSolved(){
+        if(solved) return;
+        solved = true;
+        status.className='status-icon ok';
+        status.textContent='\u2713';
+        bumpProgress();
+      }
+
+      checkBtn.addEventListener('click', function(){
+        if(trinomialMatches(input.value, b, c)){
+          status.className='status-icon ok';
+          status.textContent='\u2713';
+          markSolved();
+        } else {
+          status.className='status-icon err';
+          status.textContent='!';
+        }
+      });
+      input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); checkBtn.click(); } });
+
+      hintBtn.addEventListener('click', function(){
+        extra.classList.toggle('show');
+        if(extra.classList.contains('show') && !extra.dataset.built){
+          var oTerm = (p.n>=0?'+':'\u2212')+' '+Math.abs(p.n)+'x';
+          var iTerm = (p.m>=0?'+':'\u2212')+' '+Math.abs(p.m)+'x';
+          var lTerm = (c>=0?'':'\u2212')+Math.abs(c);
+          var tbl = '<table><tr><th>F</th><th>O</th><th>I</th><th>L</th></tr>'
+            + '<tr><td>x\u00b2</td><td>'+oTerm+'</td><td>'+iTerm+'</td><td>'+lTerm+'</td></tr></table>';
+          extra.innerHTML = 'Break it into four products:' + tbl;
+          extra.dataset.built='1';
+        }
+      });
+
+      revealBtn.addEventListener('click', function(){
+        if(!solved){
+          var bStr = b>=0 ? '+ '+b+'x' : '\u2212 '+Math.abs(b)+'x';
+          var cStr = c>=0 ? '+ '+c : '\u2212 '+Math.abs(c);
+          input.value = 'x\u00b2 '+bStr+' '+cStr;
+          markSolved();
+        }
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+})();
+</script>
+</body>
+</html>
