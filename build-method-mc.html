@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build the Method — Guided Multiple Choice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10131a;
+    --bg-grid: #171b24;
+    --panel: #181d27;
+    --panel-2: #1e2430;
+    --line: #2a3040;
+    --ink: #e8ebf2;
+    --ink-dim: #8b93a8;
+    --ink-faint: #565f74;
+    --amber: #f5b25c;
+    --cyan: #6fd0c8;
+    --pink: #e28ba8;
+    --green: #7fc98f;
+    --red: #e2857a;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+  }
+  :root[data-theme="light"]{
+    --bg: #f3f1ea;
+    --bg-grid: #ece9e0;
+    --panel: #ffffff;
+    --panel-2: #f8f6f0;
+    --line: #ddd8c8;
+    --ink: #23262d;
+    --ink-dim: #62687a;
+    --ink-faint: #9a9fae;
+    --amber: #b5711a;
+    --cyan: #1c7f76;
+    --pink: #a13c63;
+    --green: #2f7a45;
+    --red: #b23b30;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #f3f1ea; --bg-grid: #ece9e0; --panel: #ffffff; --panel-2: #f8f6f0;
+      --line: #ddd8c8; --ink: #23262d; --ink-dim: #62687a; --ink-faint: #9a9fae;
+      --amber: #b5711a; --cyan: #1c7f76; --pink: #a13c63; --green: #2f7a45; --red: #b23b30;
+    }
+  }
+
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/34px 100%,
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 40px 20px 90px; }
+
+  header{
+    display:flex; justify-content: space-between; align-items: flex-start;
+    gap: 20px; margin-bottom: 26px; flex-wrap: wrap;
+  }
+  .kicker{ font-family: var(--font-mono); font-size: 12.5px; color: var(--cyan); margin: 0 0 10px; }
+  h1{ font-size: clamp(26px, 4vw, 36px); font-weight: 600; line-height: 1.15; margin: 0 0 10px; max-width: 640px; }
+  .sub{ color: var(--ink-dim); font-size: 15.5px; line-height: 1.55; max-width: 560px; margin: 0; }
+  .theme-toggle{
+    font-family: var(--font-mono); font-size: 12px; background: var(--panel-2);
+    border: 1px solid var(--line); color: var(--ink-dim); padding: 8px 12px;
+    border-radius: 7px; cursor: pointer; white-space: nowrap;
+  }
+  .theme-toggle:hover{ color: var(--ink); border-color: var(--ink-faint); }
+
+  /* ---- building code panel ---- */
+  .code-panel{
+    background: #14181f;
+    border: 1px solid #262c3a;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 26px;
+  }
+  :root[data-theme="light"] .code-panel{ background: #1c2029; border-color: #2c3140; }
+  .code-panel .code-label{
+    font-family: var(--font-mono); font-size: 11.5px; color: #6f7891; letter-spacing: .04em; margin-bottom: 10px;
+  }
+  pre.build{
+    margin:0; font-family: var(--font-mono); font-size: 14px; line-height: 1.85;
+    color: #cdd3e0; white-space: pre; overflow-x: auto;
+  }
+  .blank{
+    display:inline-block;
+    min-width: 34px;
+    border-bottom: 2px dashed #46506b;
+    color: #46506b;
+  }
+  .slot{ transition: color .25s ease; }
+  .slot.filled{ animation: pop .35s ease; }
+  @keyframes pop{ from{ opacity:0; transform: translateY(-3px);} to{ opacity:1; transform: translateY(0);} }
+  .kw{ color: #d99bd0; } .type{ color: #8fc9e8; } .fn{ color: #f0c674; } .fld{ color: #eab5c9; } .cmt{ color: #6f7891; } .num{ color: #d59a6f; }
+
+  /* ---- progress ---- */
+  .progress{ display:flex; align-items:center; gap: 8px; margin: 0 0 22px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); }
+  .dots{ display:flex; gap:6px; }
+  .dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background .25s ease, transform .25s ease; }
+  .dot.done{ background: var(--green); }
+  .dot.current{ background: var(--cyan); transform: scale(1.3); }
+
+  /* ---- question card ---- */
+  .qcard{
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 26px 28px; animation: rise .4s ease both;
+  }
+  @keyframes rise{ from{ opacity:0; transform: translateY(10px);} to{ opacity:1; transform: translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ .qcard, .slot.filled{ animation: none; } }
+
+  .q-tag{ font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-faint); margin-bottom: 10px; }
+  .q-text{ font-size: 17px; line-height: 1.5; margin: 0 0 20px; }
+  .q-text code{ font-family: var(--font-mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; font-size: 14px; }
+
+  .options{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px){ .options{ grid-template-columns: 1fr; } }
+
+  .opt-btn{
+    font-family: var(--font-mono); font-size: 13.5px; text-align: left;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+    padding: 13px 16px; border-radius: 9px; cursor: pointer;
+    transition: border-color .15s ease, transform .08s ease;
+  }
+  .opt-btn:hover:not(:disabled){ border-color: var(--cyan); }
+  .opt-btn:active:not(:disabled){ transform: translateY(1px); }
+  .opt-btn:disabled{ cursor: default; }
+  .opt-btn.correct{ border-color: var(--green); background: color-mix(in srgb, var(--green) 14%, var(--panel-2)); }
+  .opt-btn.wrong{ border-color: var(--red); background: color-mix(in srgb, var(--red) 14%, var(--panel-2)); }
+  .opt-btn.dim{ opacity: .45; }
+
+  .feedback{
+    margin-top: 16px; font-size: 14px; line-height: 1.55; color: var(--ink-dim);
+    padding: 12px 16px; border-radius: 8px; border-left: 3px solid var(--line); background: var(--panel-2);
+    display: none;
+  }
+  .feedback.show{ display: block; animation: rise .3s ease both; }
+  .feedback.good{ border-left-color: var(--green); }
+  .feedback.bad{ border-left-color: var(--red); }
+  .feedback code{ font-family: var(--font-mono); background: var(--panel); border: 1px solid var(--line); padding: 1px 5px; border-radius: 4px; font-size: 13px; color: var(--ink); }
+
+  .next-row{ margin-top: 18px; display:flex; justify-content: flex-end; }
+  .next-btn{
+    font-family: var(--font-mono); font-size: 13.5px; font-weight: 500;
+    background: var(--amber); color: #201405; border: none; padding: 11px 20px;
+    border-radius: 8px; cursor: pointer; display:none;
+  }
+  .next-btn.show{ display:inline-block; animation: rise .3s ease both; }
+  .next-btn:hover{ filter: brightness(1.08); }
+
+  .finale{
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line); border-radius: 12px; padding: 28px 26px;
+    animation: rise .45s ease both;
+  }
+  .finale h2{ font-size: 20px; margin: 0 0 10px; color: var(--green); }
+  .finale p{ color: var(--ink-dim); font-size: 15px; line-height: 1.6; margin: 0 0 10px; }
+  .finale code{ font-family: var(--font-mono); background: var(--panel); border: 1px solid var(--line); padding: 1px 6px; border-radius: 5px; color: var(--ink); font-size: 13px; }
+  .restart{
+    margin-top: 14px; font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-faint);
+    background: none; border: 1px solid var(--line); padding: 8px 14px; border-radius: 7px; cursor: pointer;
+  }
+  .restart:hover{ color: var(--ink); border-color: var(--ink-faint); }
+
+  footer{ margin-top: 40px; font-family: var(--font-mono); font-size: 12px; color: var(--ink-faint); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="kicker">// guided practice · multiple choice</p>
+      <h1>Build getXCoordinates() one choice at a time</h1>
+      <p class="sub">Each question fills in one blank of the method below. Pick wrong and you'll get a nudge — pick right and it locks into place.</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button">switch to light</button>
+  </header>
+
+  <div class="code-panel">
+    <div class="code-label">static double[] getXCoordinates()</div>
+    <pre class="build" id="codeBuild"></pre>
+  </div>
+
+  <div class="progress">
+    <span id="progressLabel">question 1 of 5</span>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <footer>guided build · one blank per question</footer>
+</div>
+
+<script>
+  // Each question fills one slot in the code skeleton.
+  // "render" is the HTML that appears in that slot once answered correctly.
+  const questions = [
+    {
+      tag: "BLANK 1 / 5 — sizing the array",
+      text: "Before looping, what should the new array's length be set to?",
+      options: [
+        { text: "workouts.size()", correct: true },
+        { text: "workouts.size() - 1", correct: false, why: "That would leave the array one slot too small — the last workout would have nowhere to go." },
+        { text: "10", correct: false, why: "A fixed number breaks the moment the list has more or fewer than 10 workouts. The array has to match however many workouts actually exist." },
+        { text: "0", correct: false, why: "An array of length 0 can't hold anything — nothing would ever get copied into it." }
+      ],
+      render: '<span class="type">double</span>[] x = <span class="kw">new</span> <span class="type">double</span>[workouts.size()];'
+    },
+    {
+      tag: "BLANK 2 / 5 — the loop bounds",
+      text: "Which for-loop correctly visits every valid index, once each, from the first workout to the last?",
+      options: [
+        { text: "for (int i = 0; i <= workouts.size(); i++)", correct: false, why: "<= goes one step too far — on the last pass, i equals workouts.size(), which isn't a valid index and would crash the program." },
+        { text: "for (int i = 1; i < workouts.size(); i++)", correct: false, why: "Starting at 1 skips index 0 entirely — the first workout in the list never gets copied." },
+        { text: "for (int i = 0; i < workouts.size(); i++)", correct: true },
+        { text: "for (int i = 0; i < workouts.size() - 1; i++)", correct: false, why: "This stops one short — the last workout in the list never gets visited." }
+      ],
+      render: '<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; workouts.size(); i++) {'
+    },
+    {
+      tag: "BLANK 3 / 5 — reaching into the list",
+      text: "Inside the loop, how do you pull the workout sitting at position i out of the workouts list?",
+      options: [
+        { text: "workouts[i]", correct: false, why: "Square brackets are for arrays. workouts is an ArrayList — it doesn't support [i] directly." },
+        { text: "workouts.at(i)", correct: false, why: "ArrayList has no .at() method in Java — that's from a different language." },
+        { text: "workouts.get(i)", correct: true },
+        { text: "workouts.i()", correct: false, why: "That's not a real method — there's no way to call a variable like a method name." }
+      ],
+      render: 'workouts.get(i)'
+    },
+    {
+      tag: "BLANK 4 / 5 — copying the field",
+      text: "Which line correctly stores that workout's number into the new array at the matching position?",
+      options: [
+        { text: "x[i] = workouts.get(i).workoutNumber;", correct: true },
+        { text: "x.add(workouts.get(i).workoutNumber);", correct: false, why: "x is an array, not a list — arrays don't have .add(). You assign into a specific index instead." },
+        { text: "x = workouts.get(i).workoutNumber;", correct: false, why: "This overwrites the whole array with a single number instead of filling one slot of it." },
+        { text: "i = workouts.get(x).workoutNumber;", correct: false, why: "This has x and i backwards — x is the array being filled, i is the position being filled." }
+      ],
+      render: 'x[i] = workouts.get(i).<span class="fld">workoutNumber</span>;'
+    },
+    {
+      tag: "BLANK 5 / 5 — finishing the method",
+      text: "After the loop finishes filling every slot, what does the method still need to do?",
+      options: [
+        { text: "print(x);", correct: false, why: "Printing shows the array but doesn't hand it back to whatever called this method — the caller would get nothing." },
+        { text: "x.close();", correct: false, why: "Arrays don't need closing — that's a habit from files or streams, not arrays." },
+        { text: "return x;", correct: true },
+        { text: "Nothing — it's done once the loop ends.", correct: false, why: "Without a return statement, the method wouldn't compile — it promised to return a double[] and has to deliver one." }
+      ],
+      render: '<span class="kw">return</span> x;'
+    }
+  ];
+
+  const codeBuild = document.getElementById('codeBuild');
+  const quizArea = document.getElementById('quizArea');
+  const dotsEl = document.getElementById('dots');
+  const progressLabel = document.getElementById('progressLabel');
+
+  let current = 0;
+  let answeredCorrectly = false;
+
+  function buildDots(){
+    dotsEl.innerHTML = '';
+    questions.forEach((_, idx) => {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.id = 'dot-' + idx;
+      dotsEl.appendChild(d);
+    });
+  }
+
+  function updateDots(){
+    questions.forEach((_, idx) => {
+      const d = document.getElementById('dot-' + idx);
+      d.classList.remove('done', 'current');
+      if (idx < current) d.classList.add('done');
+      else if (idx === current) d.classList.add('current');
+    });
+  }
+
+  function slotFilled(idx){
+    return idx < current || (idx === current && answeredCorrectly);
+  }
+
+  function buildExplicit(){
+    const s0 = slotFilled(0) ? `<span class="slot filled">${questions[0].render}</span>` : `<span class="blank">___________________</span>`;
+    const s1 = slotFilled(1) ? `<span class="slot filled">${questions[1].render}</span>` : `<span class="blank">_______________________________</span>`;
+    const s2 = slotFilled(2) ? `<span class="slot filled">${questions[2].render}</span>` : `<span class="blank">______________</span>`;
+    const s4 = slotFilled(4) ? `<span class="slot filled">${questions[4].render}</span>` : `<span class="blank">_________</span>`;
+
+    let out = '';
+    out += s0 + '\n\n';
+    out += '  ' + s1 + '\n';
+    if (slotFilled(3)) {
+      out += '    ' + `<span class="slot filled">x[i] = workouts.get(i).<span class="fld">workoutNumber</span>;</span>` + '\n';
+    } else if (slotFilled(2)) {
+      out += '    x[i] = ' + s2 + '<span class="blank">.______________</span>;\n';
+    } else {
+      out += '    x[i] = <span class="blank">______________________________</span>;\n';
+    }
+    out += '  }\n\n';
+    out += '  ' + s4 + '\n';
+    out += '}';
+    return out;
+  }
+
+  function renderQuestion(){
+    const q = questions[current];
+    answeredCorrectly = false;
+    updateDots();
+    progressLabel.textContent = 'question ' + (current + 1) + ' of ' + questions.length;
+    codeBuild.innerHTML = buildExplicit();
+
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.innerHTML = `
+      <div class="q-tag">${q.tag}</div>
+      <p class="q-text">${q.text}</p>
+      <div class="options" id="opts"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="next-row"><button class="next-btn" id="nextBtn" type="button">Continue →</button></div>
+    `;
+    quizArea.innerHTML = '';
+    quizArea.appendChild(card);
+
+    const optsEl = card.querySelector('#opts');
+    const feedbackEl = card.querySelector('#feedback');
+    const nextBtn = card.querySelector('#nextBtn');
+    let locked = false;
+
+    q.options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.textContent = opt.text;
+      btn.addEventListener('click', () => {
+        if (locked) return;
+        if (opt.correct){
+          locked = true;
+          btn.classList.add('correct');
+          [...optsEl.children].forEach(b => { if (b !== btn) b.classList.add('dim'); b.disabled = true; });
+          answeredCorrectly = true;
+          codeBuild.innerHTML = buildExplicit();
+          feedbackEl.className = 'feedback show good';
+          feedbackEl.innerHTML = "That's the one. Locked in.";
+          nextBtn.classList.add('show');
+        } else {
+          btn.classList.add('wrong');
+          btn.disabled = true;
+          feedbackEl.className = 'feedback show bad';
+          feedbackEl.innerHTML = opt.why || "Not quite — try one of the others.";
+        }
+      });
+      optsEl.appendChild(btn);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      current++;
+      if (current >= questions.length){
+        renderFinale();
+      } else {
+        renderQuestion();
+      }
+    });
+  }
+
+  function renderFinale(){
+    updateDots();
+    progressLabel.textContent = 'question ' + questions.length + ' of ' + questions.length;
+    codeBuild.innerHTML = buildExplicit();
+
+    const fin = document.createElement('div');
+    fin.className = 'finale';
+    fin.innerHTML = `
+      <h2>That's the whole method</h2>
+      <p>Every blank above is exactly what <code>getXCoordinates()</code> does: size the array, loop by index, grab one workout, copy one field, hand the array back.</p>
+      <p><code>getYCoordinates()</code> is the same five moves with <code>y</code> instead of <code>x</code> and <code>getVolume()</code> instead of <code>workoutNumber</code>. Try writing it from memory before you look it up.</p>
+      <button class="restart" id="restartBtn" type="button">start over</button>
+    `;
+    quizArea.innerHTML = '';
+    quizArea.appendChild(fin);
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      current = 0;
+      answeredCorrectly = false;
+      renderQuestion();
+    });
+  }
+
+  buildDots();
+  renderQuestion();
+
+  const themeToggle = document.getElementById('themeToggle');
+  let theme = null;
+  themeToggle.addEventListener('click', () => {
+    theme = (theme === 'light') ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'light' ? 'switch to dark' : 'switch to light';
+  });
+</script>
+</body>
+</html>
