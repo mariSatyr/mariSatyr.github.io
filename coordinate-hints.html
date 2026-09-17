@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reading the Coordinate Methods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10131a;
+    --bg-grid: #171b24;
+    --panel: #181d27;
+    --panel-2: #1e2430;
+    --line: #2a3040;
+    --ink: #e8ebf2;
+    --ink-dim: #8b93a8;
+    --ink-faint: #565f74;
+    --amber: #f5b25c;
+    --cyan: #6fd0c8;
+    --pink: #e28ba8;
+    --lav: #9b93e0;
+    --green: #7fc98f;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    --font-serif: 'Source Serif 4', Georgia, serif;
+  }
+  :root:not([data-theme="light"]){ }
+  :root[data-theme="light"]{
+    --bg: #f3f1ea;
+    --bg-grid: #ece9e0;
+    --panel: #ffffff;
+    --panel-2: #f8f6f0;
+    --line: #ddd8c8;
+    --ink: #23262d;
+    --ink-dim: #62687a;
+    --ink-faint: #9a9fae;
+    --amber: #b5711a;
+    --cyan: #1c7f76;
+    --pink: #a13c63;
+    --lav: #5a4fc0;
+    --green: #2f7a45;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg: #f3f1ea;
+      --bg-grid: #ece9e0;
+      --panel: #ffffff;
+      --panel-2: #f8f6f0;
+      --line: #ddd8c8;
+      --ink: #23262d;
+      --ink-dim: #62687a;
+      --ink-faint: #9a9fae;
+      --amber: #b5711a;
+      --cyan: #1c7f76;
+      --pink: #a13c63;
+      --lav: #5a4fc0;
+      --green: #2f7a45;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; }
+  body{
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/100% 34px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/34px 100%,
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 40px 20px 90px;
+  }
+
+  header{
+    display:flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 34px;
+    flex-wrap: wrap;
+  }
+  .kicker{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    color: var(--cyan);
+    margin: 0 0 10px;
+  }
+  h1{
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    margin: 0 0 12px;
+    max-width: 640px;
+  }
+  .sub{
+    color: var(--ink-dim);
+    font-size: 16px;
+    line-height: 1.55;
+    max-width: 560px;
+    margin: 0;
+  }
+  .theme-toggle{
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 8px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .theme-toggle:hover{ color: var(--ink); border-color: var(--ink-faint); }
+
+  /* ---- code panel ---- */
+  .code-toggle-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 14px;
+  }
+  .code-toggle{
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    padding: 9px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .code-toggle:hover{ border-color: var(--amber); }
+  .code-toggle .chev{ transition: transform .2s ease; display:inline-block; }
+  .code-toggle.open .chev{ transform: rotate(90deg); }
+
+  .code-panel{
+    background: #14181f;
+    border: 1px solid #262c3a;
+    border-radius: 12px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height .35s ease, opacity .35s ease, margin .35s ease;
+    margin-bottom: 0;
+  }
+  :root[data-theme="light"] .code-panel{ background: #1c2029; border-color: #2c3140; }
+  .code-panel.open{
+    max-height: 900px;
+    opacity: 1;
+    margin-bottom: 30px;
+  }
+  .code-panel-inner{ padding: 4px 0 8px; }
+  .code-block{ padding: 18px 22px 22px; }
+  .code-block + .code-block{ border-top: 1px solid #232838; }
+  .code-label{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: #6f7891;
+    letter-spacing: .04em;
+    margin-bottom: 10px;
+  }
+  pre{
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #cdd3e0;
+    overflow-x: auto;
+  }
+  .kw{ color: #d99bd0; }
+  .type{ color: #8fc9e8; }
+  .fn{ color: #f0c674; }
+  .num{ color: #d59a6f; }
+  .fld{ color: #eab5c9; }
+  .cmt{ color: #6f7891; }
+
+  /* ---- hint ladder ---- */
+  .progress{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    margin: 6px 0 28px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .dots{ display:flex; gap:6px; }
+  .dot{
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line);
+    transition: background .25s ease, transform .25s ease;
+  }
+  .dot.done{ background: var(--amber); }
+  .dot.current{ background: var(--cyan); transform: scale(1.3); }
+
+  .ladder{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .hint{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: 10px;
+    padding: 20px 22px;
+    animation: rise .4s ease both;
+  }
+  .hint:nth-of-type(4n+2){ border-left-color: var(--cyan); }
+  .hint:nth-of-type(4n+3){ border-left-color: var(--pink); }
+  .hint:nth-of-type(4n+4){ border-left-color: var(--lav); }
+
+  @keyframes rise{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hint{ animation: none; }
+  }
+
+  .hint-num{
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    letter-spacing: .05em;
+    margin-bottom: 8px;
+  }
+  .hint-title{
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0 0 8px;
+    font-family: var(--font-serif);
+  }
+  .hint p{
+    margin: 0 0 8px;
+    color: var(--ink-dim);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .hint p:last-child{ margin-bottom: 0; }
+  .hint code{
+    font-family: var(--font-mono);
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--ink);
+    font-size: 13.5px;
+  }
+
+  .reveal-row{
+    margin-top: 22px;
+    display:flex;
+    align-items:center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .reveal-btn{
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--amber);
+    color: #201405;
+    border: none;
+    padding: 13px 22px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: transform .12s ease, filter .12s ease;
+  }
+  .reveal-btn:hover{ filter: brightness(1.08); }
+  .reveal-btn:active{ transform: translateY(1px); }
+  .reveal-btn:disabled{
+    display:none;
+  }
+  .hint-count{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  .finale{
+    margin-top: 8px;
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 26px 24px;
+    animation: rise .45s ease both;
+  }
+  .finale h2{
+    font-family: var(--font-serif);
+    font-size: 20px;
+    margin: 0 0 10px;
+    color: var(--green);
+  }
+  .finale p{
+    color: var(--ink-dim);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 10px;
+  }
+  .finale ul{
+    margin: 10px 0 0;
+    padding-left: 20px;
+    color: var(--ink-dim);
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+  .finale li code{
+    font-family: var(--font-mono);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 5px;
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .restart{
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    background: none;
+    border: 1px solid var(--line);
+    padding: 8px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .restart:hover{ color: var(--ink); border-color: var(--ink-faint); }
+
+  footer{
+    margin-top: 40px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="kicker">// workouts.size() &nbsp;·&nbsp; parallel arrays</p>
+      <h1>What are these two methods actually doing?</h1>
+      <p class="sub">Click through one hint at a time. Try to answer the question in your head before revealing the next one — that's the part that actually sticks.</p>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button">switch to light</button>
+  </header>
+
+  <div class="code-toggle-row">
+    <button class="code-toggle" id="codeToggle" type="button">
+      <span class="chev">▸</span> show the code these hints are about
+    </button>
+  </div>
+
+  <div class="code-panel" id="codePanel">
+    <div class="code-panel-inner">
+      <div class="code-block">
+        <div class="code-label">getXCoordinates()</div>
+        <pre><span class="kw">static</span> <span class="type">double</span>[] <span class="fn">getXCoordinates</span>() {
+    <span class="type">double</span>[] x = <span class="kw">new</span> <span class="type">double</span>[workouts.size()];
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; workouts.size(); i++) {
+        x[i] = workouts.get(i).<span class="fld">workoutNumber</span>;
+    }
+
+    <span class="kw">return</span> x;
+}</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">getYCoordinates()</div>
+        <pre><span class="kw">static</span> <span class="type">double</span>[] <span class="fn">getYCoordinates</span>() {
+    <span class="type">double</span>[] y = <span class="kw">new</span> <span class="type">double</span>[workouts.size()];
+
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; workouts.size(); i++) {
+        y[i] = workouts.get(i).<span class="fn">getVolume</span>();
+    }
+
+    <span class="kw">return</span> y;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress">
+    <span id="progressLabel">hint 0 of 7</span>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="ladder" id="ladder"></div>
+
+  <div class="reveal-row">
+    <button class="reveal-btn" id="revealBtn" type="button">Show hint 1</button>
+    <span class="hint-count" id="doneLabel"></span>
+  </div>
+
+  <footer>made for one confused Java student, at 11pm, probably</footer>
+</div>
+
+<script>
+  const hints = [
+    {
+      title: "Start with the goal, not the syntax",
+      body: [
+        "Both methods return a <code>double[]</code>, and both loop over the exact same <code>workouts</code> list. Whatever they're doing, they're doing it once per workout.",
+        "Ask yourself: if you have 20 workouts, what should the length of the array coming back be?"
+      ]
+    },
+    {
+      title: "Why make the array before the loop?",
+      body: [
+        "<code>double[] x = new double[workouts.size()];</code> happens on its own line, before any looping starts.",
+        "In Java, an array's size is locked in the moment it's created — you can't grow it later. So the method has to know how many workouts there are <em>first</em>, then build a box exactly that size, and only then start filling it in."
+      ]
+    },
+    {
+      title: "Reading the for-loop",
+      body: [
+        "<code>for (int i = 0; i &lt; workouts.size(); i++)</code> walks a counter <code>i</code> from <code>0</code> up to — but not including — the number of workouts.",
+        "That matters because both the list and the new array are indexed starting at <code>0</code>. If there are 20 workouts, valid positions are <code>0</code> through <code>19</code>, which is exactly what this loop visits."
+      ]
+    },
+    {
+      title: "What's inside the loop actually grabbing?",
+      body: [
+        "<code>workouts.get(i)</code> reaches into the list and pulls out one workout — the one sitting at position <code>i</code>.",
+        "From that single workout, <code>.workoutNumber</code> or <code>.getVolume()</code> pulls out one number. Everything else about that workout gets ignored — only one field is being copied out."
+      ]
+    },
+    {
+      title: "Field vs. method — same idea, different door",
+      body: [
+        "<code>workoutNumber</code> has no parentheses — it's read directly as a field on the Workout object.",
+        "<code>getVolume()</code> has parentheses — it's a method being called, which happens to hand back a value instead of a field being read directly. Both end up as one number; they just get there differently depending on how the Workout class was written."
+      ]
+    },
+    {
+      title: "Why the same i in both places",
+      body: [
+        "<code>x[i] = workouts.get(i).workoutNumber;</code> — the position you write to in the new array is the <em>same number</em> as the position you read from in the list.",
+        "That's what keeps everything lined up: workout #0's number lands at <code>x[0]</code>, and workout #0's volume lands at <code>y[0]</code>. Point <code>i</code> on a graph is <code>(x[i], y[i])</code> — same workout, described two ways."
+      ]
+    },
+    {
+      title: "The return is the whole point",
+      body: [
+        "By the time the loop finishes, every slot in the array has been visited exactly once and filled in — nothing left as a placeholder.",
+        "<code>return x;</code> hands back the completed array to whatever called this method — probably something that's about to plot it."
+      ]
+    }
+  ];
+
+  const ladder = document.getElementById('ladder');
+  const revealBtn = document.getElementById('revealBtn');
+  const dotsEl = document.getElementById('dots');
+  const progressLabel = document.getElementById('progressLabel');
+  const doneLabel = document.getElementById('doneLabel');
+
+  let shown = 0;
+
+  function buildDots(){
+    dotsEl.innerHTML = '';
+    hints.forEach((_, idx) => {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.id = 'dot-' + idx;
+      dotsEl.appendChild(d);
+    });
+  }
+
+  function updateDots(){
+    hints.forEach((_, idx) => {
+      const d = document.getElementById('dot-' + idx);
+      d.classList.remove('done', 'current');
+      if (idx < shown - 1) d.classList.add('done');
+      else if (idx === shown - 1) d.classList.add('current');
+    });
+  }
+
+  function renderNextHint(){
+    const idx = shown;
+    const h = hints[idx];
+    const card = document.createElement('div');
+    card.className = 'hint';
+    card.innerHTML =
+      '<div class="hint-num">HINT ' + (idx + 1) + ' / ' + hints.length + '</div>' +
+      '<h3 class="hint-title">' + h.title + '</h3>' +
+      h.body.map(p => '<p>' + p + '</p>').join('');
+    ladder.appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    shown++;
+    updateDots();
+    progressLabel.textContent = 'hint ' + shown + ' of ' + hints.length;
+
+    if (shown >= hints.length){
+      revealBtn.style.display = 'none';
+      renderFinale();
+    } else {
+      revealBtn.textContent = 'Show hint ' + (shown + 1);
+    }
+  }
+
+  function renderFinale(){
+    const fin = document.createElement('div');
+    fin.className = 'finale';
+    fin.innerHTML =
+      '<h2>Now try it without looking</h2>' +
+      '<p>Both methods follow the exact same four moves: size the array, loop by index, grab one field per workout, line up the index. Pick a different field on <code>Workout</code> — say <code>duration</code> or <code>calories</code> — and write your own method, <code>getDurations()</code>, from scratch.</p>' +
+      '<ul>' +
+        '<li>1. <code>double[] d = new double[workouts.size()];</code></li>' +
+        '<li>2. loop <code>i</code> from <code>0</code> to <code>workouts.size()</code></li>' +
+        '<li>3. read the field off <code>workouts.get(i)</code></li>' +
+        '<li>4. store it at <code>d[i]</code>, then <code>return d;</code></li>' +
+      '</ul>' +
+      '<button class="restart" id="restartBtn" type="button">start over</button>';
+    ladder.appendChild(fin);
+    fin.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    document.getElementById('restartBtn').addEventListener('click', resetAll);
+  }
+
+  function resetAll(){
+    shown = 0;
+    ladder.innerHTML = '';
+    revealBtn.style.display = 'inline-block';
+    revealBtn.textContent = 'Show hint 1';
+    progressLabel.textContent = 'hint 0 of ' + hints.length;
+    updateDots();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  revealBtn.addEventListener('click', renderNextHint);
+  buildDots();
+  updateDots();
+
+  // code panel toggle
+  const codeToggle = document.getElementById('codeToggle');
+  const codePanel = document.getElementById('codePanel');
+  codeToggle.addEventListener('click', () => {
+    const open = codePanel.classList.toggle('open');
+    codeToggle.classList.toggle('open', open);
+    codeToggle.innerHTML = '<span class="chev">▸</span> ' + (open ? 'hide the code' : 'show the code these hints are about');
+  });
+
+  // theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  let theme = null;
+  themeToggle.addEventListener('click', () => {
+    theme = (theme === 'light') ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'light' ? 'switch to dark' : 'switch to light';
+  });
+</script>
+</body>
+</html>
