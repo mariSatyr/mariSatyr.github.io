@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mineral ID Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6ECE9; --paper:#FFFFFF; --ink:#1B2A29; --muted:#5A6B69; --line:#C9D4D0;
+  --azurite:#2F52A8; --azurite-soft:#DCE4F6; --brass:#B8901C; --brass-soft:#F5ECCD;
+  --out:#9AA7A4; --ok:#1E7A55; --warn:#A5402A;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131B1A; --paper:#1C2625; --ink:#E4ECE9; --muted:#9DB0AC; --line:#324240;
+    --azurite:#86A3EC; --azurite-soft:#233151; --brass:#E0BC52; --brass-soft:#3A331C;
+    --out:#5E6E6B; --ok:#5BC99A; --warn:#EE8D74;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131B1A; --paper:#1C2625; --ink:#E4ECE9; --muted:#9DB0AC; --line:#324240;
+  --azurite:#86A3EC; --azurite-soft:#233151; --brass:#E0BC52; --brass-soft:#3A331C;
+  --out:#5E6E6B; --ok:#5BC99A; --warn:#EE8D74;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:26px}
+header.top h1{font-size:clamp(2rem,5vw,3.1rem);font-weight:800;letter-spacing:-.02em}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:56ch}
+.sample-name{display:flex;align-items:center;gap:10px;font-weight:700}
+.sample-name input{font:inherit;width:9.5em;padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+
+/* stepper */
+ol.steps{list-style:none;margin:0 0 22px;padding:0;display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+ol.steps button{all:unset;cursor:pointer;display:block;width:100%;padding:10px 8px 9px;border-top:4px solid var(--line);font-size:.85rem;color:var(--muted);line-height:1.25}
+ol.steps button b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.15rem;color:var(--ink)}
+ol.steps button.done{border-top-color:var(--ok)}
+ol.steps button.skipped{border-top-style:dashed}
+ol.steps button.current{border-top-color:var(--azurite);color:var(--ink)}
+ol.steps button:focus-visible{outline:3px solid var(--azurite);outline-offset:2px;border-radius:4px}
+@media (max-width:720px){ol.steps{grid-template-columns:repeat(4,1fr)}}
+
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:26px}
+.panel h2{font-size:1.7rem;font-weight:700;margin-bottom:6px}
+.how{margin:0 0 20px;color:var(--muted);max-width:60ch}
+.how strong{color:var(--ink)}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.opt{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:8px;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--paper);font-weight:700;line-height:1.2}
+.opt small{font-weight:400;color:var(--muted);font-size:.82rem}
+.opt:hover{border-color:var(--azurite)}
+.opt:focus-visible{outline:3px solid var(--azurite);outline-offset:2px}
+.opt.sel{border-color:var(--azurite);background:var(--azurite-soft)}
+.opt .count{font-weight:400;font-size:.8rem;color:var(--muted)}
+.swatch{height:30px;border-radius:7px;border:1px solid rgba(0,0,0,.12)}
+.opt svg{width:46px;height:40px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linejoin:round}
+
+.nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{all:unset;cursor:pointer;padding:11px 20px;border-radius:999px;font-weight:700;border:2px solid var(--ink)}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn:focus-visible{outline:3px solid var(--azurite);outline-offset:2px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+
+.density{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:520px){.density{grid-template-columns:1fr}}
+.density label{display:flex;flex-direction:column;gap:5px;font-weight:700;font-size:.92rem}
+.density input{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);width:100%}
+.density input:focus{outline:none;border-color:var(--azurite)}
+.calc{margin-top:16px;padding:14px 16px;border-radius:12px;background:var(--brass-soft);font-size:1.05rem}
+.calc b{font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem}
+
+/* tray */
+.tray{position:sticky;top:calc(env(safe-area-inset-top,0px) + 14px)}
+.tray h3{font-size:1.25rem;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.tray h3 span{font-family:"Atkinson Hyperlegible",sans-serif;font-weight:400;font-size:.9rem;color:var(--muted)}
+.meter{height:8px;border-radius:99px;background:var(--line);margin:10px 0 16px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--brass);transition:width .35s ease}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(122px,1fr));gap:7px}
+.chip{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;border:1px solid var(--line);font-size:.9rem;line-height:1.2;transition:opacity .3s}
+.chip i{flex:none;width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.18)}
+.chip.out{opacity:.35;text-decoration:line-through;text-decoration-color:var(--out)}
+.chip.out i{filter:grayscale(1)}
+.tray .hint{margin:12px 0 0;font-size:.85rem;color:var(--muted)}
+.toggle{all:unset;cursor:pointer;font-size:.88rem;color:var(--azurite);text-decoration:underline;margin-top:10px;display:inline-block}
+.why{margin:10px 0 0;padding:0;list-style:none;font-size:.85rem;color:var(--muted);max-height:220px;overflow:auto}
+.why li{padding:3px 0;border-bottom:1px dashed var(--line)}
+@media (prefers-reduced-motion:reduce){.meter i,.chip{transition:none}}
+
+/* result */
+.verdict{border-radius:14px;padding:20px;margin:6px 0 18px;background:var(--brass-soft)}
+.verdict h3{font-size:2.2rem;font-weight:800}
+.verdict p{margin:6px 0 0}
+.summary{width:100%;border-collapse:collapse;font-size:.95rem}
+.summary td{padding:7px 4px;border-bottom:1px solid var(--line)}
+.summary td:first-child{color:var(--muted);width:40%}
+.near{margin:10px 0 0;padding-left:1.1em}
+.near li{margin:4px 0}
+.bad{color:var(--warn)}
+
+section.extra{margin-top:34px}
+section.extra h2{font-size:1.5rem;margin-bottom:10px}
+.scroll{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+table.ref{border-collapse:collapse;width:100%;min-width:780px;font-size:.9rem}
+table.ref th,table.ref td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+table.ref th{font-family:"Bricolage Grotesque",sans-serif;font-size:.95rem;background:var(--bg)}
+table.ref tr.hit td{background:var(--azurite-soft)}
+details summary{cursor:pointer;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:12px}
+.empty{padding:18px;color:var(--muted)}
+.dl{display:none;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 22px;padding:14px 18px;border-radius:14px;background:var(--azurite-soft)}
+.dl.on{display:flex}
+.dl p{margin:0;flex:1 1 280px}
+.dl .btn,.dl a.btn{background:var(--azurite);border-color:var(--azurite);color:#fff}
+.dl small{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Mineral ID field guide</h1>
+      <p>Test your sample one property at a time. Each answer crosses off minerals that don't fit, until one is left.</p>
+    </div>
+    <label class="sample-name">Sample <input id="sampleName" value="Sample A" aria-label="Sample name"></label>
+  </header>
+
+  <div class="dl" id="dlBar">
+    <p><strong>Want to practice first?</strong> Download four practice minerals with pictures and recorded test data, plus an answer key.</p>
+    <button class="btn" id="dlBtn">Download practice minerals (PDF)</button>
+    <small id="dlMsg" aria-live="polite"></small>
+  </div>
+
+  <ol class="steps" id="steps"></ol>
+
+  <div class="layout">
+    <main class="panel" id="panel" aria-live="polite"></main>
+    <aside class="panel tray" id="tray"></aside>
+  </div>
+
+  <section class="extra">
+    <h2>My data table</h2>
+    <div class="scroll" id="log"></div>
+  </section>
+
+  <section class="extra">
+    <details>
+      <summary>Mineral reference chart</summary>
+      <div class="scroll" id="ref"></div>
+    </details>
+  </section>
+</div>
+
+<script>
+const MINERALS = [
+ {n:'Quartz',     c:['clear','pink','purple','gray'], l:['glassy'], s:['hexagon'], h:[7,7], st:['white'], d:2.65, a:false, sw:'#E4ECEF'},
+ {n:'Calcite',    c:['clear','yellow'], l:['glassy'], s:['rhombus'], h:[3,3], st:['white'], d:2.71, a:true, sw:'#F3EEDD'},
+ {n:'Halite',     c:['clear','pink'], l:['glassy'], s:['cube'], h:[2.5,2.5], st:['white'], d:2.17, a:false, sw:'#F4F1F1'},
+ {n:'Fluorite',   c:['purple','green','clear','yellow','blue'], l:['glassy'], s:['cube','pyramid'], h:[4,4], st:['white'], d:3.18, a:false, sw:'#9C7FC8'},
+ {n:'Gypsum',     c:['clear','gray'], l:['glassy','pearly'], s:['rectangle','irregular'], h:[2,2], st:['white'], d:2.32, a:false, sw:'#EDEAE3'},
+ {n:'Talc',       c:['clear','green','gray'], l:['pearly','dull'], s:['irregular'], h:[1,1], st:['white'], d:2.75, a:false, sw:'#D6E3D4'},
+ {n:'Muscovite (mica)', c:['clear','gray','red'], l:['pearly','glassy'], s:['hexagon'], h:[2.5,3], st:['white'], d:2.83, a:false, sw:'#D9D2C1'},
+ {n:'Orthoclase (feldspar)', c:['pink','clear'], l:['glassy'], s:['rectangle'], h:[6,6], st:['white'], d:2.56, a:false, sw:'#E7B8A6'},
+ {n:'Topaz',      c:['yellow','clear','blue'], l:['glassy'], s:['rectangle'], h:[8,8], st:['white'], d:3.53, a:false, sw:'#E9C36A'},
+ {n:'Corundum',   c:['red','blue','gray'], l:['glassy'], s:['hexagon'], h:[9,9], st:['white'], d:4.02, a:false, sw:'#B6424D'},
+ {n:'Diamond',    c:['clear','yellow'], l:['glassy'], s:['pyramid'], h:[10,10], st:['white'], d:3.52, a:false, sw:'#F2F7FA'},
+ {n:'Olivine',    c:['green'], l:['glassy'], s:['irregular'], h:[6.5,7], st:['white'], d:3.32, a:false, sw:'#8FAE3E'},
+ {n:'Pyrite',     c:['yellow'], l:['metallic'], s:['cube'], h:[6,6.5], st:['black'], d:5.02, a:false, sw:'#C9AE4C', note:'streak is greenish-black'},
+ {n:'Galena',     c:['gray'], l:['metallic'], s:['cube'], h:[2.5,2.5], st:['gray','black'], d:7.5, a:false, sw:'#7E858C'},
+ {n:'Magnetite',  c:['black'], l:['metallic'], s:['pyramid'], h:[6,6], st:['black'], d:5.18, a:false, sw:'#2E2F31', note:'magnetic'},
+ {n:'Hematite',   c:['red','gray','black'], l:['metallic','dull'], s:['irregular'], h:[5.5,6.5], st:['red'], d:5.26, a:false, sw:'#7A3B30'},
+ {n:'Graphite',   c:['black','gray'], l:['metallic','dull'], s:['irregular','hexagon'], h:[1.5,1.5], st:['black','gray'], d:2.2, a:false, sw:'#45484B'},
+ {n:'Copper',     c:['copper'], l:['metallic'], s:['irregular'], h:[2.5,3], st:['copper'], d:8.94, a:false, sw:'#B8683B'},
+ {n:'Gold',       c:['yellow'], l:['metallic'], s:['irregular'], h:[2.5,3], st:['yellow'], d:19.3, a:false, sw:'#D8AE2E'},
+ {n:'Silver',     c:['gray'], l:['metallic'], s:['irregular'], h:[2.5,3], st:['gray'], d:10.5, a:false, sw:'#C4C8CC'},
+ {n:'Sulfur',     c:['yellow'], l:['dull','glassy'], s:['irregular'], h:[2,2], st:['yellow'], d:2.07, a:false, sw:'#E8D63A'},
+ {n:'Azurite',    c:['blue'], l:['glassy','dull'], s:['irregular'], h:[3.5,4], st:['blue'], d:3.77, a:true, sw:'#2C4FA0'},
+ {n:'Malachite',  c:['green'], l:['dull'], s:['irregular'], h:[3.5,4], st:['green'], d:4.0, a:true, sw:'#2E8B5E'}
+];
+
+const SHAPE_SVG = {
+ hexagon:'<svg viewBox="0 0 50 40"><path d="M6 14l8-8h24l6 8-6 8H14z M14 22v12h24V22 M6 14v8l8 12 M44 14v8l-6 12"/></svg>',
+ cube:'<svg viewBox="0 0 50 40"><path d="M14 10l8-6h18l-8 6z M14 10h18v24H14z M32 10l8-6v24l-8 6"/></svg>',
+ rhombus:'<svg viewBox="0 0 50 40"><path d="M4 20l14-10h28L32 20z M4 20v6l14 10h14V20 M32 26v10l14-10V10"/></svg>',
+ pyramid:'<svg viewBox="0 0 50 40"><path d="M25 2L10 20l15 18 15-18z M10 20h30 M25 2l-5 18 5 18"/></svg>',
+ rectangle:'<svg viewBox="0 0 50 40"><path d="M16 6l6-4h12l-6 4z M16 6h12v32H16z M28 6l6-4v32l-6 4"/></svg>',
+ irregular:'<svg viewBox="0 0 50 40"><path d="M6 30l4-14 10-8 8 6 10-4 6 12-4 10-12 4-8-6z M20 8l2 12 6-6 M22 20l-12-4 M22 20l4 14"/></svg>'
+};
+
+const HARD_BINS = [
+ {v:'none',  lo:0,   hi:2.5, t:'Scratches nothing', sm:'softer than 2.5'},
+ {v:'nail',  lo:2.5, hi:3.5, t:'Fingernail only', sm:'about 2.5 – 3.5'},
+ {v:'penny', lo:3.5, hi:5.5, t:'Fingernail + penny', sm:'about 3.5 – 5.5'},
+ {v:'glass', lo:5.5, hi:6.5, t:'…+ glass too', sm:'about 5.5 – 6.5'},
+ {v:'steel', lo:6.5, hi:11,  t:'…+ steel plate too', sm:'6.5 or harder'}
+];
+
+const STEPS = [
+ {id:'luster', title:'Luster', how:'Choose <strong>Appearance</strong>. Look at how light bounces off the surface and compare it with the luster strip under the sample.',
+  opts:[
+   {v:'metallic',t:'Metallic',sm:'shiny like metal',sw:'linear-gradient(90deg,#555,#eee,#777)'},
+   {v:'glassy',t:'Glassy',sm:'shiny like glass',sw:'linear-gradient(90deg,#bfe9dc,#f4fffb,#9fd9c6)'},
+   {v:'pearly',t:'Pearly',sm:'soft sheen, like a pearl',sw:'linear-gradient(90deg,#f1d8c6,#fff6ef,#e8c9b3)'},
+   {v:'dull',t:'Dull',sm:'no shine, earthy',sw:'#4a4a4a'}],
+  test:(m,v)=>m.l.includes(v), fmt:v=>v},
+ {id:'color', title:'Color', how:'Still in <strong>Appearance</strong>, pick the main color. Careful: color is the least reliable clue, because many minerals come in several colors.',
+  opts:[
+   {v:'clear',t:'Clear / white',sw:'#F2F4F4'},{v:'gray',t:'Gray / silver',sw:'#A2A8AD'},
+   {v:'black',t:'Black',sw:'#2A2B2D'},{v:'yellow',t:'Yellow / gold',sw:'#D9B63A'},
+   {v:'red',t:'Red / brown',sw:'#8A4033'},{v:'pink',t:'Pink',sw:'#E7B3B0'},
+   {v:'green',t:'Green',sw:'#4D9A62'},{v:'blue',t:'Blue',sw:'#3558A8'},
+   {v:'purple',t:'Purple',sw:'#8763B8'},{v:'copper',t:'Copper / orange',sw:'#B8683B'}],
+  test:(m,v)=>m.c.includes(v), fmt:v=>STEPS[1].opts.find(o=>o.v===v).t},
+ {id:'shape', title:'Crystal shape', how:'Match the sample to the closest shape in the <strong>Common crystal shapes</strong> chart.',
+  opts:['hexagon','cube','rhombus','pyramid','rectangle','irregular'].map(s=>({v:s,t:s[0].toUpperCase()+s.slice(1),icon:SHAPE_SVG[s]})),
+  test:(m,v)=>m.s.includes(v), fmt:v=>v},
+ {id:'hardness', title:'Hardness', how:'Choose <strong>Hardness</strong> and rub the sample on each item. A scratch means the mineral is at least as hard as that item. Pick the <strong>hardest item it scratches</strong>.',
+  opts:HARD_BINS.map(b=>({v:b.v,t:b.t,sm:b.sm})),
+  test:(m,v)=>{const b=HARD_BINS.find(x=>x.v===v);return m.h[0]<b.hi && m.h[1]>=b.lo;},
+  fmt:v=>{const b=HARD_BINS.find(x=>x.v===v);return b.t+' ('+b.sm+')';}},
+ {id:'streak', title:'Streak', how:'Choose <strong>Streak</strong> and rub the sample on the plate. Record the color of the powder, not the sample. Very hard minerals leave no streak, so pick white / colorless.',
+  opts:[
+   {v:'white',t:'White / none',sw:'#F4F4F2'},{v:'gray',t:'Gray',sw:'#8E9398'},
+   {v:'black',t:'Black / dark green',sw:'#2A2D2B'},{v:'red',t:'Red-brown',sw:'#8E3F2E'},
+   {v:'yellow',t:'Yellow',sw:'#E3C94A'},{v:'green',t:'Light green',sw:'#8FCBA6'},
+   {v:'blue',t:'Light blue',sw:'#8DAAE0'},{v:'copper',t:'Copper-red',sw:'#B8683B'}],
+  test:(m,v)=>m.st.includes(v), fmt:v=>STEPS[4].opts.find(o=>o.v===v).t},
+ {id:'density', title:'Density', how:'Choose <strong>Density</strong>. Drag the sample to the scale for its mass, then into the cylinder. The volume is how much the water level rises.',
+  test:(m,v)=>Math.abs(m.d-v)<=Math.max(0.3,m.d*0.08), fmt:v=>v.toFixed(2)+' g/mL'},
+ {id:'acid', title:'Acid test', how:'Choose <strong>Acid reaction</strong> and drag the dropper onto the sample. Bubbling means the mineral contains carbonate.',
+  opts:[{v:'yes',t:'It bubbles',sm:'fizzes in acid'},{v:'no',t:'No reaction',sm:'nothing happens'}],
+  test:(m,v)=>m.a===(v==='yes'), fmt:v=>v==='yes'?'Bubbles':'No reaction'}
+];
+
+let obs = {}; let skipped = {}; let cur = 0; let showWhy = false;
+let dens = {mass:'',v1:'',v2:''};
+const $ = id => document.getElementById(id);
+
+function failReasons(m){
+  const r=[];
+  STEPS.forEach(s=>{ if(obs[s.id]!==undefined && !s.test(m,obs[s.id])) r.push(s.title); });
+  return r;
+}
+function remaining(){ return MINERALS.filter(m=>failReasons(m).length===0); }
+function countIf(stepId,val){
+  const s=STEPS.find(x=>x.id===stepId);
+  return remaining().filter(m=>s.test(m,val)).length;
+}
+
+function renderSteps(){
+  const labels=[...STEPS.map(s=>s.title),'Result'];
+  $('steps').innerHTML=labels.map((t,i)=>{
+    const s=STEPS[i]; let cls='';
+    if(i===cur) cls='current';
+    else if(s && obs[s.id]!==undefined) cls='done';
+    else if(s && skipped[s.id]) cls='skipped';
+    return `<li><button class="${cls}" data-go="${i}" ${i===cur?'aria-current="step"':''}><b>${i+1}</b>${t}</button></li>`;
+  }).join('');
+}
+
+function renderPanel(){
+  const p=$('panel');
+  if(cur===STEPS.length){ renderResult(); return; }
+  const s=STEPS[cur];
+  let body='';
+  if(s.id==='density'){
+    const d=calcDensity();
+    body=`<div class="density">
+      <label>Mass (g)<input inputmode="decimal" id="dMass" value="${dens.mass}" placeholder="e.g. 37.1"></label>
+      <label>Water before (mL)<input inputmode="decimal" id="dV1" value="${dens.v1}" placeholder="e.g. 50"></label>
+      <label>Water after (mL)<input inputmode="decimal" id="dV2" value="${dens.v2}" placeholder="e.g. 64"></label>
+    </div>
+    <div class="calc" id="calcOut">${densityText(d)}</div>`;
+  } else {
+    body=`<div class="opts" role="radiogroup" aria-label="${s.title}">`+s.opts.map(o=>{
+      const vis=o.icon?o.icon:(o.sw?`<div class="swatch" style="background:${o.sw}"></div>`:'');
+      const n=countIf(s.id,o.v);
+      return `<button class="opt ${obs[s.id]===o.v?'sel':''}" role="radio" aria-checked="${obs[s.id]===o.v}" data-pick="${o.v}">
+        ${vis}<span>${o.t}${o.sm?`<br><small>${o.sm}</small>`:''}</span>
+        <span class="count">${n} match${n===1?'':'es'}</span></button>`;
+    }).join('')+`</div>`;
+  }
+  p.innerHTML=`<h2>${s.title}</h2><p class="how">${s.how}</p>${body}
+    <div class="nav">
+      <button class="btn ghost" data-nav="back" ${cur===0?'disabled':''}>Back</button>
+      <button class="btn ghost" data-nav="skip">Skip this test</button>
+      <button class="btn primary" data-nav="next" ${obs[s.id]===undefined?'disabled':''}>Next test</button>
+    </div>`;
+  if(s.id==='density'){
+    ['dMass','dV1','dV2'].forEach((id,i)=>{
+      $(id).addEventListener('input',e=>{
+        dens[['mass','v1','v2'][i]]=e.target.value;
+        const d=calcDensity();
+        if(d) obs.density=d; else delete obs.density;
+        $('calcOut').innerHTML=densityText(d);
+        document.querySelector('[data-nav="next"]').disabled=!d;
+        document.querySelector('[data-nav="next"]').toggleAttribute('disabled',!d);
+        renderTray(); renderSteps(); renderRef();
+      });
+    });
+  }
+}
+
+function calcDensity(){
+  const m=parseFloat(dens.mass), a=parseFloat(dens.v1), b=parseFloat(dens.v2);
+  if(!(m>0) || isNaN(a) || isNaN(b) || b<=a) return null;
+  return m/(b-a);
+}
+function densityText(d){
+  if(!d) return 'Enter all three numbers. The water level after must be higher than before.';
+  const v=(parseFloat(dens.v2)-parseFloat(dens.v1));
+  return `Volume = ${dens.v2} − ${dens.v1} = ${+v.toFixed(2)} mL<br>Density = ${dens.mass} g ÷ ${+v.toFixed(2)} mL = <b>${d.toFixed(2)} g/mL</b>`;
+}
+
+function renderTray(){
+  const rem=remaining(); const total=MINERALS.length;
+  const out=MINERALS.filter(m=>failReasons(m).length);
+  $('tray').innerHTML=`<h3>Still possible <span>${rem.length} of ${total}</span></h3>
+    <div class="meter"><i style="width:${rem.length/total*100}%"></i></div>
+    <div class="chips">${MINERALS.map(m=>{
+      const r=failReasons(m);
+      return `<div class="chip ${r.length?'out':''}" title="${r.length?'Ruled out by: '+r.join(', '):'Still possible'}"><i style="background:${m.sw}"></i>${m.n}</div>`;
+    }).join('')}</div>
+    ${out.length?`<button class="toggle" data-why>${showWhy?'Hide':'Show'} why minerals were crossed off</button>`:''}
+    ${showWhy&&out.length?`<ul class="why">${out.map(m=>`<li><b>${m.n}</b>: ${failReasons(m).join(', ')} didn't match</li>`).join('')}</ul>`:''}
+    ${rem.length===0?`<p class="hint bad">No mineral fits every answer. Go back and re-check a step, especially color or luster.</p>`:''}`;
+}
+
+function renderResult(){
+  const rem=remaining();
+  const answered=STEPS.filter(s=>obs[s.id]!==undefined);
+  let verdict;
+  if(answered.length===0){
+    verdict=`<div class="verdict"><h3>No tests yet</h3><p>Start with step 1 to begin narrowing it down.</p></div>`;
+  } else if(rem.length===1){
+    const m=rem[0];
+    verdict=`<div class="verdict"><p>Your sample is most likely</p><h3>${m.n}</h3>
+      <p>Type <strong>${m.n.split(' ')[0]}</strong> into the “Type mineral name” box and click Submit to check.${m.note?' Note: '+m.note+'.':''}</p></div>`;
+  } else if(rem.length>1){
+    const next=STEPS.filter(s=>obs[s.id]===undefined).map(s=>s.title);
+    verdict=`<div class="verdict"><h3>${rem.length} minerals still fit</h3>
+      <p>${rem.map(m=>m.n).join(', ')}.</p>
+      <p>${next.length?'Run a test you skipped to tell them apart: '+next.join(', ')+'.':'Double-check your density and hardness, since those separate look-alikes best.'}</p></div>`;
+  } else {
+    const ranked=MINERALS.map(m=>({m,r:failReasons(m)})).sort((a,b)=>a.r.length-b.r.length).slice(0,3);
+    verdict=`<div class="verdict"><h3>No exact match</h3><p>At least one observation is probably off. These come closest:</p>
+      <ul class="near">${ranked.map(x=>`<li><b>${x.m.n}</b>: disagrees on ${x.r.join(', ')}</li>`).join('')}</ul>
+      <p>Go back to those steps and test again.</p></div>`;
+  }
+  $('panel').innerHTML=`<h2>Result</h2><p class="how">Here's what you recorded for ${esc($('sampleName').value)}.</p>${verdict}
+    <table class="summary">${STEPS.map(s=>`<tr><td>${s.title}</td><td>${obs[s.id]!==undefined?s.fmt(obs[s.id]):'<em>not tested</em>'}</td></tr>`).join('')}</table>
+    <div class="nav">
+      <button class="btn ghost" data-nav="back">Back</button>
+      <button class="btn primary" data-nav="save" ${answered.length?'':'disabled'}>Save to my data table</button>
+      <button class="btn" data-nav="new">Start next sample</button>
+    </div>`;
+}
+
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* data log */
+let log=[];
+try{ log=JSON.parse(localStorage.getItem('mineral-log')||'[]'); if(!Array.isArray(log)) log=[]; }catch(e){ log=[]; }
+function saveLog(){ try{ localStorage.setItem('mineral-log',JSON.stringify(log)); }catch(e){} }
+function renderLog(){
+  if(!log.length){ $('log').innerHTML='<p class="empty">Finish a sample and click “Save to my data table” to build a record like the one on your worksheet.</p>'; return; }
+  $('log').innerHTML=`<table class="ref"><thead><tr><th>Sample</th>${STEPS.map(s=>`<th>${s.title}</th>`).join('')}<th>Mineral</th><th></th></tr></thead><tbody>
+    ${log.map((r,i)=>`<tr><td><b>${esc(r.name)}</b></td>${STEPS.map(s=>`<td>${r.obs[s.id]!==undefined?s.fmt(r.obs[s.id]):'–'}</td>`).join('')}<td><b>${esc(r.result)}</b></td><td><button class="toggle" data-del="${i}">Remove</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+function renderRef(){
+  const rem=new Set(remaining().map(m=>m.n));
+  const any=STEPS.some(s=>obs[s.id]!==undefined);
+  const cl={clear:'clear/white',gray:'gray/silver',black:'black',yellow:'yellow/gold',red:'red/brown',pink:'pink',green:'green',blue:'blue',purple:'purple',copper:'copper'};
+  const sl={white:'white/none',gray:'gray',black:'black',red:'red-brown',yellow:'yellow',green:'light green',blue:'light blue',copper:'copper-red'};
+  $('ref').innerHTML=`<table class="ref"><thead><tr><th>Mineral</th><th>Luster</th><th>Color</th><th>Shape</th><th>Hardness</th><th>Streak</th><th>Density (g/mL)</th><th>Acid</th></tr></thead><tbody>
+    ${MINERALS.map(m=>`<tr class="${any&&rem.has(m.n)?'hit':''}"><td><b>${m.n}</b></td><td>${m.l.join(', ')}</td><td>${m.c.map(c=>cl[c]).join(', ')}</td><td>${m.s.join(', ')}</td>
+      <td>${m.h[0]===m.h[1]?m.h[0]:m.h[0]+'–'+m.h[1]}</td><td>${m.st.map(s=>sl[s]).join(', ')}${m.note&&m.note.startsWith('streak')?' (greenish)':''}</td><td>${m.d}</td><td>${m.a?'bubbles':'none'}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+function renderAll(){ renderSteps(); renderPanel(); renderTray(); renderRef(); }
+
+document.addEventListener('click',e=>{
+  const go=e.target.closest('[data-go]'); if(go){ cur=+go.dataset.go; renderAll(); return; }
+  const pick=e.target.closest('[data-pick]');
+  if(pick){ const s=STEPS[cur]; obs[s.id]=pick.dataset.pick; delete skipped[s.id]; renderAll(); document.querySelector('[data-nav="next"]').focus(); return; }
+  const nav=e.target.closest('[data-nav]');
+  if(nav){
+    const a=nav.dataset.nav;
+    if(a==='back') cur=Math.max(0,cur-1);
+    if(a==='next') cur=Math.min(STEPS.length,cur+1);
+    if(a==='skip'){ const s=STEPS[cur]; delete obs[s.id]; skipped[s.id]=true; if(s.id==='density') dens={mass:'',v1:'',v2:''}; cur++; }
+    if(a==='save'){
+      const rem=remaining();
+      log.push({name:$('sampleName').value||'Sample',obs:{...obs},result:rem.length===1?rem[0].n:(rem.length?rem.length+' possible':'no match')});
+      saveLog(); renderLog(); nav.textContent='Saved'; nav.disabled=true; return;
+    }
+    if(a==='new'){
+      obs={}; skipped={}; dens={mass:'',v1:'',v2:''}; cur=0; showWhy=false;
+      const n=$('sampleName').value.match(/^(.*?)([A-Z])$/);
+      if(n && n[2]!=='Z') $('sampleName').value=n[1]+String.fromCharCode(n[2].charCodeAt(0)+1);
+    }
+    renderAll(); window.scrollTo({top:0,behavior:'smooth'}); return;
+  }
+  if(e.target.closest('[data-why]')){ showWhy=!showWhy; renderTray(); return; }
+  const del=e.target.closest('[data-del]'); if(del){ log.splice(+del.dataset.del,1); saveLog(); renderLog(); }
+});
+
+renderAll(); renderLog();
+
+const PRACTICE_PDF="JVBERi0xLjQKJZOMi54gUmVwb3J0TGFiIEdlbmVyYXRlZCBQREYgZG9jdW1lbnQgKG9wZW5zb3VyY2UpCjEgMCBvYmoKPDwKL0YxIDIgMCBSIC9GMiAzIDAgUgo+PgplbmRvYmoKMiAwIG9iago8PAovQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyAvTmFtZSAvRjEgL1N1YnR5cGUgL1R5cGUxIC9UeXBlIC9Gb250Cj4+CmVuZG9iagozIDAgb2JqCjw8Ci9CYXNlRm9udCAvSGVsdmV0aWNhLUJvbGQgL0VuY29kaW5nIC9XaW5BbnNpRW5jb2RpbmcgL05hbWUgL0YyIC9TdWJ0eXBlIC9UeXBlMSAvVHlwZSAvRm9udAo+PgplbmRvYmoKNCAwIG9iago8PAovQ29udGVudHMgMTAgMCBSIC9NZWRpYUJveCBbIDAgMCA2MTIgNzkyIF0gL1BhcmVudCA5IDAgUiAvUmVzb3VyY2VzIDw8Ci9Gb250IDEgMCBSIC9Qcm9jU2V0IFsgL1BERiAvVGV4dCAvSW1hZ2VCIC9JbWFnZUMgL0ltYWdlSSBdCj4+IC9Sb3RhdGUgMCAvVHJhbnMgPDwKCj4+IAogIC9UeXBlIC9QYWdlCj4+CmVuZG9iago1IDAgb2JqCjw8Ci9Db250ZW50cyAxMSAwIFIgL01lZGlhQm94IFsgMCAwIDYxMiA3OTIgXSAvUGFyZW50IDkgMCBSIC9SZXNvdXJjZXMgPDwKL0V4dEdTdGF0ZSA8PAovZ1JMczAgPDwKL2NhIC41NQo+PiAvZ1JMczEgPDwKL2NhIDEKPj4KPj4gL0ZvbnQgMSAwIFIgL1Byb2NTZXQgWyAvUERGIC9UZXh0IC9JbWFnZUIgL0ltYWdlQyAvSW1hZ2VJIF0KPj4gL1JvdGF0ZSAwIC9UcmFucyA8PAoKPj4gCiAgL1R5cGUgL1BhZ2UKPj4KZW5kb2JqCjYgMCBvYmoKPDwKL0NvbnRlbnRzIDEyIDAgUiAvTWVkaWFCb3ggWyAwIDAgNjEyIDc5MiBdIC9QYXJlbnQgOSAwIFIgL1Jlc291cmNlcyA8PAovRm9udCAxIDAgUiAvUHJvY1NldCBbIC9QREYgL1RleHQgL0ltYWdlQiAvSW1hZ2VDIC9JbWFnZUkgXQo+PiAvUm90YXRlIDAgL1RyYW5zIDw8Cgo+PiAKICAvVHlwZSAvUGFnZQo+PgplbmRvYmoKNyAwIG9iago8PAovUGFnZU1vZGUgL1VzZU5vbmUgL1BhZ2VzIDkgMCBSIC9UeXBlIC9DYXRhbG9nCj4+CmVuZG9iago4IDAgb2JqCjw8Ci9BdXRob3IgKE1pbmVyYWwgSUQgRmllbGQgR3VpZGUpIC9DcmVhdGlvbkRhdGUgKEQ6MjAyNjA5MjMxODU4MDIrMDAnMDAnKSAvQ3JlYXRvciAoYW5vbnltb3VzKSAvS2V5d29yZHMgKCkgL01vZERhdGUgKEQ6MjAyNjA5MjMxODU4MDIrMDAnMDAnKSAvUHJvZHVjZXIgKFJlcG9ydExhYiBQREYgTGlicmFyeSAtIFwob3BlbnNvdXJjZVwpKSAKICAvU3ViamVjdCAodW5zcGVjaWZpZWQpIC9UaXRsZSAoUHJhY3RpY2UgTWluZXJhbHMpIC9UcmFwcGVkIC9GYWxzZQo+PgplbmRvYmoKOSAwIG9iago8PAovQ291bnQgMyAvS2lkcyBbIDQgMCBSIDUgMCBSIDYgMCBSIF0gL1R5cGUgL1BhZ2VzCj4+CmVuZG9iagoxMCAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAyNjA1Cj4+CnN0cmVhbQpHYXVITWdNWiZtJlVpODRvXSxBVmdYQ0BpI0tUOFVCPGlJYSZkMCdzOkNAOj43OWRxKDEqRVBVcnFmW2Y5cEErL1E+QSQrbSZndVNWXzBOJEc5Om5DaS5xM0U8RDFEL3BaMS8mM1Q1U0Y1N2p1ciw1MzIkTFxoaEo5TnMiUWpbTCEvaTVjOCthUkhfMTtabVs+VlsscTRTLSVVPkxvcS44LFU8JThxPG1dPT1cWk4uLUxJdDpMVSVmNC1obVdmcEhObUk7QEJCXlRvKHFMLzw3QHMzWkErNyh0SUohNi1YWzI0SUdxQDxhL0llX2hPLSlyYjNXVjRcZk9kYSpmYidVaGtkc2djVTNxb3UhWmA7IkM8TGxARFhgXGc9dCtsOzhhVCUxXFE5XUkrNiVdJU4xY3JHR1B0XjhvQDhlUilwOysxa3BObkxnJT4uRVNyNGxUPVtlJiJjRy5UMDJQPW1gKylUSSJ0PGFdIUFJOmYuZUI+KGNNUjw2OVomOms+Xl05Z1YzZD8rMzs0QkljYj5zaSg2TzhXMExVJyZrOSRgMjw1am9YPmtLVz9pNUpGRzpSTmUxbEFYalhkLDZBUHI9Uj4uPy5FOl85bCtvUCM8LHBYXF5iVm82NnM/X01nVi01VHE5cE5ZTkh1IUguJCMjVzRLL1ZaTCYwO1NiV1lLa3JabW8pOGNBWDQ7Q2RkZ204RS8yKUNxWjxaT3Vnbkgjcyo3byFWI3NRXDRQUD88Ti5FO1EkPUw7YyYpZ1VqUCJhQ0hpWzQ8RFBlOj9WWSg9bTdmaWpYWkIsMENCb0twISZJPzghJm1yXFZxbFwvM00yWE8kcVNjLHMuTEpyMlFeMScrQFhSL2wpZyteMGgnZCNtTj5WWHNtZT1wVjVNVGdkMT0mUkpRXW0rRW1RPGwoSi8kXURpcUEtSSsjJiVAXS8ial1IZSFkXWp0QSR0PUNGcGApXz0pRHJlKyhbXjo8YUxsUEpIXikoZ1VJNGIsQ2o8QDprU14rK1pXS3NHVDhtWkkhQD8kLCoqU2ZtbzBoMyx1aFssZExoNyoiX2U6cGM6XnRPUTRraTE4bUZqLShMcW9wMCMxMVtnRFFMbStESFxKbjJFbjNiMGFYTzxUWWlybixzXjU2IVw0VEg0SGVsOEZVdDouW3BzRzlKZmE/R2hQLGg0RDtkX0YvaTIrUFQjZWVuLVE7OChZN2A9J3JbcS8wREJwUm4jQUokcEdvUVpFcCppIUdrJDQ8MjlnVD9MMnUjQGgmWWEra2RydHFYMFNfLj4mN0dLQ1xZSTYrSjpZMUdgVTUuY1tGN1FGNkpyMGNnUzthbCFNWWI+OVJsX08hRk4kWywiSFxQYDBiYGowVGonclQhVVdRND80PVA2cTR0OWtlMVBGQlIxJTonKGdLSVk8cztNZTQrNjU7cVVfNSRvQl9iSkNMJ0pxXGBsJy1FZ2QjbzgsND5DTk9mTiZmaS1nVi10XjgrUERZQG9MOCRBNCtySEl0LkBwbDZMJjRQKDp0WThNSiEmOkRMTk9lWz9OYzlMLU9GZlFFOEpkJDs2KnFOdCE7ZmRtckckQF1cV2xkOXBAMGEsNyVrZ0A+OF0nRWFKa2ZgcjhcIWx0P0VoSUZfZThkUipEPF1MUGdaUW4kTT5XT1UwV2xmZjFJO2BVcVpXP2JQOD8wJDNOJyhsOkcyUCxIJHBITF5YVUkiOT9rbz4iNyRROEsqW188UCU+P3RAQHRUXmo3UC5pW10sVS9SanRrUz9cV1UtMDxxJ0pjY3JXSS9Aby41LEZYYmcsP2BWL3I7Yy9bblFQYS1aOFEhUSReSj8lPi08NFBmXHVnL201RT5LSixRbzxtZCJmOTZBL183ZkJfUy8yLiUsP21bYm5OOkRaLWQwJ3IoSVFPLCNFSW09XS8qRmxIY25KSiRkVSsyXksmNGZ1IUZUSCwhWTtlWWRIJGozJGgmcERJQiZvcGBVVmNxMkdxMTtaWXQpPilLclJ1MzBcJVpcOlMwJi9QcFQmREdiNDJdPThNXG9vMFVtP0ZVJVMzUEA8TUljYkEpTUVXMiRoJSQkVS5URC48XyYpWGtDZSZhXUJUOUstbmhtRlFQbypISSRFWjJdWV9rdD8taSw0NT1TdD41WTkpclA0K15eZjNGMWxzWjFJMixrIzU/VTpbZWc4aW45Li1MLHNIbCNkMFY/OCNsNmU1LWtXdW1dSDRRY1dQZiswK0wraWdSXi5LOzVpS0wpODcwR25HcSxKNC9qWT1iLTBRIWhKV1xtUjtFVFFscCxuQlkoPyNqaU5BUTZKNEwicFsrQSY0cGpxK25aJ1M8UEk7QCguXSw3Nl5ybFI7clY0YlxEUVZAWlFZTElpZzhHbVpqbF5gWiRkRTw+bkhyLUw1Sl51PHIhN2BoNEojOTRkTFQpPy07KDc+XyEyJVUuYDUhVGZYKylvMW9rUTs7cGlCX2o2KjNfXjw8blckZiNWWykrNHI4Y2ZMR0xrKGk9KDFvZnBlWlskST9TbktWNmg+OFxqQSlyNylwRCwnNDZaKjAoUWVZO2Q0VytQK1pyVkBdaSIpZlk8PyRVSEFlOmo+UEFrKSpoSTNycF5PXnBIYClNY2tgTjpbPSJVSURPIltAITNjXiRjL1gzLWtGOV0tUGNbZT87VDhcQExRQ3JfdV9TZyZeNmAvNiVSWThWWChINzY5MyE7OnBccTphcHRgaWNJKWVPYjQxb3MxXW82XVRBZ2JhMU1nS3VTPi11M2VXak5wUCxKcVA4ZCpeMnEkUGZwZmEmJCVXSzAvcjooVnU3Q19MUDo2K1g4aStKVE9tYylyMVRBW0JTYi0halNgUTxAX0NBZW5hPm0mLjA7UkMxIVdaWC9bRFpvaG0tT1FTQ2I9TyshVXFEYmZWYnFeNiYxbT8wPkNZQENiXSZKZlMhPU5EXWxrMVMuQEswQz04anBzP0JhdVdPWHA4S0VhRS0vb3JSOTwvOFJbT2VSbV50YSpPSTZFRCZCL1JndCNFVzFxVyZMRShwaG8vL1BIaTJzJFBCSV5OTmlJbWImJTgkJiM3MyxZWDQ1cWpWTyIyVChMaylATFYpJVxlMUBedW5kRl9lUTtSPFRhZyxacChxL0peNCk0bTIyOCdCTzN1YV5bJSZQNWpqbC1tdWMyR25vRypKcDg5bkkndCEnNUheS11xTCFGO0gxJTJNXF4mOylGXTddV2lQUTlaP0dTZXBnY2tPU20/PlRhRyNSZlgpLFdvWiczS2BBcFZfLF9qaV1NXipoMiZIXD5LSmVvaVBFNURMSltLNDFBLltnP0IiQ1A8XSVtWkgxPkUtZFIzRjRPZSQzOFhpNzZFQHJJLmA0N24lVCImMSJIR1ZDNTpGT0pkLVdINDJiIzxwOiw1JWErQT1ldEciKHUxOm9RTUo0TSkwPEJnOFFkOEFYdFopJ0JxbmNycltWcCNpR34+ZW5kc3RyZWFtCmVuZG9iagoxMSAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCAyNDQ2Cj4+CnN0cmVhbQpHYXVITTk1aVRUJyMpXHFXKzA5YkZNSEs7WV9SQSw4SWpHc0xrUnRxPU84JSZgLlsxVyxTYFdGSV1LSzw0V0lVajFfc2BFWWUsNDlvam1UJmY0UEJrcyUqLXVsMlgiUV8+QmlNOC1OKUgrQUhKK2w0WCk9W0U1NUtoQ0hbQzFWJUozTVZLLWZGck9JWlRGQGVKVEQ+Rjtob2ZdaDM2OExYV3QpbD5EKClIYVdHOlhjXilrRj9dUlhiUzpKSD0/RG5oIiw1TjFsSnFwU1JcN1JDXXRpSW4rL2swPjwnKG8jKSYjSDlLUVpwdHVyPzhdNEw2WldfOEllRihSM0U4IXFcZlUvKjpvT0FGbCknMlRXYy1rcVZCMEwvRzVIOE87OFIzODVySiNMWi8zQHNxRHFqIVJLPGlUNDshTzpSQmBeb15RcjEoNG9HJnJjYSFbNigwayhiXVR0VjFcNFopIktBVjE4OEBaXlRvRVheMERsYTMyJSEzRyglODYqLjNmdUcpKkgvJ1RbRSxfRTJuPVFVNl4jVXI/VlFbaylHL0s8cj9kSDA8b2VvOl1OPkEqWm5pKFEnPEcxUSctK0ExLGUkWC9pc0c2VlMiJVpYR0hZWzNSPCovI2U7XUM/O0JUIVxcKDg9U0Q6Wm1GKDdJRksnckRQIigyPjc8bms+Vk85b11mcUN1JVJbK0xOVTRSOG9pJjklMTclMU81Mm0uTVlOTW5bMHEwSS9VLzAxZ1oqa0JXXT5WJDE1YFhbUihwVzppYUJNWztqJC1iPGtoPDxARXFHLV5GPEI5OkBBSCRIVmQ/ZDYnTmJTRXVIU0UzO2ZCWCcvJDhQKFtbS2NvJzg7OUd0SkojK24sOmItWTFnTTxMJSpZQmZJKl90PjlabDdXb2AtSTtpN1h1OlBaSmglYTJbVyo4YTd0aXNqLmNfZydAKiNpNmtTRFBZJylGcmhjcjYpVkhxbyEyQkNjMGMtcjwwQS9QKGVfLXI6NyZCUDRcTEtLRTlPRWQsK25LMz1VSSJVRScrIzg+SWgkWmdtL0cpP0IzbTtpVHRXMnNzU1QvJ1c0USc6VGIzSXIiOmZbRFdbNEdDYVBwZTQ/ISFrYlotUzJQNTIyYmxfIzI+ZEBTQDxtSD0lcUFWSm9ncGZlLDMkQGIkNU89YksjP2MscjtFajxwVllHT2JDSzFRLitlQV4jLnE/Z19zTUhmP1ViWmVQcSFma1AjdUY2NEEuOFI+VTxHYEBfME0jZXVMLDolSWAiayokN3BPPGhzOUZDPDlwT2lQbD88aitLQlZoTllNQk1FMCNWRF1hXz5DVVdgUTJxLl5Icm5RT0xBSUlWPFZoN2UsPVRAcFlhbjtsZVhwN082ZVxkKWM1PzotMmZXODU2QmAjQypHUDA9TDltWm9NRmwvaEokSiknJ2gwUSZpJkRpS0ZIPVNFQTZPaFZKSjY9dTgoTmA5TmdYRD9GLj0mNytuZSRbQTouJj1kb3AxaWtASWZocSJbWTpeX14vLnEnVjVfMFYxb2VJRTJmNFk5LU4zTTF0MV45QmJQVUJvcTlja3E8Pl5TJjExQG9aLjdJbVQ0aFM3TipwalVjM1pmKEgzZTcwX1lsVF1nVWhKbT1LPExzVlZlUVFsQm4uI2ZbRi1DVnR0XihlLypAJ1YtU0JGa1ZgJTU+KnN1N0FqLGNDJmBOXmwxIj82bzZbT2RYRGxsPl9PNWhWXTxeaGU4ZSs2Pl1Ca0hRWzY1M1E3Y0xZQiNGSi1LMVc5Y1hSPTxsaFBATF5XUm8qZSFAWyd1SUJAckJwNTFxMGA8ajdtQVJYOV1fOWVRQ04yPzdZXzkmZTZxISNjOzo5TiciIS9gbT5tIyxrQkBmQm0tKElIJ2tuWDZkLHBsSXI9OS5VP1FYUHI2TipqbFk/MmJTQEdRcWtqcjw/TzNSPEloZmpuQm4vaFJYRlBaQTVHQmw9NCsnRlprX0N0I1RtOyJRKk43ZC49STlsVFJKWzQxTUIyYTZEUkhOMzFFaElnZElpYDUhQjM5ZXFkZyc+byYmXScqKzlHaFYmKEgvLU9aQilsIio6LHBIR2dlOjY3XT9yLmwuRFUqMS1pUU5JOSkvXyY+Kjc3UmM9UDUybSJTS0suUm0lQ0diJ1pOYiJWZWM4VldVXUcqbGNpMUV0OSMuSUYoZyVqZCI2RnFWJHJpcF0jUW4oTy00RlIhX0xSOy0oc3A4Q1BbKEgyS1JyZkkwOFQlaiFsYmYySFNcZUlYYl5NPVsscXMnNWEqSjxRKmAwYiFvIU1LRSc7QWdPOU8oYjdxQDA9RGVvUi4iXispcHAsWF9KXyQlJi9hM04kPURiMzVOMnMrT1UzPUMzK2p0cig3cHBPMGhkalJvYSJBXy0uVGZMKFpZbkBtYzYvU3FjYTFwYyQwJmEtOStvKnRuN3A8YUlrcmM2UDA6XU0hKHNaVjJoKGZLNCtxKylpZDFhOCYsRVdRVjFwYlQiJTovZms6WE9YI2FBWlE4ZGNYK2FCPyViTDc+c11gJVNXTy0/S1dja21oVScsbEstJk1BK2VncFZHcUZlTGVQTjRWZjVoMW1tT1h0NDRLXkhhNFBpLV9ZOlwiMDFRJlQmX2dPRCorUWxpNm4tSEguJmI2ZWtaY2k5Py1iJEVWVTtYXGwiYVFVJ1I3TkMpK3VJJiRXXXQvMT46W3M1RjxnKnEqSDdFX11AJFI4ZF1ZTD4vbEYhLmtAQT0kYV9mQjFZXyRlJSFHIzYhO0ZgWyFzPDAuSjRIZHBnalZGLF5adEhmSGxjJ2pNUyFubzteXzswR21Lbm1FKiNoSGdHW1VIbCszK14+Oyc4dGM6WmQ2cDcjS2hHQltuTHFKO2ohOSYkRzZHIShES0s6Ly1FSiZdXTshKWpXMT0kV1NoVzpfVl9jKysuTGZ1O1B0MUMyTlBlbWMlZ0FIXGQ7MUdiR3FSLlokYFFUWFFIU3VcUS9wPUY6QUV0WDsiaGdIRjpwU1o/PjEqTlEjJWxuMz1jSD1iX3AyTi1VP2J0QDgiSjlddHBsbEJJY0g9Yl86Pj9GZ2o1LlQnYUZwTzU0XFYrUXBXZ18vYmlbZyJmPnJXQEVebklucF9rMWlSOV04VFtZRlRlOklCKlxDQUBmc2ZzRl9AV2ZiXm1VMiRKOjlcJUsuVyNDZzc8IjNdJE0rT15VVUVXXUo/IkBcXmNOZktONl0/NDhSUlJYKDdbYU4rNHRCOTlgTEJDOmZfYzcyM1Bfan4+ZW5kc3RyZWFtCmVuZG9iagoxMiAwIG9iago8PAovRmlsdGVyIFsgL0FTQ0lJODVEZWNvZGUgL0ZsYXRlRGVjb2RlIF0gL0xlbmd0aCA5MjYKPj4Kc3RyZWFtCkdhdFVyPyNRMmQnU2MpSi51cSErRyYmKDZZYkBNK1ojND4tWGNvYXBvcjlxXCkiPkM0QTctR1ZvZVFeVkMiJTU6Nz5gKytoTyE5b2pGaTAlY25GMWVITzdLQSRdQFhkUiItK1VbWkNbXCU9RUE0I1RNOTUjVSU+QmdMMFxoZlQkK2JTMkNvXFVsYzU+OUQhQV5cbSNTWmRmOz1YUDpwWUwta3JhT0ZVSVBURSdIOEstNy5naiMlWlw2QWlUSUBEKzhrclNXSkQ5UDdnMUpZV3EiQD9ZMFdQXzdgQzwqNVMxOlo5SkRKOEVSLzhUbiZDNjEqbigmV0B1XjNaRWNgSjRQSFJbPF5CWjpzI0JsdSNBMC9ITENhOUo/JWQoZSZPMGhWJ1RXZEZAQ2NpWmNmLVxsTFo/R3VtW0hhZz1dRm0wJmhdPzpMWFgtSkYuZyYqYiJrSHQrLSpfUD8vdU1uSkpYWmovNydqS2g6NCZuLl91ckk1aFU7c19sayokXiFhV0BGXV9YWlJnKzxYZT9gPmZdISI2aUEwSVBGaG4hU2pUVHE7OGsrRnBsbGhLT1FOIiRaVyYwIyVbZUE0ZCNhRjgscltzWkRuTzclV1xSIyZJNUU3dSdeZCVOZHA0LSw7P1s+SUJfMSdSKTtzImdUJTkzLFU2SCxNWGdRdSo7Y1Vqc0V1UyRvOnQ5VVdlQVFxYyI7ZiIzLl1qN1wiNTB0NGFLOGtsIzdXW1o9cVsyUjF1JD4mI2s9RU5wSEZrQDxUMTEkTDQ/LTZHNiU6cUdXRXBJXz1HYi51dUxrPFpbaSxjO1xdTU8zYGBySiNEXnJFWDBXTydqbSohcy4oPyxnRzYiYF0kIVZmJiJDWXFwck1rPGMrcl5iKXE0O0UjYkJgV0dSbEJgUVVSSjMvaEg7SmZsXyMlOmJoNShjUytHVSErNj50alZxRWtPT0kxPlYpKU5KNjBRWSFwM2MuP0lhc1ghK2drT0xzak5vNFJHST50aW1hYVJvNlttUUBXZERnT0kwKl4lUmghW1tkPzhuRihKcGpUKUBPNHI7VElHWCs9RzgmbCcxWUU9IkFxTFtgbEs4Tks0TCQ+I0FSdV50J21zMy9fKkI/c1A2bGhmWSImZD1VU2s/L2NzckZhNmhKMWZbb2Q0cCk/TGVCV3I9cEwramdQaEFKIic+MG9vbF8oInQtNj1lX2ZTIUVcaEBhYkhRMGJsLlc3OTYkW34+ZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgMTMKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDYxIDAwMDAwIG4gCjAwMDAwMDAxMDIgMDAwMDAgbiAKMDAwMDAwMDIwOSAwMDAwMCBuIAowMDAwMDAwMzIxIDAwMDAwIG4gCjAwMDAwMDA1MTUgMDAwMDAgbiAKMDAwMDAwMDc2NiAwMDAwMCBuIAowMDAwMDAwOTYwIDAwMDAwIG4gCjAwMDAwMDEwMjggMDAwMDAgbiAKMDAwMDAwMTMxMSAwMDAwMCBuIAowMDAwMDAxMzgyIDAwMDAwIG4gCjAwMDAwMDQwNzkgMDAwMDAgbiAKMDAwMDAwNjYxNyAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9JRCAKWzwzMmUxN2VhNmJlYTBjNzI0YmViM2QxNzlhNWEzNDlmMT48MzJlMTdlYTZiZWEwYzcyNGJlYjNkMTc5YTVhMzQ5ZjE+XQolIFJlcG9ydExhYiBnZW5lcmF0ZWQgUERGIGRvY3VtZW50IC0tIGRpZ2VzdCAob3BlbnNvdXJjZSkKCi9JbmZvIDggMCBSCi9Sb290IDcgMCBSCi9TaXplIDEzCj4+CnN0YXJ0eHJlZgo3NjM0CiUlRU9GCg==";
+(async()=>{
+  let dl=null;
+  try{ dl=window.claude&&await window.claude.use("downloads"); }catch(e){ dl=null; }
+  if(!dl){
+    // Standalone file: offer a normal browser download instead
+    const bin=atob(PRACTICE_PDF), bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    const a=document.createElement('a');
+    a.className='btn'; a.textContent='Download practice minerals (PDF)';
+    a.href=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+    a.download='practice-minerals.pdf';
+    $('dlBtn').replaceWith(a);
+    $('dlBar').classList.add('on');
+    return;
+  }
+  $('dlBar').classList.add('on');
+  $('dlBtn').addEventListener('click',async()=>{
+    const bin=atob(PRACTICE_PDF), bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+    $('dlMsg').textContent='';
+    try{ await dl.save({filename:'practice-minerals.pdf',data:new Blob([bytes])}); $('dlMsg').textContent='Downloaded.'; }
+    catch(err){
+      const c=err&&err.code;
+      if(c==='declined') return;
+      if(c==='rate_limited'){ $('dlMsg').textContent='A download prompt is already open.'; return; }
+      $('dlMsg').textContent='Downloads are not available here.'; $('dlBtn').disabled=true;
+    }
+  });
+})();
+</script>
+</body>
+</html>
