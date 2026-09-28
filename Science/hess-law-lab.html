@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hess's Law Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #f7f9fc;
+    --paper: #ffffff;
+    --ink: #172033;
+    --muted: #5b6579;
+    --line: #d5dce8;
+    --grid: #e8edf5;
+    --accent: #0f766e;
+    --accent-soft: #e0f2ef;
+    --exo: #c2410c;
+    --exo-soft: #fff1e8;
+    --endo: #1d4ed8;
+    --endo-soft: #e8efff;
+    --good: #15803d;
+    --good-soft: #e7f6ec;
+    --warn: #a16207;
+    --warn-soft: #fdf6dc;
+    --strike: #9aa3b5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1420; --paper: #171e2d; --ink: #e8edf6; --muted: #a2acc0; --line: #2d374c; --grid: #1b2335;
+      --accent: #2dd4bf; --accent-soft: #123330; --exo: #fb923c; --exo-soft: #33200f; --endo: #7aa2ff; --endo-soft: #16223f;
+      --good: #4ade80; --good-soft: #10291a; --warn: #facc15; --warn-soft: #2c2610; --strike: #5f6a80;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1420; --paper: #171e2d; --ink: #e8edf6; --muted: #a2acc0; --line: #2d374c; --grid: #1b2335;
+    --accent: #2dd4bf; --accent-soft: #123330; --exo: #fb923c; --exo-soft: #33200f; --endo: #7aa2ff; --endo-soft: #16223f;
+    --good: #4ade80; --good-soft: #10291a; --warn: #facc15; --warn-soft: #2c2610; --strike: #5f6a80;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; color: var(--ink); background-color: var(--bg);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    font-family: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif; font-size: 17px; line-height: 1.5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", "Segoe UI", sans-serif; line-height: 1.15; }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; margin: .5rem 0 .4rem; letter-spacing: -0.01em; }
+  h2 { font-size: 1.5rem; margin: 0 0 .6rem; font-weight: 800; }
+  h3 { font-size: 1.1rem; margin: 0 0 .3rem; font-weight: 600; }
+  p { margin: .4rem 0; }
+  .lede { font-size: 1.12rem; color: var(--muted); max-width: 62ch; margin: 0; }
+
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.5rem; align-items: center; margin-bottom: 1.8rem; }
+  .hero-demo {
+    background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 1rem 1.1rem;
+  }
+  .hero-demo .label { font-size: .85rem; color: var(--muted); }
+  @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 1.2rem; }
+  .learn { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0 2rem; }
+  .rule { background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px; padding: .9rem 1rem; }
+  .rule .ico { font-size: 1.5rem; line-height: 1; margin-bottom: .35rem; display: block; }
+  .rule p { font-size: .96rem; margin: 0; }
+  .rule .ex { margin-top: .5rem; font-size: .9rem; color: var(--muted); }
+  @media (max-width: 800px) { .learn { grid-template-columns: 1fr; } }
+
+  .defs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+  .def { border-left: 5px solid var(--exo); background: var(--paper); border-radius: 0 12px 12px 0; padding: .8rem 1rem; border-top: 1.5px solid var(--line); border-right: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line); }
+  .def.endo { border-left-color: var(--endo); }
+  .def h3 { color: var(--exo); }
+  .def.endo h3 { color: var(--endo); }
+  .def p { font-size: .95rem; margin: .2rem 0; }
+  @media (max-width: 700px) { .defs { grid-template-columns: 1fr; } }
+
+  /* Problem tabs */
+  .tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin: .6rem 0 1rem; }
+  .tab {
+    font: inherit; font-size: .95rem; cursor: pointer; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: .45rem .8rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .45rem;
+  }
+  .tab[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tab .dots { font-size: .7rem; letter-spacing: 1px; opacity: .75; }
+  .tab .done { color: var(--good); font-weight: 700; }
+  .tab[aria-selected="true"] .done { color: var(--paper); }
+
+  .target {
+    background: var(--accent-soft); border: 2px solid var(--accent); border-radius: 14px; padding: .9rem 1.1rem; margin-bottom: 1rem;
+  }
+  .target .tlabel { font-size: .85rem; color: var(--accent); font-weight: 700; }
+  .target .eq { font-size: 1.35rem; }
+  .target p.blurb { color: var(--muted); font-size: .95rem; margin-top: .3rem; }
+
+  .lab { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 900px) { .lab { grid-template-columns: 1fr; } }
+
+  .eqcard { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: .9rem 1rem; margin-bottom: .9rem; }
+  .eqcard.changed { border-color: var(--accent); }
+  .eqhead { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+  .eqname { font-weight: 700; font-size: .9rem; color: var(--muted); }
+  .status-tag { font-size: .78rem; padding: .1rem .5rem; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .eqrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+  .eq { font-size: 1.2rem; overflow-wrap: anywhere; }
+  .arrow { display: inline-block; margin: 0 .35em; font-weight: 700; }
+  .state { font-size: .7em; color: var(--muted); }
+  .coef { font-weight: 700; margin-right: .08em; }
+  .fr { display: inline-flex; flex-direction: column; text-align: center; font-size: .72em; line-height: 1; vertical-align: middle; margin-right: .12em; font-weight: 700; }
+  .fr span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 .1em; }
+  .dh {
+    font-weight: 700; padding: .3rem .65rem; border-radius: 8px; white-space: nowrap; font-size: 1.05rem;
+  }
+  .dh.exo { background: var(--exo-soft); color: var(--exo); }
+  .dh.endo { background: var(--endo-soft); color: var(--endo); }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1rem; margin-top: .75rem; }
+  .btn {
+    font: inherit; font-size: .95rem; cursor: pointer; padding: .45rem .9rem; border-radius: 9px;
+    border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); font-weight: 700;
+  }
+  .btn:hover { background: var(--grid); }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+  .btn.ghost { border-color: var(--line); font-weight: 400; }
+  .btn:focus-visible, .tab:focus-visible, .seg button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .seg { display: inline-flex; border: 1.5px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .seg button { font: inherit; font-size: .95rem; border: none; background: var(--paper); color: var(--ink); padding: .42rem .7rem; cursor: pointer; border-right: 1.5px solid var(--line); }
+  .seg button:last-child { border-right: none; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--paper); font-weight: 700; }
+  .seglabel { font-size: .9rem; color: var(--muted); }
+  .working { font-size: .9rem; color: var(--muted); margin-top: .5rem; min-height: 1.3em; }
+  .working b { color: var(--ink); }
+
+  @keyframes swap { 0% { opacity: .15; transform: scaleX(-.6); } 100% { opacity: 1; transform: none; } }
+  @keyframes bump { 0% { transform: scale(1.18); } 100% { transform: none; } }
+  .swap { animation: swap .38s ease-out; display: inline-block; transform-origin: center; }
+  .bump { animation: bump .35s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .swap, .bump { animation: none; } }
+
+  /* sum panel */
+  .sum { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 1rem); }
+  .sumlines { border-bottom: 2px solid var(--ink); padding-bottom: .5rem; margin-bottom: .6rem; }
+  .sumline { display: flex; justify-content: space-between; gap: .6rem; align-items: baseline; padding: .3rem 0; border-bottom: 1px dashed var(--line); font-size: 1.02rem; }
+  .sumline:last-child { border-bottom: none; }
+  .sumline .tag { font-size: .8rem; color: var(--muted); min-width: 1.6rem; }
+  .sumline .eq { font-size: 1rem; flex: 1; }
+  .sumline .v { font-weight: 700; white-space: nowrap; }
+  .x { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--strike); }
+  .part { text-decoration: underline dashed; text-decoration-color: var(--warn); text-underline-offset: 3px; }
+  .net { font-size: 1.12rem; padding: .3rem 0; }
+  .total { font-size: 1.05rem; margin-top: .4rem; }
+  .total .big { font-size: 1.5rem; font-weight: 700; }
+  .feedback { margin-top: .8rem; border-radius: 10px; padding: .7rem .9rem; font-size: .96rem; }
+  .feedback.try { background: var(--warn-soft); border: 1.5px solid var(--warn); }
+  .feedback.win { background: var(--good-soft); border: 1.5px solid var(--good); }
+  .feedback ul { margin: .3rem 0 0; padding-left: 1.1rem; }
+  .feedback h3 { margin: 0 0 .2rem; }
+  .win h3 { color: var(--good); }
+  .legend { font-size: .82rem; color: var(--muted); margin-top: .5rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+  .hintbox { margin-top: .7rem; font-size: .95rem; background: var(--grid); border-radius: 10px; padding: .6rem .8rem; }
+  .hintbox ol { margin: .2rem 0 0; padding-left: 1.2rem; }
+  footer { margin-top: 2.5rem; font-size: .85rem; color: var(--muted); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <div>
+      <h1>Hess's Law Lab</h1>
+      <p class="lede">Hess's Law says the total enthalpy change (ΔH) of a reaction is the same no matter what path you take. So if you can't measure a reaction directly, you can build it out of other reactions — and just add up their ΔH values.</p>
+    </div>
+    <div class="hero-demo" aria-label="Try the reverse button">
+      <div class="label">Try it: press <b>Reverse</b></div>
+      <div class="eqrow" style="margin-top:.4rem">
+        <span class="eq" id="demoEq"></span>
+        <span class="dh" id="demoDh"></span>
+      </div>
+      <div class="controls"><button class="btn" id="demoBtn" aria-pressed="false">⇄ Reverse</button></div>
+      <div class="working" id="demoWork">If ice melting absorbs heat, then water freezing must release the same amount.</div>
+    </div>
+  </section>
+
+  <h2>The three moves</h2>
+  <div class="learn">
+    <div class="rule">
+      <span class="ico" aria-hidden="true">⇄</span>
+      <h3>Reverse it → flip the sign</h3>
+      <p>Write the equation backwards (reactants become products). ΔH stays the same size but changes sign.</p>
+      <p class="ex">A → B, ΔH = −50 kJ becomes B → A, ΔH = +50 kJ</p>
+    </div>
+    <div class="rule">
+      <span class="ico" aria-hidden="true">×2</span>
+      <h3>Multiply it → multiply ΔH</h3>
+      <p>Multiply every coefficient by the same number. Multiply ΔH by that number too.</p>
+      <p class="ex">A → B, ΔH = −50 kJ becomes 2A → 2B, ΔH = −100 kJ</p>
+    </div>
+    <div class="rule">
+      <span class="ico" aria-hidden="true">+</span>
+      <h3>Add them → things cancel</h3>
+      <p>Add the equations together. Anything on both sides cancels out. Add the ΔH values to get the answer.</p>
+      <p class="ex">(A → B) + (B → C) gives A → C</p>
+    </div>
+  </div>
+
+  <div class="defs">
+    <div class="def">
+      <h3>Exothermic: ΔH is negative</h3>
+      <p>The reaction <b>releases</b> heat. The surroundings get warmer.</p>
+      <p>Examples: burning fuel, hand warmers, water freezing.</p>
+    </div>
+    <div class="def endo">
+      <h3>Endothermic: ΔH is positive</h3>
+      <p>The reaction <b>absorbs</b> heat. The surroundings get colder.</p>
+      <p>Examples: cold packs, ice melting, photosynthesis.</p>
+    </div>
+  </div>
+
+  <h2 id="labTitle">Build the reaction</h2>
+  <p style="margin-top:0">Pick a reaction. Reverse and multiply the given equations until they add up to the target. The totals update as you go.</p>
+  <div class="tabs" role="tablist" id="tabs" aria-labelledby="labTitle"></div>
+
+  <div class="target" id="target"></div>
+
+  <div class="lab">
+    <div>
+      <div id="cards"></div>
+      <div class="actions">
+        <button class="btn ghost" id="hintBtn">Give me a hint</button>
+        <button class="btn ghost" id="resetBtn">Reset</button>
+        <button class="btn ghost" id="solveBtn">Show solution</button>
+      </div>
+      <div class="hintbox" id="hintbox" hidden></div>
+    </div>
+    <aside class="panel sum" aria-labelledby="sumTitle">
+      <h2 id="sumTitle" style="font-size:1.25rem">Add them up</h2>
+      <div class="sumlines" id="sumlines"></div>
+      <div class="net"><span style="color:var(--muted);font-size:.9rem">Your reaction:</span><br><span id="net"></span></div>
+      <div class="total" id="total"></div>
+      <div id="feedback" aria-live="polite"></div>
+      <p class="legend"><span class="x">crossed out</span> = cancels completely &nbsp;·&nbsp; <span class="part">dashed</span> = partly cancels</p>
+    </aside>
+  </div>
+
+  <footer>Enthalpy values are standard values at 25 °C in kJ per reaction as written. The “burning methane to steam” data matches the LibreTexts reading on Hess' Law.</footer>
+</div>
+
+<script>
+(function () {
+  // ---------- data ----------
+  // species: [coefficient, formula, state]
+  var PROBLEMS = [
+    {
+      id: "no2", title: "Nitrogen dioxide", level: 1,
+      blurb: "Warm-up: these two already line up. Just see how they add together.",
+      target: { r: [[1,"N2","g"],[2,"O2","g"]], p: [[2,"NO2","g"]] },
+      eqs: [
+        { r: [[1,"N2","g"],[1,"O2","g"]], p: [[2,"NO","g"]], dH: 180.5 },
+        { r: [[2,"NO","g"],[1,"O2","g"]], p: [[2,"NO2","g"]], dH: -114.1 }
+      ],
+      hints: ["Look at the “Add them up” panel. NO appears as a product in A and a reactant in B, so it cancels.", "You don't need to change anything. The answer is already there!"],
+      solution: [{rev:false,k:1},{rev:false,k:1}]
+    },
+    {
+      id: "co", title: "Carbon monoxide", level: 1,
+      blurb: "Carbon monoxide is hard to make on its own (it keeps burning to CO₂), so we find its ΔH with Hess's Law.",
+      target: { r: [[1,"C","s"],[0.5,"O2","g"]], p: [[1,"CO","g"]] },
+      eqs: [
+        { r: [[1,"C","s"],[1,"O2","g"]], p: [[1,"CO2","g"]], dH: -393.5 },
+        { r: [[1,"CO","g"],[0.5,"O2","g"]], p: [[1,"CO2","g"]], dH: -283.0 }
+      ],
+      hints: ["Where is CO in the target? On the products side. Where is it in equation B?", "Reverse equation B so CO ends up as a product."],
+      solution: [{rev:false,k:1},{rev:true,k:1}]
+    },
+    {
+      id: "so3", title: "Sulfur trioxide", level: 2,
+      blurb: "This one needs a fraction. Multiplying by ½ is allowed!",
+      target: { r: [[1,"S","s"],[1.5,"O2","g"]], p: [[1,"SO3","g"]] },
+      eqs: [
+        { r: [[1,"S","s"],[1,"O2","g"]], p: [[1,"SO2","g"]], dH: -296.8 },
+        { r: [[2,"SO2","g"],[1,"O2","g"]], p: [[2,"SO3","g"]], dH: -197.8 }
+      ],
+      hints: ["The target makes 1 SO₃, but equation B makes 2 SO₃.", "Multiply equation B by ½."],
+      solution: [{rev:false,k:1},{rev:false,k:0.5}]
+    },
+    {
+      id: "ch4f", title: "Making methane", level: 2,
+      blurb: "Same problem as the worksheet: find ΔH for forming methane from carbon and hydrogen.",
+      target: { r: [[1,"C","s"],[2,"H2","g"]], p: [[1,"CH4","g"]] },
+      eqs: [
+        { r: [[1,"C","s"],[1,"O2","g"]], p: [[1,"CO2","g"]], dH: -393.5 },
+        { r: [[1,"H2","g"],[0.5,"O2","g"]], p: [[1,"H2O","l"]], dH: -285.8 },
+        { r: [[1,"CH4","g"],[2,"O2","g"]], p: [[1,"CO2","g"],[2,"H2O","l"]], dH: -890.3 }
+      ],
+      hints: ["C(s) is already a reactant in A — leave A alone.", "The target needs 2 H₂. Multiply B by 2.", "CH₄ needs to be a product. Reverse C."],
+      solution: [{rev:false,k:1},{rev:false,k:2},{rev:true,k:1}]
+    },
+    {
+      id: "ch4c", title: "Burning methane (steam)", level: 3,
+      blurb: "From the reading: burning methane makes water vapor, not liquid water. You'll need a phase change step.",
+      target: { r: [[1,"CH4","g"],[2,"O2","g"]], p: [[1,"CO2","g"],[2,"H2O","g"]] },
+      eqs: [
+        { r: [[1,"C","s"],[2,"H2","g"]], p: [[1,"CH4","g"]], dH: -75 },
+        { r: [[1,"C","s"],[1,"O2","g"]], p: [[1,"CO2","g"]], dH: -394 },
+        { r: [[2,"H2","g"],[1,"O2","g"]], p: [[2,"H2O","l"]], dH: -572 },
+        { r: [[1,"H2O","l"]], p: [[1,"H2O","g"]], dH: 44 }
+      ],
+      hints: ["CH₄ is a reactant in the target. Reverse A so methane breaks apart into C and H₂.", "B and C can stay as they are.", "D turns liquid water into steam. You need 2 H₂O(g), so multiply D by 2."],
+      solution: [{rev:true,k:1},{rev:false,k:1},{rev:false,k:1},{rev:false,k:2}]
+    },
+    {
+      id: "c2h2", title: "Acetylene", level: 3,
+      blurb: "Acetylene is the fuel in welding torches. This one needs a reverse and a multiply.",
+      target: { r: [[2,"C","s"],[1,"H2","g"]], p: [[1,"C2H2","g"]] },
+      eqs: [
+        { r: [[1,"C2H2","g"],[2.5,"O2","g"]], p: [[2,"CO2","g"],[1,"H2O","l"]], dH: -1299.6 },
+        { r: [[1,"C","s"],[1,"O2","g"]], p: [[1,"CO2","g"]], dH: -393.5 },
+        { r: [[1,"H2","g"],[0.5,"O2","g"]], p: [[1,"H2O","l"]], dH: -285.8 }
+      ],
+      hints: ["C₂H₂ must be a product. Reverse A.", "The target needs 2 C(s). Multiply B by 2.", "C already has 1 H₂ as a reactant. Leave it alone."],
+      solution: [{rev:true,k:1},{rev:false,k:2},{rev:false,k:1}]
+    }
+  ];
+  var FACTORS = [0.5, 1, 2, 3];
+  var LETTERS = "ABCDEFG";
+
+  // ---------- helpers ----------
+  function r1(x) { return Math.round(x * 10) / 10; }
+  function fmtNum(x) {
+    x = r1(x);
+    var s = Math.abs(x).toFixed(1).replace(/\.0$/, "");
+    if (x > 0) return "+" + s;
+    if (x < 0) return "\u2212" + s;
+    return "0";
+  }
+  function fracParts(x) {
+    for (var d = 1; d <= 8; d++) {
+      var n = Math.round(x * d);
+      if (Math.abs(n / d - x) < 1e-9) return [n, d];
+    }
+    return [x, 1];
+  }
+  function coefHTML(c) {
+    if (Math.abs(c - 1) < 1e-9) return "";
+    var f = fracParts(c);
+    if (f[1] === 1) return '<span class="coef">' + f[0] + "</span>";
+    return '<span class="fr" aria-label="' + f[0] + " over " + f[1] + '"><span>' + f[0] + "</span><span>" + f[1] + "</span></span>";
+  }
+  function formulaHTML(f) { return f.replace(/(\d+)/g, "<sub>$1</sub>"); }
+  function key(f, st) { return f + "(" + st + ")"; }
+  function speciesHTML(s, cls) {
+    return '<span class="' + (cls || "") + '">' + coefHTML(s[0]) + formulaHTML(s[1]) + '<span class="state">(' + s[2] + ")</span></span>";
+  }
+  function sideHTML(list, clsFn) {
+    return list.map(function (s) { return speciesHTML(s, clsFn ? clsFn(s) : ""); }).join(" + ");
+  }
+  function eqHTML(e, clsFn) {
+    return sideHTML(e.r, clsFn) + '<span class="arrow">→</span>' + sideHTML(e.p, clsFn);
+  }
+  function dhHTML(v) {
+    return '<span class="dh ' + (v < 0 ? "exo" : "endo") + '">ΔH = ' + fmtNum(v) + " kJ</span>";
+  }
+  function factorLabel(k) { return k === 0.5 ? "½" : String(k); }
+
+  function adjust(e, st) {
+    var r = st.rev ? e.p : e.r, p = st.rev ? e.r : e.p;
+    var mul = function (s) { return [s[0] * st.k, s[1], s[2]]; };
+    return { r: r.map(mul), p: p.map(mul), dH: r1(e.dH * (st.rev ? -1 : 1) * st.k) };
+  }
+  function vec(e, into, sign) {
+    sign = sign || 1;
+    e.r.forEach(function (s) { var k = key(s[1], s[2]); into[k] = (into[k] || 0) - sign * s[0]; });
+    e.p.forEach(function (s) { var k = key(s[1], s[2]); into[k] = (into[k] || 0) + sign * s[0]; });
+    return into;
+  }
+  function clean(v) { Object.keys(v).forEach(function (k) { if (Math.abs(v[k]) < 1e-9) v[k] = 0; }); return v; }
+  function parseKey(k) { var m = k.match(/^(.*)\((\w+)\)$/); return [m[1], m[2]]; }
+
+  // ---------- hero demo ----------
+  var demo = { r: [[1,"H2O","s"]], p: [[1,"H2O","l"]], dH: 6.0 };
+  var demoRev = false;
+  function renderDemo(anim) {
+    var a = adjust(demo, { rev: demoRev, k: 1 });
+    var eqEl = document.getElementById("demoEq");
+    eqEl.innerHTML = '<span class="' + (anim ? "swap" : "") + '">' + eqHTML(a) + "</span>";
+    var dhEl = document.getElementById("demoDh");
+    dhEl.className = "dh " + (a.dH < 0 ? "exo" : "endo") + (anim ? " bump" : "");
+    dhEl.textContent = "ΔH = " + fmtNum(a.dH) + " kJ";
+    document.getElementById("demoWork").innerHTML = demoRev
+      ? "Freezing: <b>" + fmtNum(a.dH) + " kJ</b>. Heat is released, so it's <b style='color:var(--exo)'>exothermic</b>."
+      : "Melting: <b>" + fmtNum(a.dH) + " kJ</b>. Heat is absorbed, so it's <b style='color:var(--endo)'>endothermic</b>.";
+    document.getElementById("demoBtn").setAttribute("aria-pressed", String(demoRev));
+  }
+  document.getElementById("demoBtn").addEventListener("click", function () { demoRev = !demoRev; renderDemo(true); });
+  renderDemo(false);
+
+  // ---------- lab ----------
+  var current = 0;
+  var states = PROBLEMS.map(function (p) { return p.eqs.map(function () { return { rev: false, k: 1 }; }); });
+  var hintsShown = PROBLEMS.map(function () { return 0; });
+  var solved = PROBLEMS.map(function () { return false; });
+
+  function renderTabs() {
+    var tabs = document.getElementById("tabs");
+    tabs.innerHTML = "";
+    PROBLEMS.forEach(function (p, i) {
+      var b = document.createElement("button");
+      b.className = "tab"; b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(i === current));
+      b.innerHTML = (solved[i] ? '<span class="done" aria-label="solved">✓</span>' : "") + p.title +
+        ' <span class="dots" aria-label="difficulty ' + p.level + ' of 3">' + "●".repeat(p.level) + "○".repeat(3 - p.level) + "</span>";
+      b.addEventListener("click", function () { current = i; renderAll(); });
+      tabs.appendChild(b);
+    });
+  }
+
+  function renderTarget() {
+    var p = PROBLEMS[current];
+    document.getElementById("target").innerHTML =
+      '<div class="tlabel">Target reaction: find ΔH</div><div class="eq">' + eqHTML(p.target) +
+      '<span style="margin-left:.6rem;color:var(--muted)">ΔH = ?</span></div><p class="blurb">' + p.blurb + "</p>";
+  }
+
+  function renderCards(animIndex, animKind) {
+    var p = PROBLEMS[current], st = states[current];
+    var box = document.getElementById("cards");
+    box.innerHTML = "";
+    p.eqs.forEach(function (e, i) {
+      var s = st[i], a = adjust(e, s);
+      var card = document.createElement("div");
+      card.className = "eqcard" + ((s.rev || s.k !== 1) ? " changed" : "");
+      var tag = [];
+      if (s.rev) tag.push("reversed");
+      if (s.k !== 1) tag.push("× " + factorLabel(s.k));
+      var anim = animIndex === i;
+      card.innerHTML =
+        '<div class="eqhead"><span class="eqname">Equation ' + LETTERS[i] + "</span>" +
+        (tag.length ? '<span class="status-tag">' + tag.join(", ") + "</span>" : "") + "</div>" +
+        '<div class="eqrow"><span class="eq"><span class="' + (anim && animKind === "rev" ? "swap" : "") + '">' + eqHTML(a) + "</span></span>" +
+        '<span class="dh ' + (a.dH < 0 ? "exo" : "endo") + (anim ? " bump" : "") + '">ΔH = ' + fmtNum(a.dH) + " kJ</span></div>" +
+        '<div class="controls">' +
+          '<button class="btn" data-rev="' + i + '" aria-pressed="' + s.rev + '">⇄ Reverse</button>' +
+          '<span class="seglabel" id="mlab' + i + '">Multiply by</span>' +
+          '<span class="seg" role="group" aria-labelledby="mlab' + i + '">' +
+            FACTORS.map(function (f) { return '<button data-eq="' + i + '" data-k="' + f + '" aria-pressed="' + (s.k === f) + '">×' + factorLabel(f) + "</button>"; }).join("") +
+          "</span>" +
+        "</div>" +
+        '<div class="working">' + workingText(e, s) + "</div>";
+      box.appendChild(card);
+    });
+    box.querySelectorAll("[data-rev]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.getAttribute("data-rev");
+        states[current][i].rev = !states[current][i].rev;
+        update(i, "rev");
+      });
+    });
+    box.querySelectorAll("[data-k]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.getAttribute("data-eq");
+        states[current][i].k = +b.getAttribute("data-k");
+        update(i, "mul");
+      });
+    });
+  }
+
+  function workingText(e, s) {
+    if (!s.rev && s.k === 1) return "Original equation: ΔH = " + fmtNum(e.dH) + " kJ";
+    var parts = [];
+    var v = e.dH;
+    if (s.rev) { parts.push("reversed, so the sign flips: " + fmtNum(v) + " → <b>" + fmtNum(-v) + "</b>"); v = -v; }
+    if (s.k !== 1) { parts.push("multiplied: " + fmtNum(v) + " × " + factorLabel(s.k) + " = <b>" + fmtNum(r1(v * s.k)) + "</b>"); }
+    return "ΔH " + parts.join("; then ") + " kJ";
+  }
+
+  function renderSum() {
+    var p = PROBLEMS[current], st = states[current];
+    var adj = p.eqs.map(function (e, i) { return adjust(e, st[i]); });
+    var net = {}; adj.forEach(function (a) { vec(a, net); }); clean(net);
+    var tgt = clean(vec(p.target, {}));
+    // count appearances on each side to decide cancel styling
+    var onR = {}, onP = {};
+    adj.forEach(function (a) {
+      a.r.forEach(function (s) { onR[key(s[1], s[2])] = true; });
+      a.p.forEach(function (s) { onP[key(s[1], s[2])] = true; });
+    });
+    var clsFn = function (s) {
+      var k = key(s[1], s[2]);
+      if (onR[k] && onP[k]) return net[k] === 0 ? "x" : "part";
+      return "";
+    };
+    var lines = adj.map(function (a, i) {
+      return '<div class="sumline"><span class="tag">' + LETTERS[i] + '</span><span class="eq">' + eqHTML(a, clsFn) +
+        '</span><span class="v" style="color:' + (a.dH < 0 ? "var(--exo)" : "var(--endo)") + '">' + fmtNum(a.dH) + "</span></div>";
+    }).join("");
+    document.getElementById("sumlines").innerHTML = lines;
+
+    // net equation
+    var R = [], P = [];
+    Object.keys(net).forEach(function (k) {
+      if (net[k] === 0) return;
+      var fs = parseKey(k);
+      if (net[k] < 0) R.push([-net[k], fs[0], fs[1]]); else P.push([net[k], fs[0], fs[1]]);
+    });
+    var netEq = { r: R, p: P };
+    document.getElementById("net").innerHTML = '<span class="eq" style="font-size:1.1rem">' +
+      (R.length || P.length ? eqHTML(netEq) : "(everything cancelled)") + "</span>";
+
+    var total = r1(adj.reduce(function (t, a) { return t + a.dH; }, 0));
+    document.getElementById("total").innerHTML =
+      "ΔH = " + adj.map(function (a) { return "(" + fmtNum(a.dH) + ")"; }).join(" + ") +
+      ' = <span class="big" style="color:' + (total < 0 ? "var(--exo)" : "var(--endo)") + '">' + fmtNum(total) + " kJ</span>";
+
+    // compare
+    var keys = {}; Object.keys(net).forEach(function (k) { keys[k] = 1; }); Object.keys(tgt).forEach(function (k) { keys[k] = 1; });
+    var msgs = [], match = true;
+    Object.keys(keys).forEach(function (k) {
+      var n = net[k] || 0, t = tgt[k] || 0;
+      if (Math.abs(n - t) < 1e-9) return;
+      match = false;
+      var fs = parseKey(k), name = formulaHTML(fs[0]) + "(" + fs[1] + ")";
+      var amt = function (x) { var f = fracParts(Math.abs(x)); return f[1] === 1 ? f[0] : f[0] + "/" + f[1]; };
+      if (t === 0) {
+        msgs.push(name + " doesn't cancel yet — there's " + amt(n) + " left on the " + (n < 0 ? "reactant" : "product") + " side.");
+      } else if (n === 0) {
+        msgs.push("The target needs " + name + " on the " + (t < 0 ? "reactant" : "product") + " side, but right now it cancels out.");
+      } else if ((n < 0) !== (t < 0)) {
+        msgs.push(name + " is on the wrong side. Try reversing the equation it comes from.");
+      } else {
+        msgs.push("You have " + amt(n) + " " + name + " but the target needs " + amt(t) + ". Try multiplying.");
+      }
+    });
+    var fb = document.getElementById("feedback");
+    if (match) {
+      var wasSolved = solved[current];
+      solved[current] = true;
+      fb.innerHTML = '<div class="feedback win"><h3>It matches the target!</h3>ΔH for the target reaction is <b>' + fmtNum(total) +
+        " kJ</b>. Because ΔH is " + (total < 0 ? "negative, the reaction is <b style='color:var(--exo)'>exothermic</b> — it releases heat."
+                                              : "positive, the reaction is <b style='color:var(--endo)'>endothermic</b> — it absorbs heat.") + "</div>";
+      if (!wasSolved) renderTabs();
+    } else {
+      fb.innerHTML = '<div class="feedback try"><h3 style="color:var(--warn)">Not there yet</h3>Your reaction doesn\u2019t match the target.<ul>' +
+        msgs.slice(0, 3).map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul></div>";
+    }
+  }
+
+  function renderHints() {
+    var p = PROBLEMS[current], n = hintsShown[current], hb = document.getElementById("hintbox");
+    if (!n) { hb.hidden = true; hb.innerHTML = ""; }
+    else {
+      hb.hidden = false;
+      hb.innerHTML = "<b>Hints</b><ol>" + p.hints.slice(0, n).map(function (h) { return "<li>" + h + "</li>"; }).join("") + "</ol>";
+    }
+    var hbtn = document.getElementById("hintBtn");
+    hbtn.disabled = n >= p.hints.length;
+    hbtn.textContent = n >= p.hints.length ? "No more hints" : (n ? "Another hint" : "Give me a hint");
+  }
+
+  function update(i, kind) { renderCards(i, kind); renderSum(); }
+  function renderAll() { renderTabs(); renderTarget(); renderCards(); renderSum(); renderHints(); }
+
+  document.getElementById("hintBtn").addEventListener("click", function () {
+    hintsShown[current] = Math.min(hintsShown[current] + 1, PROBLEMS[current].hints.length); renderHints();
+  });
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    states[current] = PROBLEMS[current].eqs.map(function () { return { rev: false, k: 1 }; });
+    hintsShown[current] = 0; renderCards(); renderSum(); renderHints();
+  });
+  document.getElementById("solveBtn").addEventListener("click", function () {
+    states[current] = PROBLEMS[current].solution.map(function (s) { return { rev: s.rev, k: s.k }; });
+    hintsShown[current] = PROBLEMS[current].hints.length; renderCards(); renderSum(); renderHints();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
