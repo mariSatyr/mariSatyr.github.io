@@ -167,6 +167,13 @@
   .hintbox ol { margin: .2rem 0 0; padding-left: 1.2rem; }
   footer { margin-top: 2.5rem; font-size: .85rem; color: var(--muted); }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  /* Worksheet embed */
+  .sheet { margin-top: 2.5rem; }
+  .sheet .bar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; justify-content: space-between; margin-bottom: .8rem; }
+  .sheet .bar p { margin: 0; color: var(--muted); max-width: 60ch; }
+  .sheet .btn { text-decoration: none; display: inline-flex; align-items: center; }
+  .pdf-frame { width: 100%; height: min(85vh, 1100px); border: 1.5px solid var(--line); border-radius: 12px; background: var(--paper); display: block; }
+  .pdf-fallback { padding: 1rem; }
 </style>
 </head>
 <body>
@@ -248,6 +255,19 @@
       <p class="legend"><span class="x">crossed out</span> = cancels completely &nbsp;·&nbsp; <span class="part">dashed</span> = partly cancels</p>
     </aside>
   </div>
+
+  <section class="sheet" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle">Worksheet: Methane &amp; Acetylene</h2>
+    <div class="bar">
+      <p>Work the three problems above on paper. Fill in every blank, then check your ΔH with the lab.</p>
+      <a class="btn" href="Hess_Law_Worksheet_Student.pdf" download>⬇ Download PDF</a>
+    </div>
+    <object class="pdf-frame" data="Hess_Law_Worksheet_Student.pdf#view=FitH" type="application/pdf" aria-label="Hess's Law worksheet PDF">
+      <div class="pdf-fallback panel">
+        <p>Your browser can't show the PDF here. <a href="Hess_Law_Worksheet_Student.pdf" target="_blank" rel="noopener">Open the worksheet</a> in a new tab.</p>
+      </div>
+    </object>
+  </section>
 
   <footer>Enthalpy values are standard values at 25 °C in kJ per reaction as written. The “burning methane to steam” data matches the LibreTexts reading on Hess' Law.</footer>
 </div>
