@@ -76,7 +76,7 @@ button{font:inherit;cursor:pointer}
 .now h3{font-size:1.6rem}
 .now p{color:var(--muted)}
 .procs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.proc{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;text-align:left;font-weight:700;font-size:.95rem;transition:border-color .15s, transform .1s}
+.proc{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;text-align:left;font-weight:700;font-size:.95rem;transition:border-color .15s, transform .15s}
 .proc:hover{border-color:var(--ink)}
 .proc:active{transform:scale(.98)}
 .proc:last-child{grid-column:span 2}
@@ -94,6 +94,7 @@ button{font:inherit;cursor:pointer}
 @media (max-width:820px){.types{grid-template-columns:1fr}}
 .type{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .type .swatch{height:110px;display:block;width:100%}
+.type .type-photo{width:100%;height:110px;display:block;object-fit:cover;filter:saturate(.9) contrast(1.05)}
 .type .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px}
 .type .nick{font-style:italic;color:var(--muted)}
 .type dl{margin:0;display:flex;flex-direction:column;gap:8px}
@@ -132,7 +133,7 @@ button{font:inherit;cursor:pointer}
 .card{perspective:800px;background:none;border:0;padding:0;height:140px;text-align:left}
 .card .inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
 .card.flip .inner{transform:rotateY(180deg)}
-.card .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.card .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--line);background:var(--surface)}
 .card .front span{font-family:var(--display);font-size:1.35rem;font-weight:700}
 .card .front small{color:var(--muted);font-size:.78rem}
 .card .back{transform:rotateY(180deg);background:var(--ink);color:var(--bg);font-size:.95rem;justify-content:center}
@@ -204,6 +205,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
     </div>
     <div class="types">
       <article class="type t-ign">
+        <img class="type-photo" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80" alt="Volcanic rock landscape in a lava field" loading="lazy">
         <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <rect width="300" height="110" fill="var(--ign-soft)"/>
           <g fill="var(--ign)" opacity=".85">
@@ -212,7 +214,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
             <polygon points="120,82 138,78 142,100 122,104"/><polygon points="180,70 196,66 200,88 182,92"/>
           </g>
           <g fill="var(--ink)" opacity=".7">
-            <polygon points="60,30 70,26 74,40 62,44"/><polygon points="120,30 132,34 128,48 116,44"/><polygon points="240,30 250,28 252,40 242,42"/><polygon points="160,56 172,52 176,64 164,68"/><polygon points="270,70 282,72 280,86 268,84"/><polygon points="12,48 22,50 20,62 10,60"/>
+            <polygon points="60,30 70,26 74,40 62,44"/><polygon points="120,30 132,34 128,48 116,44"/><polygon points="240,30 250,28 252,40 242,42"/><polygon points="160,56 172,52 176,64 164,68"/><polygon points="210,22 220,20 222,32 212,34"/>
           </g>
         </svg>
         <div class="body">
@@ -227,12 +229,13 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
       </article>
 
       <article class="type t-sed">
+        <img class="type-photo" src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80" alt="Layered sedimentary rock cliffs" loading="lazy">
         <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <rect width="300" height="110" fill="var(--sed-soft)"/>
           <path d="M0 22 C60 16 120 28 180 20 S270 16 300 22 V40 C240 44 180 34 120 40 S30 42 0 38Z" fill="var(--sed)" opacity=".35"/>
           <path d="M0 52 C70 46 130 58 200 50 S280 48 300 54 V66 C230 70 170 62 100 68 S20 68 0 64Z" fill="var(--sed)" opacity=".7"/>
           <path d="M0 82 C50 78 140 90 210 82 S280 80 300 84 V110 H0Z" fill="var(--sed)" opacity=".5"/>
-          <g fill="var(--ink)" opacity=".55"><circle cx="40" cy="30" r="2"/><circle cx="95" cy="33" r="1.6"/><circle cx="160" cy="27" r="2"/><circle cx="230" cy="30" r="1.6"/><circle cx="70" cy="74" r="1.6"/><circle cx="190" cy="73" r="2"/><circle cx="260" cy="96" r="2"/><circle cx="120" cy="98" r="1.6"/></g>
+          <g fill="var(--ink)" opacity=".55"><circle cx="40" cy="30" r="2"/><circle cx="95" cy="33" r="1.6"/><circle cx="160" cy="27" r="2"/><circle cx="230" cy="30" r="1.6"/><circle cx="70" cy="74" r="1.8"/><circle cx="144" cy="77" r="2"/><circle cx="186" cy="72" r="1.6"/><circle cx="258" cy="76" r="2"/></g>
           <path d="M136 92 q8 -12 16 0 q-8 -4 -16 0z" fill="none" stroke="var(--ink)" stroke-width="1.5" opacity=".6"/>
         </svg>
         <div class="body">
@@ -247,6 +250,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
       </article>
 
       <article class="type t-met">
+        <img class="type-photo" src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=900&q=80" alt="Marble and metamorphic rock texture" loading="lazy">
         <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <rect width="300" height="110" fill="var(--met-soft)"/>
           <g fill="none" stroke="var(--met)" stroke-width="7" opacity=".75">
@@ -309,7 +313,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
     <div class="cards" id="cards"></div>
   </section>
 
-  <footer>Rock Cycle Explorer · Middle school earth science</footer>
+  <footer>Rock Cycle Explorer · Middle school earth science · Open-source photos via Unsplash</footer>
 </div>
 
 <script>
@@ -328,7 +332,6 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
     {k:"press", label:"Heat & pressure", sub:"deep underground"},
     {k:"melt", label:"Melting", sub:"into magma"}
   ];
-  // transitions[state][process] = {to, edge, msg}
   const T = {
     magma:{cool:{to:"igneous",edge:"e-cool",msg:"The magma cooled and hardened into igneous rock. If it cooled slowly underground, it grew big crystals like granite."}},
     igneous:{
@@ -398,7 +401,6 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
   $("reset").addEventListener("click",()=>{ cur="magma"; trail=["magma"]; light(null); fb.className="feedback"; fb.textContent="Back to magma. Pick a process to begin."; place(); });
   place();
 
-  // Rock type examples
   const EX = {
     ign:[["Granite","Cooled slowly underground, so its crystals are big enough to see. Used for countertops and buildings."],
          ["Basalt","Dark rock from lava that cooled quickly. Most of the ocean floor is basalt."],
@@ -425,7 +427,6 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
     });
   });
 
-  // Game
   const Q = [
     ["I have visible layers and a seashell fossil inside me.","sed","Fossils and layers are clues for sedimentary rock (like limestone)."],
     ["I am black, shiny and smooth like glass.","ign","That's obsidian, an igneous rock from lava that cooled very fast."],
@@ -441,7 +442,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
   let qi=0, score=0, results=[];
   const clue=$("clue"), gfb=$("g-feedback"), next=$("next"), answers=[...document.querySelectorAll(".ans")];
   const NAMES={ign:"igneous",sed:"sedimentary",met:"metamorphic"};
-  function drawDots(){ $("dots").innerHTML = Q.map((_,i)=>`<span class="dot ${results[i]===true?'r':results[i]===false?'w':''} ${i===qi&&results[i]===undefined?'cur':''}"></span>`).join(""); $("score").textContent=score; }
+  function drawDots(){ $("dots").innerHTML = Q.map((_,i)=>`<span class="dot ${results[i]===true?'r':results[i]===false?'w':''} ${i===qi&&results[i]===undefined?'cur':''}"></span>`).join(""); $("score").textContent = score; }
   function showQ(){
     if(qi>=Q.length){
       clue.textContent = `You got ${score} out of ${Q.length}!`;
@@ -466,8 +467,7 @@ footer{color:var(--muted);font-size:.85rem;text-align:center}
   next.addEventListener("click",()=>{ if(qi>=Q.length){qi=0;score=0;results=[];} else qi++; showQ(); });
   showQ();
 
-  // Flip cards
-  const V=[["Magma","Melted rock underground."],["Lava","Melted rock that reaches Earth's surface."],["Sediment","Small pieces of rock, sand, mud and shells."],["Weathering","Breaking rock into smaller pieces."],["Erosion","Moving sediment to a new place with water, wind or ice."],["Deposition","Dropping sediment in a new place, often in layers."],["Compaction","Squeezing layers of sediment together."],["Cementation","Minerals gluing sediment together."],["Foliation","Stripes or bands in metamorphic rock caused by pressure."],["Fossil","Preserved remains or traces of past life, found in sedimentary rock."]];
+  const V=[["Magma","Melted rock underground."],["Lava","Melted rock that reaches Earth's surface."],["Sediment","Small pieces of rock, sand, mud and shells."],["Weathering","Breaking rock into smaller pieces."],["Compaction","Layers pressed together by weight."],["Metamorphic","Rock changed by heat and pressure."]];
   const cards=$("cards");
   V.forEach(([t,d])=>{
     const b=document.createElement("button"); b.className="card"; b.setAttribute("aria-label",`${t}. Tap to flip.`);
