@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rock Cycle Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one long field-guide page — interactive cycle up top, then rock types, a clue game, and flip cards. */
+:root{
+  --bg:#eef1f0; --surface:#ffffff; --ink:#1d2624; --muted:#56635f; --line:#cdd5d2;
+  --ign:#c2410c; --ign-soft:#fde3d4;
+  --sed:#a16207; --sed-soft:#f7ecc9;
+  --met:#6d4aa8; --met-soft:#e9e1f6;
+  --magma:#dc2626; --good:#15803d; --bad:#b91c1c;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", Verdana, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141a19; --surface:#1d2523; --ink:#e7ecea; --muted:#9caaa5; --line:#34403d;
+  --ign:#fb8a4c; --ign-soft:#3b2317; --sed:#e0b44a; --sed-soft:#342b14; --met:#b597ec; --met-soft:#2a2240;
+  --magma:#f87171; --good:#4ade80; --bad:#f87171; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141a19; --surface:#1d2523; --ink:#e7ecea; --muted:#9caaa5; --line:#34403d;
+  --ign:#fb8a4c; --ign-soft:#3b2317; --sed:#e0b44a; --sed-soft:#342b14; --met:#b597ec; --met-soft:#2a2240;
+  --magma:#f87171; --good:#4ade80; --bad:#f87171; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding:0 16px}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 64px;display:flex;flex-direction:column;gap:64px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:700}
+h3{font-size:1.25rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.lede{max-width:62ch;color:var(--muted);font-size:1.1rem}
+section{display:flex;flex-direction:column;gap:20px}
+.sec-head{display:flex;flex-direction:column;gap:8px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--met);outline-offset:2px}
+
+/* Cycle explorer */
+.explorer{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.explorer{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.diagram svg{width:100%;height:auto;display:block}
+.node rect{fill:var(--surface);stroke:var(--line);stroke-width:2;transition:stroke .2s, fill .2s}
+.node{cursor:pointer}
+.node text{font-family:var(--display);font-weight:700;font-size:17px;fill:var(--ink);pointer-events:none}
+.node.here rect{stroke-width:3.5}
+.node[data-k="magma"] rect{stroke:var(--magma)}
+.node[data-k="igneous"] rect{stroke:var(--ign)}
+.node[data-k="sedimentary"] rect{stroke:var(--sed)}
+.node[data-k="metamorphic"] rect{stroke:var(--met)}
+.node[data-k="sediment"] rect{stroke:var(--sed);stroke-dasharray:5 4}
+.node.here[data-k="magma"] rect{fill:color-mix(in srgb,var(--magma) 16%,var(--surface))}
+.node.here[data-k="igneous"] rect{fill:var(--ign-soft)}
+.node.here[data-k="sedimentary"] rect,.node.here[data-k="sediment"] rect{fill:var(--sed-soft)}
+.node.here[data-k="metamorphic"] rect{fill:var(--met-soft)}
+.edge path{fill:none;stroke:var(--muted);stroke-width:2;opacity:.55;transition:stroke .2s,opacity .2s,stroke-width .2s}
+.edge.lit path{stroke:var(--ink);opacity:1;stroke-width:3.5}
+.edge text{font-size:13px;fill:var(--muted);font-family:var(--body)}
+.edge.lit text{fill:var(--ink);font-weight:700}
+.arrowhead{fill:var(--muted)}
+.marker circle{fill:var(--ink)}
+.marker text{fill:var(--bg);font-size:11px;font-weight:700;font-family:var(--body)}
+.marker{transition:transform .6s cubic-bezier(.5,0,.2,1)}
+@media (prefers-reduced-motion:reduce){.marker{transition:none}}
+
+.side{display:flex;flex-direction:column;gap:16px}
+.now{display:flex;flex-direction:column;gap:6px}
+.now .tag{display:inline-flex;align-self:flex-start;padding:2px 10px;border-radius:99px;font-size:.8rem;font-weight:700;background:var(--bg);border:1px solid var(--line)}
+.now h3{font-size:1.6rem}
+.now p{color:var(--muted)}
+.procs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.proc{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;text-align:left;font-weight:700;font-size:.95rem;transition:border-color .15s, transform .1s}
+.proc:hover{border-color:var(--ink)}
+.proc:active{transform:scale(.98)}
+.proc:last-child{grid-column:span 2}
+.proc small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.feedback{min-height:3.2em;padding:12px 14px;border-radius:10px;background:var(--bg);font-size:.95rem}
+.feedback.ok{border-left:4px solid var(--good)}
+.feedback.no{border-left:4px solid var(--bad)}
+.trail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.85rem;color:var(--muted)}
+.trail b{color:var(--ink)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;padding:0;font-size:.9rem}
+
+/* Rock types */
+.types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.types{grid-template-columns:1fr}}
+.type{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.type .swatch{height:110px;display:block;width:100%}
+.type .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.type .nick{font-style:italic;color:var(--muted)}
+.type dl{margin:0;display:flex;flex-direction:column;gap:8px}
+.type dt{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.type dd{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:4px 12px;font-size:.88rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.fact{font-size:.92rem;padding:10px 12px;border-radius:8px;min-height:2.8em}
+.t-ign h3{color:var(--ign)} .t-ign .fact{background:var(--ign-soft)}
+.t-sed h3{color:var(--sed)} .t-sed .fact{background:var(--sed-soft)}
+.t-met h3{color:var(--met)} .t-met .fact{background:var(--met-soft)}
+
+/* Game */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:20px;align-items:start}
+@media (max-width:700px){.game{grid-template-columns:1fr}}
+.clue{font-family:var(--display);font-size:clamp(1.3rem,3vw,1.7rem);font-weight:700;line-height:1.25;min-height:3.8em}
+.answers{display:flex;flex-wrap:wrap;gap:10px}
+.ans{flex:1 1 150px;padding:14px;border-radius:10px;border:2px solid;background:var(--surface);font-weight:700;font-size:1rem}
+.ans.a-ign{border-color:var(--ign);color:var(--ign)}
+.ans.a-sed{border-color:var(--sed);color:var(--sed)}
+.ans.a-met{border-color:var(--met);color:var(--met)}
+.ans:disabled{opacity:.45;cursor:default}
+.ans.picked{opacity:1}
+.ans.a-ign.picked{background:var(--ign-soft)} .ans.a-sed.picked{background:var(--sed-soft)} .ans.a-met.picked{background:var(--met-soft)}
+.score{display:flex;flex-direction:column;gap:10px}
+.big{font-family:var(--display);font-size:3rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:5px;flex-wrap:wrap}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--line)}
+.dot.r{background:var(--good)} .dot.w{background:var(--bad)} .dot.cur{outline:2px solid var(--ink);outline-offset:1px}
+.primary{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:12px 18px;font-weight:700}
+.game .gameplay{display:flex;flex-direction:column;gap:16px}
+
+/* Flip cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.card{perspective:800px;background:none;border:0;padding:0;height:140px;text-align:left}
+.card .inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.card.flip .inner{transform:rotateY(180deg)}
+.card .face{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.card .front span{font-family:var(--display);font-size:1.35rem;font-weight:700}
+.card .front small{color:var(--muted);font-size:.78rem}
+.card .back{transform:rotateY(180deg);background:var(--ink);color:var(--bg);font-size:.95rem;justify-content:center}
+@media (prefers-reduced-motion:reduce){.card .inner{transition:none}}
+footer{color:var(--muted);font-size:.85rem;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="sec-head">
+    <span class="eyebrow">Earth Science · Rocks</span>
+    <h1>Rock Cycle Explorer</h1>
+    <p class="lede">Every rock on Earth is on a slow journey. Heat from inside Earth and energy from the Sun keep changing rocks from one type to another. Take a rock on that journey below.</p>
+  </header>
+
+  <!-- 1. Explorer -->
+  <section id="explore" aria-labelledby="h-explore">
+    <div class="sec-head">
+      <span class="eyebrow">Part 1 · Try it</span>
+      <h2 id="h-explore">Move a rock through the cycle</h2>
+      <p class="lede">Your rock starts as magma. Pick a process to see what happens. Some processes won't work on every rock, and the explorer will tell you why.</p>
+    </div>
+    <div class="explorer">
+      <div class="panel diagram">
+        <svg viewBox="0 0 640 440" role="img" aria-label="Rock cycle diagram: magma, igneous rock, sediment, sedimentary rock and metamorphic rock connected by processes">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="arrowhead" d="M0 0L10 5L0 10z"/></marker>
+          </defs>
+          <g class="edge" id="e-cool"><path d="M150 195 L258 106" marker-end="url(#ah)"/><text x="130" y="140">Cooling</text></g>
+          <g class="edge" id="e-weather"><path d="M382 106 L490 195" marker-end="url(#ah)"/><text x="450" y="140">Weathering</text></g>
+          <g class="edge" id="e-compact"><path d="M522 246 L478 344" marker-end="url(#ah)"/><text x="512" y="305">Compaction</text></g>
+          <g class="edge" id="e-press"><path d="M374 370 H268" marker-end="url(#ah)"/><text x="321" y="418" text-anchor="middle">Heat &amp; pressure</text></g>
+          <g class="edge" id="e-melt"><path d="M170 344 L124 246" marker-end="url(#ah)"/><text x="40" y="305">Melting</text></g>
+          <g class="edge" id="e-press2"><path d="M302 106 L212 344" marker-end="url(#ah)"/><text x="262" y="230">Heat &amp; pressure</text></g>
+
+          <g class="node" data-k="igneous" tabindex="0" role="button" aria-label="Igneous rock"><rect x="245" y="55" width="150" height="50" rx="12"/><text x="320" y="86" text-anchor="middle">Igneous rock</text></g>
+          <g class="node" data-k="magma" tabindex="0" role="button" aria-label="Magma"><rect x="35" y="195" width="150" height="50" rx="12"/><text x="110" y="226" text-anchor="middle">Magma</text></g>
+          <g class="node" data-k="sediment" tabindex="0" role="button" aria-label="Sediment"><rect x="455" y="195" width="150" height="50" rx="12"/><text x="530" y="226" text-anchor="middle">Sediment</text></g>
+          <g class="node" data-k="sedimentary" tabindex="0" role="button" aria-label="Sedimentary rock"><rect x="360" y="345" width="180" height="50" rx="12"/><text x="450" y="376" text-anchor="middle">Sedimentary rock</text></g>
+          <g class="node" data-k="metamorphic" tabindex="0" role="button" aria-label="Metamorphic rock"><rect x="95" y="345" width="180" height="50" rx="12"/><text x="185" y="376" text-anchor="middle">Metamorphic rock</text></g>
+
+          <g class="marker" id="marker"><circle r="15"/><text text-anchor="middle" y="4">YOU</text></g>
+        </svg>
+      </div>
+
+      <div class="side">
+        <div class="panel now" aria-live="polite">
+          <span class="tag" id="now-tag">Your rock is now</span>
+          <h3 id="now-name">Magma</h3>
+          <p id="now-desc"></p>
+        </div>
+        <div class="panel side">
+          <div class="row"><strong>Choose a process</strong><button class="linkbtn" id="reset">Start over</button></div>
+          <div class="procs" id="procs"></div>
+          <div class="feedback" id="feedback" aria-live="polite">Tip: tap any box in the diagram to read about it.</div>
+          <div class="trail" id="trail"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Types -->
+  <section id="types" aria-labelledby="h-types">
+    <div class="sec-head">
+      <span class="eyebrow">Part 2 · Learn</span>
+      <h2 id="h-types">The three types of rock</h2>
+      <p class="lede">Scientists group rocks by <strong>how they form</strong>. Tap an example rock to learn about it.</p>
+    </div>
+    <div class="types">
+      <article class="type t-ign">
+        <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="110" fill="var(--ign-soft)"/>
+          <g fill="var(--ign)" opacity=".85">
+            <polygon points="20,20 44,14 50,36 28,42"/><polygon points="80,50 104,40 112,66 86,74"/><polygon points="150,12 170,20 162,44 140,36"/>
+            <polygon points="210,60 236,52 240,80 214,86"/><polygon points="260,16 284,24 278,46 254,40"/><polygon points="40,70 60,64 66,90 44,96"/>
+            <polygon points="120,82 138,78 142,100 122,104"/><polygon points="180,70 196,66 200,88 182,92"/>
+          </g>
+          <g fill="var(--ink)" opacity=".7">
+            <polygon points="60,30 70,26 74,40 62,44"/><polygon points="120,30 132,34 128,48 116,44"/><polygon points="240,30 250,28 252,40 242,42"/><polygon points="160,56 172,52 176,64 164,68"/><polygon points="270,70 282,72 280,86 268,84"/><polygon points="12,48 22,50 20,62 10,60"/>
+          </g>
+        </svg>
+        <div class="body">
+          <div><h3>Igneous</h3><p class="nick">“Born from fire”</p></div>
+          <dl>
+            <div><dt>How it forms</dt><dd>Melted rock cools and hardens. Slow cooling underground (<strong>intrusive</strong>) makes big crystals. Fast cooling at the surface (<strong>extrusive</strong>) makes tiny crystals or glass.</dd></div>
+            <div><dt>Clues</dt><dd>Crystals, a glassy shine, or gas-bubble holes</dd></div>
+          </dl>
+          <div class="chips" data-group="ign"></div>
+          <p class="fact" id="fact-ign">Tap an example above.</p>
+        </div>
+      </article>
+
+      <article class="type t-sed">
+        <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="110" fill="var(--sed-soft)"/>
+          <path d="M0 22 C60 16 120 28 180 20 S270 16 300 22 V40 C240 44 180 34 120 40 S30 42 0 38Z" fill="var(--sed)" opacity=".35"/>
+          <path d="M0 52 C70 46 130 58 200 50 S280 48 300 54 V66 C230 70 170 62 100 68 S20 68 0 64Z" fill="var(--sed)" opacity=".7"/>
+          <path d="M0 82 C50 78 140 90 210 82 S280 80 300 84 V110 H0Z" fill="var(--sed)" opacity=".5"/>
+          <g fill="var(--ink)" opacity=".55"><circle cx="40" cy="30" r="2"/><circle cx="95" cy="33" r="1.6"/><circle cx="160" cy="27" r="2"/><circle cx="230" cy="30" r="1.6"/><circle cx="70" cy="74" r="1.6"/><circle cx="190" cy="73" r="2"/><circle cx="260" cy="96" r="2"/><circle cx="120" cy="98" r="1.6"/></g>
+          <path d="M136 92 q8 -12 16 0 q-8 -4 -16 0z" fill="none" stroke="var(--ink)" stroke-width="1.5" opacity=".6"/>
+        </svg>
+        <div class="body">
+          <div><h3>Sedimentary</h3><p class="nick">“Made of layers”</p></div>
+          <dl>
+            <div><dt>How it forms</dt><dd>Bits of rock, sand, mud and shells settle in layers. Over time they are pressed together (<strong>compaction</strong>) and glued by minerals (<strong>cementation</strong>).</dd></div>
+            <div><dt>Clues</dt><dd>Layers, grains you can see, and fossils</dd></div>
+          </dl>
+          <div class="chips" data-group="sed"></div>
+          <p class="fact" id="fact-sed">Tap an example above.</p>
+        </div>
+      </article>
+
+      <article class="type t-met">
+        <svg class="swatch" viewBox="0 0 300 110" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <rect width="300" height="110" fill="var(--met-soft)"/>
+          <g fill="none" stroke="var(--met)" stroke-width="7" opacity=".75">
+            <path d="M-10 20 C40 5 70 40 120 22 S200 4 240 24 S290 30 310 18"/>
+            <path d="M-10 50 C30 38 80 66 130 48 S210 32 250 52 S290 58 310 46"/>
+            <path d="M-10 82 C40 70 90 98 140 78 S210 64 250 84 S290 90 310 78"/>
+          </g>
+          <g fill="none" stroke="var(--ink)" stroke-width="2.5" opacity=".45">
+            <path d="M-10 35 C40 22 80 52 125 35 S205 18 245 38 S290 44 310 32"/>
+            <path d="M-10 66 C35 54 85 82 135 63 S210 48 250 68 S290 74 310 62"/>
+          </g>
+        </svg>
+        <div class="body">
+          <div><h3>Metamorphic</h3><p class="nick">“Changed form”</p></div>
+          <dl>
+            <div><dt>How it forms</dt><dd>Any rock buried deep underground gets squeezed and heated. It changes <strong>without melting</strong>, and its minerals line up in new ways.</dd></div>
+            <div><dt>Clues</dt><dd>Stripes or bands (<strong>foliation</strong>), hard and often shiny</dd></div>
+          </dl>
+          <div class="chips" data-group="met"></div>
+          <p class="fact" id="fact-met">Tap an example above.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. Game -->
+  <section id="game" aria-labelledby="h-game">
+    <div class="sec-head">
+      <span class="eyebrow">Part 3 · Check yourself</span>
+      <h2 id="h-game">Which rock am I?</h2>
+      <p class="lede">Read each clue and pick the rock type.</p>
+    </div>
+    <div class="panel game">
+      <div class="gameplay">
+        <p class="eyebrow" id="q-count">Clue 1 of 10</p>
+        <p class="clue" id="clue"></p>
+        <div class="answers">
+          <button class="ans a-ign" data-a="ign">Igneous</button>
+          <button class="ans a-sed" data-a="sed">Sedimentary</button>
+          <button class="ans a-met" data-a="met">Metamorphic</button>
+        </div>
+        <div class="feedback" id="g-feedback" aria-live="polite">Pick an answer.</div>
+        <div><button class="primary" id="next" hidden>Next clue</button></div>
+      </div>
+      <div class="score">
+        <span class="eyebrow">Score</span>
+        <span class="big" id="score">0</span>
+        <div class="dots" id="dots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Vocab -->
+  <section id="vocab" aria-labelledby="h-vocab">
+    <div class="sec-head">
+      <span class="eyebrow">Part 4 · Review</span>
+      <h2 id="h-vocab">Vocabulary flip cards</h2>
+      <p class="lede">Say the definition out loud, then tap the card to check.</p>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <footer>Rock Cycle Explorer · Middle school earth science</footer>
+</div>
+
+<script>
+(function(){
+  const STATES = {
+    magma:{name:"Magma", tag:"Melted rock", desc:"Hot, liquid rock deep underground. When it reaches the surface it is called lava."},
+    igneous:{name:"Igneous rock", tag:"Igneous", desc:"Solid rock made when magma or lava cools. Examples: granite (cooled slowly underground) and basalt (cooled fast at the surface)."},
+    sediment:{name:"Sediment", tag:"Loose pieces", desc:"Broken bits of rock, sand, mud and shells, carried by water, wind or ice and dropped in layers."},
+    sedimentary:{name:"Sedimentary rock", tag:"Sedimentary", desc:"Rock made from layers of sediment pressed and glued together. Examples: sandstone, shale, limestone."},
+    metamorphic:{name:"Metamorphic rock", tag:"Metamorphic", desc:"Rock changed by heat and pressure deep underground, without melting. Examples: slate, marble, gneiss."}
+  };
+  const PROCS = [
+    {k:"cool", label:"Cooling", sub:"& crystallization"},
+    {k:"weather", label:"Weathering", sub:"& erosion"},
+    {k:"compact", label:"Compaction", sub:"& cementation"},
+    {k:"press", label:"Heat & pressure", sub:"deep underground"},
+    {k:"melt", label:"Melting", sub:"into magma"}
+  ];
+  // transitions[state][process] = {to, edge, msg}
+  const T = {
+    magma:{cool:{to:"igneous",edge:"e-cool",msg:"The magma cooled and hardened into igneous rock. If it cooled slowly underground, it grew big crystals like granite."}},
+    igneous:{
+      weather:{to:"sediment",edge:"e-weather",msg:"Rain, wind and ice broke the igneous rock into small pieces. Rivers carried the sediment away."},
+      press:{to:"metamorphic",edge:"e-press2",msg:"The igneous rock was buried deep and squeezed. Granite can become banded gneiss this way."},
+      melt:{to:"magma",edge:null,msg:"The igneous rock sank deep enough to melt back into magma."}},
+    sediment:{compact:{to:"sedimentary",edge:"e-compact",msg:"Layers piled up, pressing the sediment together, and minerals cemented it into sedimentary rock."}},
+    sedimentary:{
+      press:{to:"metamorphic",edge:"e-press",msg:"Heat and pressure changed the sedimentary rock. Shale becomes slate, and limestone becomes marble."},
+      weather:{to:"sediment",edge:null,msg:"The sedimentary rock was lifted to the surface and weathered back into sediment."},
+      melt:{to:"magma",edge:null,msg:"The sedimentary rock was pulled deep underground and melted into magma."}},
+    metamorphic:{
+      melt:{to:"magma",edge:"e-melt",msg:"Even more heat melted the metamorphic rock into magma. The cycle can start again."},
+      weather:{to:"sediment",edge:null,msg:"The metamorphic rock was pushed up to the surface and weathered into sediment."},
+      press:{to:"metamorphic",edge:null,msg:"More heat and pressure changed it even further. Slate can become schist, then gneiss. It's still metamorphic rock."}}
+  };
+  const WHY = {
+    cool:{_:"Only melted rock can cool and crystallize. Your rock is already solid or in loose pieces.", sediment:"Sediment isn't melted, so there is nothing to cool. Try compaction."},
+    weather:{magma:"Magma is liquid and deep underground, where wind and rain can't reach it.", sediment:"Sediment is already broken into small pieces. Try compaction."},
+    compact:{_:"Compaction and cementation only work on loose sediment. Break your rock down first.", magma:"Magma is liquid. It has to cool into rock before anything else happens."},
+    press:{magma:"Magma is already melted. It needs to cool into solid rock first.", sediment:"Loose sediment needs to become sedimentary rock first. Try compaction."},
+    melt:{magma:"Your rock is already magma!", sediment:"In this model, sediment becomes sedimentary rock before it gets buried deep enough to melt."}
+  };
+  const POS = {magma:[110,220], igneous:[320,80], sediment:[530,220], sedimentary:[450,370], metamorphic:[185,370]};
+
+  let cur = "magma", trail = ["magma"];
+  const $ = id => document.getElementById(id);
+  const procsEl = $("procs"), fb = $("feedback"), marker = $("marker");
+
+  PROCS.forEach(p=>{
+    const b=document.createElement("button"); b.className="proc"; b.dataset.p=p.k;
+    b.innerHTML=`${p.label}<small>${p.sub}</small>`;
+    b.addEventListener("click",()=>apply(p.k)); procsEl.appendChild(b);
+  });
+
+  function place(){
+    const [x,y]=POS[cur]; const half = (cur==="sedimentary"||cur==="metamorphic") ? 90 : 75;
+    marker.style.transform=`translate(${x-half+4}px,${y-27}px)`;
+    document.querySelectorAll(".node").forEach(n=>n.classList.toggle("here",n.dataset.k===cur));
+    showState(cur, true);
+    const t=$("trail"); t.innerHTML = trail.length>1 ? "<span>Your rock's path:</span> " + trail.map((s,i)=>i===trail.length-1?`<b>${STATES[s].name}</b>`:STATES[s].name).join(" → ") : "";
+  }
+  function showState(k, isHere){
+    $("now-tag").textContent = isHere ? "Your rock is now" : "Reading about";
+    $("now-name").textContent = STATES[k].name;
+    $("now-desc").textContent = STATES[k].desc;
+  }
+  function light(edge){
+    document.querySelectorAll(".edge").forEach(e=>e.classList.remove("lit"));
+    if(edge){ $(edge).classList.add("lit"); }
+  }
+  function apply(p){
+    const t = T[cur][p];
+    if(t){
+      cur=t.to; trail.push(cur); light(t.edge);
+      fb.className="feedback ok"; fb.textContent=t.msg; place();
+    } else {
+      const w = WHY[p]; const msg = (w && (w[cur]||w._)) || "That process doesn't work on this rock.";
+      fb.className="feedback no"; fb.textContent="That won't work. " + msg; light(null);
+    }
+  }
+  document.querySelectorAll(".node").forEach(n=>{
+    const go=()=>{ showState(n.dataset.k, n.dataset.k===cur); };
+    n.addEventListener("click",go);
+    n.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();go();} });
+  });
+  $("reset").addEventListener("click",()=>{ cur="magma"; trail=["magma"]; light(null); fb.className="feedback"; fb.textContent="Back to magma. Pick a process to begin."; place(); });
+  place();
+
+  // Rock type examples
+  const EX = {
+    ign:[["Granite","Cooled slowly underground, so its crystals are big enough to see. Used for countertops and buildings."],
+         ["Basalt","Dark rock from lava that cooled quickly. Most of the ocean floor is basalt."],
+         ["Obsidian","Lava cooled so fast that no crystals formed. It is natural volcanic glass."],
+         ["Pumice","Lava full of gas bubbles cooled into rock with so many holes it can float on water."]],
+    sed:[["Sandstone","Sand grains cemented together. You can often feel the grains."],
+         ["Shale","Made from mud and clay. It splits into thin, flat layers."],
+         ["Limestone","Often made from shells and skeletons of sea creatures. It fizzes in acid."],
+         ["Conglomerate","Rounded pebbles cemented together, often from an old riverbed."]],
+    met:[["Slate","Shale that was heated and squeezed. It splits into smooth sheets and was used for chalkboards."],
+         ["Marble","Limestone changed by heat and pressure. Sculptors carve statues from it."],
+         ["Quartzite","Sandstone changed into a very hard rock."],
+         ["Gneiss","Often granite that was squeezed into light and dark stripes. Say it “nice.”"]]
+  };
+  document.querySelectorAll(".chips").forEach(box=>{
+    const g=box.dataset.group;
+    EX[g].forEach(([n,f])=>{
+      const b=document.createElement("button"); b.className="chip"; b.textContent=n; b.setAttribute("aria-pressed","false");
+      b.addEventListener("click",()=>{
+        box.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+        b.setAttribute("aria-pressed","true"); $("fact-"+g).innerHTML=`<strong>${n}:</strong> ${f}`;
+      });
+      box.appendChild(b);
+    });
+  });
+
+  // Game
+  const Q = [
+    ["I have visible layers and a seashell fossil inside me.","sed","Fossils and layers are clues for sedimentary rock (like limestone)."],
+    ["I am black, shiny and smooth like glass.","ign","That's obsidian, an igneous rock from lava that cooled very fast."],
+    ["I have stripes because I was squeezed deep underground.","met","Stripes from pressure are called foliation, a clue for metamorphic rock like gneiss."],
+    ["I have large crystals because I cooled slowly underground.","ign","Slow cooling underground makes big crystals, like granite. That's intrusive igneous rock."],
+    ["I am made of sand grains glued together.","sed","That's sandstone. Sand was compacted and cemented."],
+    ["I used to be shale, but now I am slate.","met","Heat and pressure changed shale into slate, a metamorphic rock."],
+    ["I am full of tiny holes and light enough to float.","ign","That's pumice. Gas bubbles got trapped as lava cooled fast."],
+    ["I am made of rounded pebbles cemented together.","sed","That's conglomerate, a sedimentary rock often formed in rivers."],
+    ["I used to be limestone. Now sculptors carve statues from me.","met","That's marble, limestone changed by heat and pressure."],
+    ["I formed from mud at the bottom of a lake and split into thin layers.","sed","That's shale, a sedimentary rock made from mud and clay."]
+  ];
+  let qi=0, score=0, results=[];
+  const clue=$("clue"), gfb=$("g-feedback"), next=$("next"), answers=[...document.querySelectorAll(".ans")];
+  const NAMES={ign:"igneous",sed:"sedimentary",met:"metamorphic"};
+  function drawDots(){ $("dots").innerHTML = Q.map((_,i)=>`<span class="dot ${results[i]===true?'r':results[i]===false?'w':''} ${i===qi&&results[i]===undefined?'cur':''}"></span>`).join(""); $("score").textContent=score; }
+  function showQ(){
+    if(qi>=Q.length){
+      clue.textContent = `You got ${score} out of ${Q.length}!`;
+      $("q-count").textContent="Finished";
+      gfb.className="feedback"; gfb.textContent = score>=8 ? "Great work. You can spot rock types like a geologist." : "Review Part 2, then try again.";
+      answers.forEach(a=>{a.disabled=true;a.classList.remove("picked")});
+      next.textContent="Play again"; next.hidden=false; drawDots(); return;
+    }
+    $("q-count").textContent=`Clue ${qi+1} of ${Q.length}`; clue.textContent=Q[qi][0];
+    answers.forEach(a=>{a.disabled=false;a.classList.remove("picked")});
+    gfb.className="feedback"; gfb.textContent="Pick an answer."; next.hidden=true; next.textContent="Next clue"; drawDots();
+  }
+  answers.forEach(a=>a.addEventListener("click",()=>{
+    const [,ans,why]=Q[qi]; const right=a.dataset.a===ans;
+    results[qi]=right; if(right) score++;
+    answers.forEach(b=>{b.disabled=true}); a.classList.add("picked");
+    answers.find(b=>b.dataset.a===ans).classList.add("picked");
+    gfb.className="feedback "+(right?"ok":"no");
+    gfb.textContent=(right?"Correct! ":`Not quite. It's ${NAMES[ans]}. `)+why;
+    next.hidden=false; drawDots(); next.focus();
+  }));
+  next.addEventListener("click",()=>{ if(qi>=Q.length){qi=0;score=0;results=[];} else qi++; showQ(); });
+  showQ();
+
+  // Flip cards
+  const V=[["Magma","Melted rock underground."],["Lava","Melted rock that reaches Earth's surface."],["Sediment","Small pieces of rock, sand, mud and shells."],["Weathering","Breaking rock into smaller pieces."],["Erosion","Moving sediment to a new place with water, wind or ice."],["Deposition","Dropping sediment in a new place, often in layers."],["Compaction","Squeezing layers of sediment together."],["Cementation","Minerals gluing sediment together."],["Foliation","Stripes or bands in metamorphic rock caused by pressure."],["Fossil","Preserved remains or traces of past life, found in sedimentary rock."]];
+  const cards=$("cards");
+  V.forEach(([t,d])=>{
+    const b=document.createElement("button"); b.className="card"; b.setAttribute("aria-label",`${t}. Tap to flip.`);
+    b.innerHTML=`<div class="inner"><div class="face front"><span>${t}</span><small>Tap to flip</small></div><div class="face back">${d}</div></div>`;
+    b.addEventListener("click",()=>{ b.classList.toggle("flip"); b.setAttribute("aria-label", b.classList.contains("flip")?`${t}: ${d}`:`${t}. Tap to flip.`); });
+    cards.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>
