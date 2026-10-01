@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gas Laws Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a guided lab notebook. One step on screen at a time, a stepper across the top,
+   each law split into a live "bench" (particle simulation) beside the explanation, then worked example + practice. */
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --surface-2:#f6f9fb; --ink:#13202a; --muted:#53646f; --line:#d3dde4;
+  --accent:#2354d1; --accent-ink:#ffffff; --accent-soft:#e2eafb;
+  --hot:#dd5434; --cold:#1f93c4; --steel:#8a9aa6; --gas:#e9f1fb;
+  --good:#1d8456; --good-soft:#e2f4ea; --warn:#9a6a10; --warn-soft:#fbf1dc; --bad:#bd3a33; --bad-soft:#fbe6e4;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e151b; --surface:#16212a; --surface-2:#1b2731; --ink:#e4ecf1; --muted:#9bacb8; --line:#2b3945;
+  --accent:#7ea3ff; --accent-ink:#0b1424; --accent-soft:#1c2a46;
+  --hot:#ff7a5a; --cold:#5cc4ee; --steel:#6d7f8c; --gas:#182739;
+  --good:#53c98f; --good-soft:#15301f; --warn:#e6b450; --warn-soft:#30260f; --bad:#ff7069; --bad-soft:#3a1a19;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e151b; --surface:#16212a; --surface-2:#1b2731; --ink:#e4ecf1; --muted:#9bacb8; --line:#2b3945;
+  --accent:#7ea3ff; --accent-ink:#0b1424; --accent-soft:#1c2a46;
+  --hot:#ff7a5a; --cold:#5cc4ee; --steel:#6d7f8c; --gas:#182739;
+  --good:#53c98f; --good-soft:#15301f; --warn:#e6b450; --warn-soft:#30260f; --bad:#ff7069; --bad-soft:#3a1a19;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg); color:var(--ink); font:17px/1.6 var(--f-body); margin:0}
+.wrap{max-width:1180px; margin:0 auto; padding-inline:clamp(16px,3vw,32px)}
+h1,h2,h3{font-family:var(--f-display); line-height:1.12; text-wrap:balance; margin:0}
+h2{font-size:clamp(30px,4.4vw,46px); font-weight:800; letter-spacing:-.02em}
+h3{font-size:21px; font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono)}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px; border-radius:6px}
+
+/* Header + stepper */
+.top{background:var(--surface); border-bottom:1px solid var(--line); position:sticky; top:env(safe-area-inset-top,0px); z-index:10}
+.brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; padding-block:14px 8px}
+.brand h1{font-size:22px; font-weight:800; letter-spacing:-.01em}
+.brand span{color:var(--muted); font-size:14px}
+.stepper{display:flex; gap:6px; overflow-x:auto; padding-block:4px 12px; scrollbar-width:thin}
+.stepper button{flex:0 0 auto; display:flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--surface-2); border-radius:999px; padding:6px 14px 6px 6px; font-size:14px; white-space:nowrap}
+.stepper .n{display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--surface); border:1px solid var(--line); font:600 12px var(--f-mono)}
+.stepper button[aria-current="step"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink)}
+.stepper button[aria-current="step"] .n{background:var(--accent-ink); color:var(--accent); border-color:transparent}
+.stepper button.done .n{background:var(--good); color:var(--surface); border-color:var(--good)}
+
+main{padding-block:28px 40px}
+.step{display:grid; gap:24px}
+[hidden]{display:none!important}
+.eyebrow{font:600 13px var(--f-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--accent)}
+.lede{font-size:19px; color:var(--muted); max-width:64ch}
+.head{display:grid; gap:10px}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:6px}
+.chip{display:inline-flex; gap:6px; align-items:center; border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:4px 12px; font-size:14px}
+.chip b{font-family:var(--f-mono); font-weight:600}
+.chip.inverse{border-color:var(--hot); color:var(--hot)}
+.chip.direct{border-color:var(--accent); color:var(--accent)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px; display:grid; gap:14px; align-content:start; min-width:0}
+.grid2{display:grid; gap:20px; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.grid2.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:900px){ .grid2, .grid2.even{grid-template-columns:minmax(0,1fr)} }
+
+/* Bench (simulation) */
+.bench{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; display:grid; min-width:0}
+.bench-top{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--surface-2)}
+.bench-top .label{font:600 12px var(--f-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.ghost{border:1px solid var(--line); background:var(--surface); border-radius:8px; padding:4px 12px; font-size:14px}
+.sim-canvas{display:block; width:100%; height:310px; background:var(--surface)}
+.controls{display:grid; gap:14px; padding:14px 16px; border-top:1px solid var(--line)}
+.ctl{display:grid; gap:4px}
+.ctl label{display:flex; justify-content:space-between; gap:8px; font-size:15px}
+.ctl output{font:600 14px var(--f-mono)}
+input[type=range]{width:100%; accent-color:var(--accent); height:28px}
+.readouts{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); border-top:1px solid var(--line)}
+.ro{padding:10px 12px; border-right:1px solid var(--line); display:grid; gap:2px; min-width:0}
+.ro:last-child{border-right:0}
+.ro .k{font:600 12px var(--f-mono); color:var(--muted)}
+.ro .v{font:600 16px var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ro .tag{font-size:12px; color:var(--muted)}
+.ro.ctrl .tag{color:var(--accent)}
+.ro.resp{background:var(--accent-soft)}
+.ro.resp .tag{color:var(--accent); font-weight:700}
+@media (max-width:480px){ .readouts{grid-template-columns:repeat(2,minmax(0,1fr))} .ro:nth-child(2){border-right:0} .ro:nth-child(-n+2){border-bottom:1px solid var(--line)} }
+.invariant{padding:12px 16px; border-top:1px solid var(--line); font-size:15px; display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline}
+.invariant .mono{font-weight:600; font-size:16px}
+.invariant .note{color:var(--muted); font-size:14px}
+.graph-wrap{border-top:1px solid var(--line); padding:10px 8px 6px}
+.graph-canvas{display:block; width:100%; height:190px}
+
+.tryit{display:grid; gap:6px; padding-left:0; margin:0; list-style:none}
+.tryit li{display:flex; gap:10px; align-items:flex-start}
+.tryit li::before{content:"→"; color:var(--accent); font-weight:700}
+
+.formula{background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:18px; display:grid; gap:8px; justify-items:center; text-align:center}
+.formula .eq{font:600 clamp(24px,3.6vw,34px)/1.3 var(--f-mono); display:flex; align-items:center; gap:.45em; flex-wrap:wrap; justify-content:center}
+.formula .cap{font-size:14px; color:var(--muted)}
+.frac{display:inline-grid; text-align:center; vertical-align:middle}
+.frac>span:first-child{border-bottom:2.5px solid currentColor; padding:0 .15em}
+.frac>span:last-child{padding:0 .15em}
+sub{font-size:.62em}
+.illus{background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:10px; overflow-x:auto}
+.illus svg{display:block; width:100%; height:auto; min-width:280px}
+.illus figcaption{font-size:15px; padding:6px 6px 2px}
+
+/* Worked example + practice */
+.problem{font-size:17px}
+.steps{list-style:none; margin:0; padding:0; display:grid; gap:8px; counter-reset:s}
+.steps li{counter-increment:s; display:grid; grid-template-columns:30px 1fr; gap:10px; align-items:start; padding:10px 12px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line)}
+.steps li::before{content:counter(s); display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--accent-soft); color:var(--accent); font:600 13px var(--f-mono)}
+.steps li .m{font-family:var(--f-mono); font-size:15px; overflow-wrap:anywhere}
+.steps li .why{display:block; color:var(--muted); font-size:15px; margin-top:2px; font-family:var(--f-body)}
+.row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.btn{border:0; background:var(--accent); color:var(--accent-ink); border-radius:10px; padding:10px 18px; font-weight:700}
+.btn.secondary{background:var(--surface); color:var(--ink); border:1px solid var(--line); font-weight:400}
+.btn[disabled]{opacity:.45; cursor:not-allowed}
+.answer{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.answer input{width:9em; font:600 18px var(--f-mono); padding:9px 12px; border-radius:10px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink)}
+.answer .unit{font:600 16px var(--f-mono); color:var(--muted)}
+.fb{border-radius:10px; padding:12px 14px; font-size:16px}
+.fb.good{background:var(--good-soft); color:var(--good)}
+.fb.warn{background:var(--warn-soft); color:var(--warn)}
+.fb.bad{background:var(--bad-soft); color:var(--bad)}
+.hints{list-style:none; margin:0; padding:0; display:grid; gap:8px}
+.hints li{border-left:3px solid var(--accent); padding:4px 0 4px 12px; font-size:16px}
+.hints li b{color:var(--accent); font-family:var(--f-mono); font-size:13px; display:block}
+
+/* Basics */
+.symbols{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.sym{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:grid; gap:4px; align-content:start}
+.sym .l{font:800 40px/1 var(--f-display); color:var(--accent)}
+.sym .u{font:13px var(--f-mono); color:var(--muted)}
+.method{list-style:none; margin:0; padding:0; display:grid; gap:10px; counter-reset:m}
+.method li{counter-increment:m; display:grid; grid-template-columns:36px 1fr; gap:12px; align-items:center}
+.method li::before{content:counter(m); display:grid; place-items:center; width:34px; height:34px; border-radius:10px; background:var(--accent); color:var(--accent-ink); font:600 15px var(--f-mono)}
+.kconv{display:grid; gap:10px}
+.kconv .big{font:600 30px var(--f-mono); font-variant-numeric:tabular-nums}
+.callout{background:var(--accent-soft); border-radius:12px; padding:14px 16px; font-size:16px}
+
+/* Which law */
+.tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:640px; font-size:15px}
+th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--line)}
+th{font:600 12px var(--f-mono); letter-spacing:.06em; text-transform:uppercase; color:var(--muted); background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.f{font-family:var(--f-mono); white-space:nowrap}
+.toggles{display:flex; gap:8px; flex-wrap:wrap}
+.tog{border:1.5px solid var(--line); background:var(--surface); border-radius:10px; padding:8px 14px; font:600 18px var(--f-mono); min-width:56px}
+.tog[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.result{font-size:18px; font-weight:700}
+.quiz{display:grid; gap:14px}
+.q{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px; display:grid; gap:12px}
+.q .opts{display:flex; flex-wrap:wrap; gap:8px}
+.opt{border:1.5px solid var(--line); background:var(--surface-2); border-radius:10px; padding:8px 14px; font-size:15px}
+.opt.right{border-color:var(--good); background:var(--good-soft); color:var(--good); font-weight:700}
+.opt.wrong{border-color:var(--bad); background:var(--bad-soft); color:var(--bad)}
+
+.pager{display:flex; justify-content:space-between; gap:12px; margin-top:32px; padding-top:20px; border-top:1px solid var(--line); flex-wrap:wrap}
+.pager button{display:grid; gap:2px; text-align:left; border:1px solid var(--line); background:var(--surface); border-radius:12px; padding:12px 18px; min-width:0}
+.pager button.next{text-align:right; margin-left:auto; background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.pager small{font:600 12px var(--f-mono); letter-spacing:.06em; text-transform:uppercase; opacity:.8}
+.pager span{font-weight:700}
+
+/* SVG illustration classes */
+.s{fill:none; stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round}
+.s-thin{fill:none; stroke:var(--muted); stroke-width:1.5; stroke-linecap:round}
+.s-dash{fill:none; stroke:var(--muted); stroke-width:1.8; stroke-dasharray:5 5}
+.f-surf{fill:var(--surface)} .f-gas{fill:var(--gas)} .f-soft{fill:var(--accent-soft)} .f-steel{fill:var(--steel)}
+.f-hot{fill:var(--hot)} .f-cold{fill:var(--cold)} .f-acc{fill:var(--accent)} .f-ink{fill:var(--ink)} .f-good{fill:var(--good)}
+.st-hot{stroke:var(--hot)} .st-cold{stroke:var(--cold)} .st-acc{stroke:var(--accent)}
+.t{fill:var(--muted); font:600 12px var(--f-mono)}
+.t-ink{fill:var(--ink); font:600 13px var(--f-mono)}
+@media (prefers-reduced-motion: reduce){ *{scroll-behavior:auto!important} }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><h1>Gas Laws Lab</h1><span>Learn the six gas laws one step at a time</span></div>
+    <nav class="stepper" id="stepper" aria-label="Lesson steps"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<script>
+(function(){
+"use strict";
+const R = 0.0821;
+const store = {
+  get(){ try{ return JSON.parse(localStorage.getItem("gaslab-v1")) || {}; }catch(e){ return {}; } },
+  set(v){ try{ localStorage.setItem("gaslab-v1", JSON.stringify(v)); }catch(e){} }
+};
+let progress = Object.assign({done:{}, quiz:{}}, store.get());
+const save = () => store.set(progress);
+
+const sub = (v,i)=>`${v}<sub>${i}</sub>`;
+const frac = (a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const fmt = {P:v=>v.toFixed(2)+" atm", V:v=>v.toFixed(2)+" L", T:v=>Math.round(v)+" K", n:v=>v.toFixed(3)+" mol"};
+const NAMES = {P:"Pressure", V:"Volume", T:"Temperature", n:"Amount"};
+
+/* ---------- seeded dots for illustrations ---------- */
+function rng(seed){ let s=seed; return ()=>{ s=(s*16807)%2147483647; return (s-1)/2147483646; }; }
+function dotsEllipse(cx,cy,rx,ry,count,seed,cls="f-acc"){
+  const r=rng(seed); let out="";
+  for(let i=0;i<count;i++){ const a=r()*Math.PI*2, d=Math.sqrt(r())*0.78; out+=`<circle class="${cls}" cx="${(cx+Math.cos(a)*rx*d).toFixed(1)}" cy="${(cy+Math.sin(a)*ry*d).toFixed(1)}" r="3.2"/>`; }
+  return out;
+}
+function dotsRect(x,y,w,h,count,seed,cls="f-acc"){
+  const r=rng(seed); let out="";
+  for(let i=0;i<count;i++){ out+=`<circle class="${cls}" cx="${(x+5+r()*(w-10)).toFixed(1)}" cy="${(y+5+r()*(h-10)).toFixed(1)}" r="3"/>`; }
+  return out;
+}
+function balloon(cx,cy,rx,ry,fill){
+  const by=cy+ry;
+  return `<ellipse class="${fill}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" opacity=".22"/>
+  <ellipse class="s" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/>
+  <path class="s" d="M${cx-5} ${by+7} L${cx} ${by} L${cx+5} ${by+7} Z"/>
+  <path class="s-thin" d="M${cx} ${by+7} q 8 14 0 26 q -8 12 0 24"/>`;
+}
+function gauge(cx,cy,r,frac){
+  const a0=Math.PI*0.75, a=a0+frac*Math.PI*1.5;
+  return `<circle class="f-surf s" cx="${cx}" cy="${cy}" r="${r}"/>
+  <path class="s-thin" d="M${cx+Math.cos(a0)*(r-5)} ${cy+Math.sin(a0)*(r-5)} A ${r-5} ${r-5} 0 1 1 ${cx+Math.cos(a0+Math.PI*1.5)*(r-5)} ${cy+Math.sin(a0+Math.PI*1.5)*(r-5)}"/>
+  <line class="s st-hot" x1="${cx}" y1="${cy}" x2="${(cx+Math.cos(a)*(r-7)).toFixed(1)}" y2="${(cy+Math.sin(a)*(r-7)).toFixed(1)}"/>
+  <circle class="f-ink" cx="${cx}" cy="${cy}" r="3"/>`;
+}
+function flame(x,y,s){ return `<path class="f-hot" d="M${x} ${y} c ${-9*s} ${-6*s} ${-7*s} ${-16*s} 0 ${-26*s} c ${1*s} ${8*s} ${8*s} ${10*s} ${7*s} ${17*s} c 0 ${6*s} ${-3*s} ${9*s} ${-7*s} ${9*s} Z"/>`; }
+function flake(x,y,s){ let d=""; for(let i=0;i<3;i++){ const a=i*Math.PI/3; d+=`M${(x-Math.cos(a)*s).toFixed(1)} ${(y-Math.sin(a)*s).toFixed(1)} L${(x+Math.cos(a)*s).toFixed(1)} ${(y+Math.sin(a)*s).toFixed(1)} `; } return `<path class="s st-cold" stroke-width="2" d="${d}"/>`; }
+
+const ILLUS = {
+  boyle(){
+    const syr=(y,px,label,dots,seed)=>`
+      <text class="t-ink" x="52" y="${y-10}">${label}</text>
+      <line class="s" x1="18" y1="${y+18}" x2="50" y2="${y+18}"/>
+      <rect class="f-gas" x="50" y="${y}" width="${px-50}" height="36"/>
+      ${dotsRect(50,y,px-50,36,dots,seed)}
+      <rect class="s" x="50" y="${y}" width="240" height="36" rx="3"/>
+      <rect class="f-steel" x="${px}" y="${y+3}" width="9" height="30" rx="2"/>
+      <rect class="f-steel" x="${px+9}" y="${y+14}" width="${322-px-9}" height="8"/>
+      <rect class="f-steel" x="320" y="${y-6}" width="9" height="48" rx="3"/>`;
+    return `<svg viewBox="0 0 340 170" role="img" aria-label="Two sealed syringes. Pushing the plunger in squeezes the same air particles into one third of the space, so the pressure triples.">
+      ${syr(28,250,"Before: 60 mL · 1.00 atm",14,7)}
+      ${syr(112,117,"After: 20 mL · 3.00 atm",14,7)}
+      <path class="s st-acc" d="M300 88 h-36 m8 -7 l-8 7 l8 7"/>
+    </svg>`;
+  },
+  charles(){
+    return `<svg viewBox="0 0 340 190" role="img" aria-label="A balloon indoors at 25 °C is bigger than the same balloon outside at minus 18 °C.">
+      <text class="t-ink" x="20" y="20">Inside · 25 °C</text>
+      ${balloon(85,82,50,58,"f-hot")}
+      ${dotsEllipse(85,82,50,58,12,3,"f-hot")}
+      <text class="t" x="66" y="186">2.50 L</text>
+      <text class="t-ink" x="196" y="20">Outside · −18 °C</text>
+      ${balloon(258,90,42,49,"f-cold")}
+      ${dotsEllipse(258,90,42,49,12,3,"f-cold")}
+      ${flake(318,46,8)}${flake(206,64,6)}${flake(320,124,6)}
+      <text class="t" x="240" y="186">2.14 L</text>
+    </svg>`;
+  },
+  gay(){
+    const tire=(cx,lab1,lab2,frac,hot)=>`
+      <circle class="s" cx="${cx}" cy="100" r="46" stroke-width="16"/>
+      <circle class="f-soft s" cx="${cx}" cy="100" r="22"/>
+      <circle class="f-ink" cx="${cx}" cy="100" r="5"/>
+      ${gauge(cx+58,46,20,frac)}
+      <text class="t-ink" x="${cx-50}" y="172">${lab1}</text>
+      <text class="t" x="${cx-50}" y="188">${lab2}</text>
+      ${hot?`<path class="s st-hot" d="M${cx-30} 34 q 6 -8 0 -16 q -6 -8 0 -16 M${cx-10} 30 q 6 -8 0 -16 q -6 -8 0 -16"/>`:""}`;
+    return `<svg viewBox="0 0 340 196" role="img" aria-label="A car tire before driving at 15 °C and 220 kPa, and after driving at 45 °C and 243 kPa. The gauge needle moves up.">
+      ${tire(70,"220 kPa","15 °C, before",0.42,false)}
+      ${tire(230,"243 kPa","45 °C, after",0.55,true)}
+    </svg>`;
+  },
+  avogadro(){
+    return `<svg viewBox="0 0 340 190" role="img" aria-label="A small balloon with 0.200 mol of helium grows into a bigger balloon with 0.500 mol.">
+      ${balloon(70,96,32,38,"f-acc")}
+      ${dotsEllipse(70,96,32,38,5,11)}
+      <text class="t-ink" x="20" y="22">0.200 mol</text>
+      <text class="t" x="50" y="186">5.00 L</text>
+      <path class="s st-acc" d="M124 92 h56 m-9 -8 l9 8 l-9 8"/>
+      <text class="t" x="118" y="78">add gas</text>
+      ${balloon(258,82,54,62,"f-acc")}
+      ${dotsEllipse(258,82,54,62,13,11)}
+      <text class="t-ink" x="218" y="14">0.500 mol</text>
+      <text class="t" x="240" y="186">12.5 L</text>
+    </svg>`;
+  },
+  combined(){
+    return `<svg viewBox="0 0 340 200" role="img" aria-label="A weather balloon launched from the ground grows much larger high in the sky, where the air is colder and the pressure is lower.">
+      <line class="s" x1="10" y1="186" x2="330" y2="186"/>
+      <path class="s-dash" d="M120 150 C 160 120, 180 100, 210 80"/>
+      ${balloon(90,138,20,24,"f-acc")}
+      <text class="t-ink" x="14" y="104">Ground</text>
+      <text class="t" x="14" y="120">warm, high P</text>
+      ${balloon(262,58,46,52,"f-acc")}
+      <text class="t-ink" x="138" y="24">High up</text>
+      <text class="t" x="138" y="40">cold, low P</text>
+      ${flake(186,62,6)}
+      <path class="s-thin" d="M30 60 q8 -12 22 -6 q10 -10 22 0 q10 2 6 10 h-50 q-6 -2 0 -4z"/>
+    </svg>`;
+  },
+  ideal(){
+    return `<svg viewBox="0 0 340 200" role="img" aria-label="A propane tank with a pressure gauge and thermometer. Knowing the tank's volume, pressure and temperature tells you the moles of gas inside.">
+      <rect class="f-soft" x="40" y="54" width="120" height="130" rx="40"/>
+      <rect class="s" x="40" y="54" width="120" height="130" rx="40"/>
+      <rect class="f-steel" x="88" y="34" width="24" height="20" rx="3"/>
+      <line class="s" x1="100" y1="34" x2="100" y2="22"/>
+      ${gauge(132,22,16,0.6)}
+      <line class="s-thin" x1="112" y1="40" x2="122" y2="32"/>
+      ${dotsRect(52,74,96,96,16,5)}
+      <rect class="s" x="186" y="66" width="12" height="96" rx="6"/>
+      <circle class="f-hot" cx="192" cy="168" r="11"/>
+      <rect class="f-hot" x="189" y="104" width="6" height="60" rx="3"/>
+      <text class="t-ink" x="216" y="74">V = tank size</text>
+      <text class="t-ink" x="216" y="100">P = gauge</text>
+      <text class="t-ink" x="216" y="126">T = thermometer</text>
+      <text class="t-ink" x="216" y="160" style="fill:var(--accent)">n = PV ÷ RT</text>
+    </svg>`;
+  }
+};
+
+/* ---------- lesson data ---------- */
+const LAWS = [
+ { id:"boyle", short:"Boyle", name:"Boyle’s Law", pair:"Pressure and volume", changes:"P and V", held:"T and n", rel:"inverse",
+   relText:"When pressure goes up, volume goes down.",
+   formula:`${sub("P",1)}${sub("V",1)} = ${sub("P",2)}${sub("V",2)}`,
+   formulaCap:"Pressure × volume stays the same before and after.",
+   idea:"Squeeze the same particles into less space and they hit the walls more often. More hits means more pressure.",
+   tryit:["Slide the volume down to about 1.2 L. Watch the gauge climb and the wall hits pile up.","Check the P × V number. It stays the same no matter where you put the slider."],
+   everyday:"Pushing the plunger of a sealed syringe squeezes the air into less space, so the pressure inside rises.",
+   sim:{controls:{V:[0.9,6,0.05]}, init:{V:2.46,T:300,n:0.1}, solve:"P", piston:"push", vmax:6.5, pmax:3,
+        graph:{x:"V", y:"P", xr:[0,6], yr:[0,3], xt:[0,1,2,3,4,5,6], yt:[0,1,2,3], from:0.75},
+        inv:s=>`P × V = <span class="mono">${(s.P*s.V).toFixed(2)} atm·L</span>`},
+   worked:{q:"A sealed syringe holds 60.0 mL of air at 1.00 atm. The plunger is pushed in until the volume is 20.0 mL. What is the new pressure?",
+     steps:[["Known: P₁ = 1.00 atm, V₁ = 60.0 mL, V₂ = 20.0 mL. Find P₂.","List what you know and what you need."],
+            ["P₂ = P₁V₁ ÷ V₂","Rearrange P₁V₁ = P₂V₂ by dividing both sides by V₂."],
+            ["P₂ = (1.00 atm)(60.0 mL) ÷ 20.0 mL","Plug in. The mL units cancel, leaving atm."],
+            ["P₂ = 3.00 atm","Check: volume dropped to one-third, so pressure tripled. That makes sense."]]},
+   practice:{q:"A scuba diver releases a 1.50 L air bubble where the pressure is 3.00 atm. What is the bubble’s volume when it reaches the surface, where the pressure is 1.00 atm?",
+     answer:4.50, unit:"L", start:1.50, dir:"bigger",
+     hints:["Known: P₁ = 3.00 atm, V₁ = 1.50 L, P₂ = 1.00 atm. You need V₂.",
+            "Temperature and amount of gas don’t change, so this is Boyle’s law: P₁V₁ = P₂V₂.",
+            "Rearrange for V₂: V₂ = P₁V₁ ÷ P₂."],
+     solution:["V₂ = (3.00 atm)(1.50 L) ÷ 1.00 atm","V₂ = 4.50 L","Pressure dropped to one-third, so the volume tripled. The bubble grows as it rises."],
+     traps:[]}
+ },
+ { id:"charles", short:"Charles", name:"Charles’s Law", pair:"Volume and temperature", changes:"V and T", held:"P and n", rel:"direct",
+   relText:"When temperature goes up, volume goes up.",
+   formula:`${frac(sub("V",1),sub("T",1))} = ${frac(sub("V",2),sub("T",2))}`,
+   formulaCap:"Volume ÷ temperature (in kelvin) stays the same.",
+   idea:"Hotter particles move faster and push harder. The weight on the piston keeps the pressure steady, so the gas spreads out until the push balances again.",
+   tryit:["Turn the heat up to 600 K. The piston rises and the particles turn red and speed up.","On the graph, follow the dashed line down. It reaches zero volume at 0 K. That is why we use kelvin."],
+   everyday:"A balloon taken outside on a cold winter day shrinks, then expands again when brought back inside.",
+   sim:{controls:{T:[150,600,5]}, init:{P:1,T:300,n:0.1}, solve:"V", piston:"weight", vmax:6.5, pmax:3,
+        graph:{x:"T", y:"V", xr:[0,600], yr:[0,6], xt:[0,100,200,300,400,500,600], yt:[0,2,4,6], from:150, zero:true},
+        inv:s=>`V ÷ T = <span class="mono">${(s.V/s.T).toFixed(4)} L/K</span>`},
+   worked:{q:"A balloon holds 2.50 L of air at 25 °C. It is placed in a freezer at −18 °C. What is its new volume?",
+     steps:[["T₁ = 25 + 273 = 298 K, T₂ = −18 + 273 = 255 K","Convert both temperatures to kelvin first."],
+            ["V₂ = V₁T₂ ÷ T₁","Rearrange V₁/T₁ = V₂/T₂ by multiplying both sides by T₂."],
+            ["V₂ = (2.50 L)(255 K) ÷ 298 K","Plug in. The K units cancel, leaving L."],
+            ["V₂ = 2.14 L","Check: colder gas takes up less space, and 2.14 L is smaller. Good."]]},
+   practice:{q:"A 3.00 L sample of gas at 20 °C is heated to 100 °C at constant pressure. What is its new volume?",
+     answer:3.82, unit:"L", start:3.00, dir:"bigger",
+     hints:["Known: V₁ = 3.00 L, T₁ = 20 °C, T₂ = 100 °C. You need V₂.",
+            "Convert to kelvin: T₁ = 20 + 273 = 293 K and T₂ = 100 + 273 = 373 K.",
+            "Rearrange for V₂: V₂ = V₁T₂ ÷ T₁."],
+     solution:["V₂ = (3.00 L)(373 K) ÷ 293 K","V₂ = 3.82 L","Hotter gas takes up more space, so the volume grew a little."],
+     traps:[{v:15.0, msg:"It looks like you used °C. Convert both temperatures to kelvin (add 273) and try again."}]}
+ },
+ { id:"gay-lussac", short:"Gay-Lussac", name:"Gay-Lussac’s Law", pair:"Pressure and temperature", changes:"P and T", held:"V and n", rel:"direct",
+   relText:"When temperature goes up, pressure goes up.",
+   formula:`${frac(sub("P",1),sub("T",1))} = ${frac(sub("P",2),sub("T",2))}`,
+   formulaCap:"Pressure ÷ temperature (in kelvin) stays the same.",
+   idea:"The lid is bolted down, so the gas can’t spread out. Faster particles hit the walls harder and more often, and the pressure climbs.",
+   tryit:["Heat the container to 600 K. The lid can’t move, so watch the gauge instead.","Cool it to 150 K. Pressure falls by half when the kelvin temperature falls by half."],
+   everyday:"Car tires have higher pressure after a long drive because friction with the road heats the air inside.",
+   sim:{controls:{T:[150,600,5]}, init:{V:2.46,T:300,n:0.1}, solve:"P", piston:"locked", vmax:6.5, pmax:2.5,
+        graph:{x:"T", y:"P", xr:[0,600], yr:[0,2.5], xt:[0,100,200,300,400,500,600], yt:[0,0.5,1,1.5,2,2.5], from:150, zero:true},
+        inv:s=>`P ÷ T = <span class="mono">${(s.P/s.T).toFixed(5)} atm/K</span>`},
+   worked:{q:"A car tire is at 220 kPa when the air is 15 °C. After driving, the air in the tire is 45 °C. What is the new pressure?",
+     steps:[["T₁ = 15 + 273 = 288 K, T₂ = 45 + 273 = 318 K","Convert both temperatures to kelvin."],
+            ["P₂ = P₁T₂ ÷ T₁","Rearrange P₁/T₁ = P₂/T₂ by multiplying both sides by T₂."],
+            ["P₂ = (220 kPa)(318 K) ÷ 288 K","Plug in. The K units cancel, leaving kPa."],
+            ["P₂ = 243 kPa","Check: hotter gas pushes harder on the walls, so the pressure went up."]]},
+   practice:{q:"An aerosol can is at 1.50 atm at 22 °C. If it is thrown into a fire and heats to 350 °C, what is the pressure inside? (This is why cans say “do not incinerate”!)",
+     answer:3.17, unit:"atm", start:1.50, dir:"bigger",
+     hints:["Known: P₁ = 1.50 atm, T₁ = 22 °C, T₂ = 350 °C. You need P₂.",
+            "Convert to kelvin: T₁ = 22 + 273 = 295 K and T₂ = 350 + 273 = 623 K.",
+            "Rearrange for P₂: P₂ = P₁T₂ ÷ T₁."],
+     solution:["P₂ = (1.50 atm)(623 K) ÷ 295 K","P₂ = 3.17 atm","The kelvin temperature roughly doubled, so the pressure roughly doubled."],
+     traps:[{v:23.9, msg:"It looks like you used °C. Convert both temperatures to kelvin (add 273) and try again."}]}
+ },
+ { id:"avogadro", short:"Avogadro", name:"Avogadro’s Law", pair:"Volume and amount of gas", changes:"V and n", held:"P and T", rel:"direct",
+   relText:"When you add more gas particles, volume goes up.",
+   formula:`${frac(sub("V",1),sub("n",1))} = ${frac(sub("V",2),sub("n",2))}`,
+   formulaCap:"Volume ÷ moles stays the same.",
+   idea:"More particles means more hits on the walls. To keep the pressure the same, the gas takes up more room.",
+   tryit:["Slide the amount of gas up. New particles flow in through the valve and the piston rises.","Double the moles from 0.100 to 0.200 mol. The volume doubles too."],
+   everyday:"Each breath you blow into a balloon adds more gas particles, so the balloon gets bigger.",
+   sim:{controls:{n:[0.05,0.25,0.005]}, init:{P:1,T:300,n:0.1}, solve:"V", piston:"weight", inlet:true, vmax:6.5, pmax:3,
+        graph:{x:"n", y:"V", xr:[0,0.25], yr:[0,6], xt:[0,0.05,0.1,0.15,0.2,0.25], yt:[0,2,4,6], from:0.05, zero:true},
+        inv:s=>`V ÷ n = <span class="mono">${(s.V/s.n).toFixed(2)} L/mol</span>`},
+   worked:{q:"A balloon contains 0.200 mol of helium and has a volume of 5.00 L. More helium is added until it holds 0.500 mol. What is the new volume?",
+     steps:[["Known: V₁ = 5.00 L, n₁ = 0.200 mol, n₂ = 0.500 mol. Find V₂.","List what you know and what you need."],
+            ["V₂ = V₁n₂ ÷ n₁","Rearrange V₁/n₁ = V₂/n₂ by multiplying both sides by n₂."],
+            ["V₂ = (5.00 L)(0.500 mol) ÷ 0.200 mol","Plug in. The mol units cancel, leaving L."],
+            ["V₂ = 12.5 L","Check: 2.5 times the gas gives 2.5 times the volume."]]},
+   practice:{q:"A 3.60 L container holds 0.150 mol of gas. At the same temperature and pressure, what volume would 0.450 mol of the gas take up?",
+     answer:10.8, unit:"L", start:3.60, dir:"bigger",
+     hints:["Known: V₁ = 3.60 L, n₁ = 0.150 mol, n₂ = 0.450 mol. You need V₂.",
+            "Temperature and pressure stay the same, so use Avogadro’s law: V₁/n₁ = V₂/n₂.",
+            "Rearrange for V₂: V₂ = V₁n₂ ÷ n₁."],
+     solution:["V₂ = (3.60 L)(0.450 mol) ÷ 0.150 mol","V₂ = 10.8 L","Three times the gas takes up three times the space."],
+     traps:[]}
+ },
+ { id:"combined", short:"Combined", name:"The Combined Gas Law", pair:"Pressure, volume and temperature", changes:"P, V and T", held:"n", rel:"mixed",
+   relText:"Use it when pressure, volume and temperature all change at once.",
+   formula:`${frac(sub("P",1)+sub("V",1),sub("T",1))} = ${frac(sub("P",2)+sub("V",2),sub("T",2))}`,
+   formulaCap:"Tip: if one variable stays the same, cross it out to get one of the laws above.",
+   idea:"This one law contains Boyle’s, Charles’s and Gay-Lussac’s laws. The amount of gas is the only thing locked.",
+   tryit:["Raise the pressure (heavier weight). The gas squeezes down, like Boyle’s law.","Now raise the temperature. The gas expands, like Charles’s law. PV ÷ T never changes."],
+   everyday:"A weather balloon grows as it rises into colder, lower-pressure air.",
+   sim:{controls:{P:[0.75,2,0.01], T:[200,500,5]}, init:{P:1,T:300,n:0.1}, solve:"V", piston:"weight", vmax:6.5, pmax:3,
+        inv:s=>`P × V ÷ T = <span class="mono">${(s.P*s.V/s.T).toFixed(5)} atm·L/K</span>`},
+   worked:{q:"A gas occupies 500. mL at 1.20 atm and 27 °C. What is its volume at 0.800 atm and 57 °C?",
+     steps:[["T₁ = 27 + 273 = 300 K, T₂ = 57 + 273 = 330 K","Convert both temperatures to kelvin."],
+            ["V₂ = P₁V₁T₂ ÷ (P₂T₁)","Rearrange to get V₂ by itself."],
+            ["V₂ = (1.20 atm)(500. mL)(330 K) ÷ [(0.800 atm)(300 K)]","Plug in. atm and K cancel, leaving mL."],
+            ["V₂ = 825 mL","Check: lower pressure and higher temperature both make the volume bigger."]]},
+   practice:{q:"A 10.0 L sample of gas is at 101.3 kPa and 0 °C. What is its volume at 150. kPa and 35 °C?",
+     answer:7.62, unit:"L", start:10.0, dir:"smaller",
+     hints:["Known: V₁ = 10.0 L, P₁ = 101.3 kPa, T₁ = 0 °C, P₂ = 150. kPa, T₂ = 35 °C. You need V₂.",
+            "Convert to kelvin: T₁ = 0 + 273 = 273 K and T₂ = 35 + 273 = 308 K. Both pressures are already in kPa.",
+            "Rearrange for V₂: V₂ = P₁V₁T₂ ÷ (P₂T₁)."],
+     solution:["V₂ = (101.3 kPa)(10.0 L)(308 K) ÷ [(150. kPa)(273 K)]","V₂ = 7.62 L","The pressure rose a lot and the temperature rose a little. The pressure effect wins, so the volume shrinks."],
+     traps:[{v:6.75, msg:"Close, but it looks like you left out temperature. The temperature also changed, from 273 K to 308 K."}]}
+ },
+ { id:"ideal", short:"Ideal", name:"The Ideal Gas Law", pair:"All four properties", changes:"one set of conditions", held:"nothing (no before/after)", rel:"linked",
+   relText:"Use it for one gas under one set of conditions, or when you need to find moles.",
+   formula:`PV = nRT`,
+   formulaCap:"R = 0.0821 L·atm/(mol·K) when pressure is in atm · R = 8.314 L·kPa/(mol·K) when pressure is in kPa",
+   idea:"All four properties are tied together by one number, R. If you know three of them, you can find the fourth.",
+   tryit:["Every slider changes the pressure. Try to get exactly 1.00 atm using three different combinations.","Compare the two numbers below: PV and nRT always match."],
+   everyday:"Knowing the size of a propane tank, its temperature and the pressure inside tells you how many moles of fuel are left.",
+   sim:{controls:{V:[1.5,6,0.05], T:[200,600,5], n:[0.05,0.2,0.005]}, init:{V:2.46,T:300,n:0.1}, solve:"P", piston:"push", inlet:true, vmax:6.5, pmax:8,
+        inv:s=>`PV = <span class="mono">${(s.P*s.V).toFixed(3)}</span> <span class="note">and</span> nRT = <span class="mono">${(s.n*R*s.T).toFixed(3)}</span> <span class="note">(L·atm, always equal)</span>`},
+   worked:{q:"What is the pressure of 2.00 mol of oxygen gas in a 10.0 L tank at 27 °C?",
+     steps:[["T = 27 + 273 = 300 K","Convert to kelvin."],
+            ["P = nRT ÷ V","Rearrange PV = nRT by dividing both sides by V."],
+            ["P = (2.00 mol)(0.0821 L·atm/(mol·K))(300 K) ÷ 10.0 L","We want atm, so use R = 0.0821."],
+            ["P = 4.93 atm","mol, K and L all cancel, leaving atm."]]},
+   practice:{q:"How many moles of gas are in a 5.00 L container at 2.00 atm and 27 °C?",
+     answer:0.406, unit:"mol", start:null, dir:null,
+     hints:["Known: V = 5.00 L, P = 2.00 atm, T = 27 °C. You need n.",
+            "Convert to kelvin: T = 27 + 273 = 300 K. Pressure is in atm, so R = 0.0821 L·atm/(mol·K).",
+            "Rearrange for n: n = PV ÷ RT."],
+     solution:["n = (2.00 atm)(5.00 L) ÷ [(0.0821 L·atm/(mol·K))(300 K)]","n = 0.406 mol","atm, L and K cancel, leaving mol."],
+     traps:[{v:4.51, msg:"It looks like you used °C. Convert to kelvin (27 + 273 = 300 K) and try again."},
+            {v:0.00401, msg:"Check your R. The pressure is in atm, so use R = 0.0821, not 8.314."}]}
+ }
+];
+
+const STEPS = [{id:"basics", short:"Basics"}, ...LAWS, {id:"which", short:"Which law?"}];
+
+/* ---------- canvas colors from tokens ---------- */
+let C = {};
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  ["surface","surface-2","ink","muted","line","accent","accent-soft","hot","cold","steel","gas","good"].forEach(k=>C[k]=cs.getPropertyValue("--"+k).trim());
+}
+readColors();
+matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",readColors);
+new MutationObserver(readColors).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function hex2rgb(h){ h=h.replace("#",""); if(h.length===3) h=h.split("").map(c=>c+c).join(""); const n=parseInt(h,16); return [n>>16&255,n>>8&255,n&255]; }
+function mix(a,b,t){ const A=hex2rgb(a),B=hex2rgb(b); return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(",")})`; }
+
+/* ---------- simulation ---------- */
+function Sim(root, law){
+  const cfg = law.sim;
+  const canvas = root.querySelector(".sim-canvas"), ctx = canvas.getContext("2d");
+  const gcanvas = root.querySelector(".graph-canvas"), gctx = gcanvas && gcanvas.getContext("2d");
+  const s = Object.assign({}, cfg.init);
+  function solve(){ if(cfg.solve==="P") s.P = s.n*R*s.T/s.V; else s.V = s.n*R*s.T/s.P; }
+  solve();
+  let W=0,H=0, parts=[], hits=[], dispH=null, inletPulse=0;
+  function size(){
+    const dpr=Math.min(2,window.devicePixelRatio||1);
+    const r=canvas.getBoundingClientRect(); W=r.width; H=r.height;
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(gcanvas){ const g=gcanvas.getBoundingClientRect(); gcanvas.width=Math.round(g.width*dpr); gcanvas.height=Math.round(g.height*dpr); gctx.setTransform(dpr,0,0,dpr,0,0); }
+  }
+  // geometry
+  const geo = ()=>{ const panel=Math.min(150, Math.max(118, W*0.3)); const bw=Math.max(150, W-panel-46); return {x0:26, bw, bottom:H-52, hmax:H-52-58, px:26+bw+20, pw:panel}; };
+  function targetH(){ const g=geo(); return Math.min(g.hmax, s.V/cfg.vmax*g.hmax); }
+  function speed(){ return 85*Math.sqrt(s.T/300)*(reduce?0.4:1); }
+  function sync(){
+    const want=Math.round(s.n*400);
+    const g=geo();
+    while(parts.length<want){
+      const fromInlet = cfg.inlet && parts.length>0;
+      const a = fromInlet ? (Math.random()-0.5)*1.2 : Math.random()*Math.PI*2;
+      parts.push({x: fromInlet? 6 : 6+Math.random()*(g.bw-12), y: fromInlet? 18+Math.random()*10 : 6+Math.random()*Math.max(10,(dispH||targetH())-12), vx:Math.cos(a), vy:Math.sin(a), m:0.6+Math.random()*0.8});
+      if(fromInlet) inletPulse=1;
+    }
+    if(parts.length>want) parts.length=want;
+  }
+  function step(dt){
+    if(!W) return;
+    const g=geo(), th=targetH();
+    dispH = dispH==null||reduce ? th : dispH + (th-dispH)*Math.min(1,dt*6);
+    const sp=speed(), r=3.6;
+    for(const p of parts){
+      p.x+=p.vx*p.m*sp*dt; p.y+=p.vy*p.m*sp*dt;
+      if(p.x<r){p.x=r; p.vx=Math.abs(p.vx); hit(g.x0, g.bottom-p.y);}
+      if(p.x>g.bw-r){p.x=g.bw-r; p.vx=-Math.abs(p.vx); hit(g.x0+g.bw, g.bottom-p.y);}
+      if(p.y<r){p.y=r; p.vy=Math.abs(p.vy); hit(g.x0+p.x, g.bottom);}
+      if(p.y>dispH-r){p.y=Math.max(r,dispH-r); p.vy=-Math.abs(p.vy); hit(g.x0+p.x, g.bottom-dispH);}
+    }
+    for(const h of hits) h.life-=dt*3;
+    hits=hits.filter(h=>h.life>0);
+    inletPulse=Math.max(0,inletPulse-dt*1.5);
+  }
+  function hit(x,y){ if(!reduce && hits.length<80) hits.push({x,y,life:1}); }
+
+  function draw(){
+    if(!W) return;
+    const g=geo(), top=g.bottom-dispH;
+    ctx.clearRect(0,0,W,H); ctx.fillStyle=C.surface; ctx.fillRect(0,0,W,H);
+    const tcol = s.T>=300 ? mix(C.accent,C.hot,Math.min(1,(s.T-300)/250)) : mix(C.accent,C.cold,Math.min(1,(300-s.T)/120));
+    // gas
+    ctx.fillStyle=C.gas; ctx.fillRect(g.x0,top,g.bw,dispH);
+    // particles
+    ctx.fillStyle=tcol;
+    for(const p of parts){ ctx.beginPath(); ctx.arc(g.x0+p.x, g.bottom-p.y, 3.6, 0, 6.283); ctx.fill(); }
+    // hits
+    for(const h of hits){ ctx.strokeStyle=C.hot; ctx.globalAlpha=h.life*0.8; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(h.x,h.y,6*(1.4-h.life),0,6.283); ctx.stroke(); }
+    ctx.globalAlpha=1;
+    // cylinder walls
+    ctx.strokeStyle=C.ink; ctx.lineWidth=3.5; ctx.lineCap="round";
+    const wallTop=g.bottom-g.hmax-26;
+    ctx.beginPath(); ctx.moveTo(g.x0,wallTop); ctx.lineTo(g.x0,g.bottom); ctx.lineTo(g.x0+g.bw,g.bottom); ctx.lineTo(g.x0+g.bw,wallTop); ctx.stroke();
+    // inlet valve
+    if(cfg.inlet){
+      const iy=g.bottom-23; ctx.fillStyle=C.steel; ctx.fillRect(g.x0-24,iy-6,22,12);
+      ctx.fillStyle=C.surface; ctx.fillRect(g.x0-3,iy-4,6,8);
+      if(inletPulse>0){ ctx.strokeStyle=C.accent; ctx.globalAlpha=inletPulse; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(g.x0-20,iy-14); ctx.lineTo(g.x0-6,iy-14); ctx.moveTo(g.x0-11,iy-19); ctx.lineTo(g.x0-6,iy-14); ctx.lineTo(g.x0-11,iy-9); ctx.stroke(); ctx.globalAlpha=1; }
+    }
+    // piston
+    const pt=top-12;
+    ctx.fillStyle=C.steel; roundRect(g.x0+2,pt,g.bw-4,12,3); ctx.fill();
+    ctx.font=`600 11px ${getFont("mono")}`; ctx.textBaseline="middle";
+    if(cfg.piston==="push"){
+      const cx=g.x0+g.bw/2; ctx.fillRect(cx-4, 14, 8, pt-14); roundRect(cx-30,8,60,9,4); ctx.fill();
+      ctx.fillStyle=C.muted; ctx.textAlign="left"; ctx.fillText("movable piston", g.x0+6, 14);
+    } else if(cfg.piston==="weight"){
+      const wh = 14+ (s.P-0.75)/1.25*26, ww=Math.min(g.bw*0.5,110), cx=g.x0+g.bw/2;
+      ctx.fillStyle=C.ink; roundRect(cx-ww/2, pt-wh, ww, wh, 4); ctx.fill();
+      ctx.fillStyle=C.surface; ctx.textAlign="center"; ctx.fillText(s.P.toFixed(2)+" atm", cx, pt-wh/2);
+      ctx.fillStyle=C.muted; ctx.textAlign="left"; ctx.fillText(cfg.controls.P?"weight sets the pressure":"free piston · pressure stays "+s.P.toFixed(2)+" atm", g.x0, 12);
+    } else if(cfg.piston==="locked"){
+      ctx.fillStyle=C.ink; ctx.fillRect(g.x0-8,pt-4,10,20); ctx.fillRect(g.x0+g.bw-2,pt-4,10,20);
+      ctx.fillStyle=C.muted; ctx.textAlign="left"; ctx.fillText("rigid lid · volume locked", g.x0, pt-14);
+    }
+    // heat source
+    const by=g.bottom+8;
+    ctx.fillStyle=C.steel; roundRect(g.x0+g.bw*0.2,H-14,g.bw*0.6,8,3); ctx.fill();
+    if(cfg.controls.T){
+      if(s.T>300){
+        const k=Math.min(1,(s.T-300)/300), n=5;
+        ctx.fillStyle=C.hot;
+        for(let i=0;i<n;i++){ const fx=g.x0+g.bw*(0.28+i*0.11), fh=8+k*22*(0.75+0.25*Math.sin(perfNow()/120+i*1.7)); flamePath(fx,H-14,fh); ctx.fill(); }
+      } else if(s.T<290){
+        const k=Math.min(1,(290-s.T)/140); ctx.strokeStyle=C.cold; ctx.lineWidth=2;
+        for(let i=0;i<4;i++){ const fx=g.x0+g.bw*(0.3+i*0.13), fy=H-26, rr=4+k*5; for(let j=0;j<3;j++){ const a=j*Math.PI/3; ctx.beginPath(); ctx.moveTo(fx-Math.cos(a)*rr,fy-Math.sin(a)*rr); ctx.lineTo(fx+Math.cos(a)*rr,fy+Math.sin(a)*rr); ctx.stroke(); } }
+      }
+    } else {
+      ctx.fillStyle=C.muted; ctx.textAlign="center"; ctx.fillText("temperature held at "+Math.round(s.T)+" K", g.x0+g.bw/2, H-26);
+    }
+    // side panel: gauge
+    const gx=g.px+g.pw/2-6, gr=Math.min(44,g.pw/2-12), gy=22+gr;
+    drawGauge(gx,gy,gr);
+    // thermometer
+    const tx=gx, tTop=gy+gr+40, tBot=H-30, frac=Math.min(1,s.T/650);
+    ctx.strokeStyle=C.ink; ctx.lineWidth=2; roundRect(tx-6,tTop,12,tBot-tTop,6); ctx.stroke();
+    ctx.fillStyle=tcol; ctx.beginPath(); ctx.arc(tx,tBot+4,10,0,6.283); ctx.fill();
+    const fh=(tBot-tTop-6)*frac; roundRect(tx-3,tBot-fh,6,fh+2,3); ctx.fill();
+    ctx.fillStyle=C.ink; ctx.textAlign="left"; ctx.font=`600 13px ${getFont("mono")}`;
+    ctx.fillText(Math.round(s.T)+" K", tx+16, tTop+12);
+    ctx.fillStyle=C.muted; ctx.font=`600 11px ${getFont("mono")}`;
+    ctx.fillText(Math.round(s.T-273)+" °C", tx+16, tTop+30);
+  }
+  function drawGauge(cx,cy,r){
+    const a0=Math.PI*0.75, sweep=Math.PI*1.5, fr=Math.min(1,s.P/cfg.pmax);
+    ctx.fillStyle=C["surface-2"]; ctx.beginPath(); ctx.arc(cx,cy,r,0,6.283); ctx.fill();
+    ctx.strokeStyle=cfg.solve==="P"?C.accent:C.ink; ctx.lineWidth=cfg.solve==="P"?3.5:2; ctx.stroke();
+    ctx.strokeStyle=C.muted; ctx.lineWidth=1.5;
+    const ticks=cfg.pmax>4?4:Math.round(cfg.pmax*2);
+    for(let i=0;i<=ticks;i++){ const a=a0+sweep*i/ticks; ctx.beginPath(); ctx.moveTo(cx+Math.cos(a)*(r-4),cy+Math.sin(a)*(r-4)); ctx.lineTo(cx+Math.cos(a)*(r-10),cy+Math.sin(a)*(r-10)); ctx.stroke(); }
+    const a=a0+sweep*fr; ctx.strokeStyle=C.hot; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a)*(r-9),cy+Math.sin(a)*(r-9)); ctx.stroke();
+    ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(cx,cy,3.5,0,6.283); ctx.fill();
+    ctx.textAlign="center"; ctx.font=`600 13px ${getFont("mono")}`; ctx.fillText(s.P.toFixed(2)+" atm", cx, cy+r+14);
+    ctx.font=`600 10px ${getFont("mono")}`; ctx.fillStyle=C.muted; ctx.fillText("PRESSURE", cx, cy+r-6 > cy+12 ? cy+18 : cy+18);
+  }
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+  function flamePath(x,y,h){ ctx.beginPath(); ctx.moveTo(x-6,y); ctx.quadraticCurveTo(x-8,y-h*0.5,x,y-h); ctx.quadraticCurveTo(x+8,y-h*0.5,x+6,y); ctx.closePath(); }
+
+  /* graph */
+  function drawGraph(){
+    if(!gctx) return;
+    const gr=cfg.graph, r=gcanvas.getBoundingClientRect(), w=r.width, h=r.height;
+    const L=52,Rr=14,T=12,B=36, pw=w-L-Rr, ph=h-T-B;
+    const X=v=>L+(v-gr.xr[0])/(gr.xr[1]-gr.xr[0])*pw, Y=v=>T+ph-(v-gr.yr[0])/(gr.yr[1]-gr.yr[0])*ph;
+    gctx.clearRect(0,0,w,h);
+    gctx.font=`600 11px ${getFont("mono")}`; gctx.textBaseline="middle";
+    gctx.strokeStyle=C.line; gctx.lineWidth=1; gctx.fillStyle=C.muted;
+    gctx.textAlign="right"; gr.yt.forEach(v=>{ gctx.beginPath(); gctx.moveTo(L,Y(v)); gctx.lineTo(L+pw,Y(v)); gctx.stroke(); gctx.fillText(v,L-6,Y(v)); });
+    gctx.textAlign="center"; gr.xt.forEach(v=>{ gctx.fillText(v,X(v),T+ph+12); });
+    gctx.strokeStyle=C.ink; gctx.lineWidth=1.5; gctx.beginPath(); gctx.moveTo(L,T); gctx.lineTo(L,T+ph); gctx.lineTo(L+pw,T+ph); gctx.stroke();
+    const unit={P:"atm",V:"L",T:"K",n:"mol"};
+    gctx.fillStyle=C.ink; gctx.fillText(`${gr.x} (${unit[gr.x]})`, L+pw/2, h-8);
+    gctx.save(); gctx.translate(12,T+ph/2); gctx.rotate(-Math.PI/2); gctx.fillText(`${gr.y} (${unit[gr.y]})`,0,0); gctx.restore();
+    const f=x=>{ const t=Object.assign({},s); t[gr.x]=x; if(gr.y==="P") return t.n*R*t.T/t.V; return t.n*R*t.T/t.P; };
+    gctx.save(); gctx.beginPath(); gctx.rect(L,T,pw,ph); gctx.clip();
+    if(gr.zero){ gctx.setLineDash([5,5]); gctx.strokeStyle=C.muted; gctx.lineWidth=2; gctx.beginPath(); gctx.moveTo(X(gr.xr[0]),Y(f(gr.xr[0]))); gctx.lineTo(X(gr.from),Y(f(gr.from))); gctx.stroke(); gctx.setLineDash([]); }
+    gctx.strokeStyle=C.accent; gctx.lineWidth=2.5; gctx.beginPath();
+    const x0=gr.from, x1=gr.xr[1];
+    for(let i=0;i<=120;i++){ const x=x0+(x1-x0)*i/120; const y=f(x); i?gctx.lineTo(X(x),Y(y)):gctx.moveTo(X(x),Y(y)); }
+    gctx.stroke();
+    const cx=X(s[gr.x]), cy=Y(s[gr.y]);
+    gctx.setLineDash([3,4]); gctx.strokeStyle=C.muted; gctx.lineWidth=1; gctx.beginPath(); gctx.moveTo(cx,T+ph); gctx.lineTo(cx,cy); gctx.lineTo(L,cy); gctx.stroke(); gctx.setLineDash([]);
+    gctx.fillStyle=C.hot; gctx.beginPath(); gctx.arc(cx,cy,6,0,6.283); gctx.fill();
+    gctx.strokeStyle=C.surface; gctx.lineWidth=2; gctx.stroke();
+    gctx.restore();
+    if(gr.zero && gr.x==="T"){ gctx.fillStyle=C.muted; gctx.textAlign="left"; gctx.fillText("0 K", L+4, T+ph-10); }
+  }
+
+  /* controls + readouts */
+  const ro = root.querySelector(".readouts"), inv = root.querySelector(".invariant");
+  function renderReadouts(){
+    ro.innerHTML = ["P","V","T","n"].map(k=>{
+      const role = cfg.controls[k] ? "ctrl" : (cfg.solve===k ? "resp" : "held");
+      const tag = role==="ctrl" ? "you control" : role==="resp" ? "responds" : "held constant";
+      return `<div class="ro ${role}"><span class="k">${k} · ${NAMES[k]}</span><span class="v">${fmt[k](s[k])}</span><span class="tag">${tag}</span></div>`;
+    }).join("");
+    inv.innerHTML = cfg.inv(s) + (law.id!=="ideal" ? ` <span class="note">This number stays the same.</span>` : "");
+  }
+  root.querySelectorAll("input[type=range]").forEach(inp=>{
+    const k=inp.dataset.k, out=root.querySelector(`output[for="${inp.id}"]`);
+    const show=()=>{ out.textContent = k==="T" ? `${Math.round(s.T)} K (${Math.round(s.T-273)} °C)` : fmt[k](s[k]); };
+    inp.addEventListener("input",()=>{ s[k]=parseFloat(inp.value); solve(); sync(); show(); renderReadouts(); });
+    show();
+  });
+  root.querySelector(".reset").addEventListener("click",()=>{
+    Object.assign(s,cfg.init); solve();
+    root.querySelectorAll("input[type=range]").forEach(inp=>{ inp.value=s[inp.dataset.k]; inp.dispatchEvent(new Event("input")); });
+  });
+  renderReadouts();
+  const ro2 = new ResizeObserver(()=>{ size(); dispH=null; parts.forEach(p=>{p.x=Math.min(p.x,geo().bw-4);}); });
+  ro2.observe(canvas);
+  size(); sync();
+  return { tick(dt){ step(dt); draw(); drawGraph(); } };
+}
+let fontCache={};
+function getFont(k){ return fontCache[k] || (fontCache[k]=getComputedStyle(document.documentElement).getPropertyValue("--f-"+k)); }
+const perfNow=()=>performance.now();
+
+/* ---------- render sections ---------- */
+const main = document.getElementById("main");
+const esc = t=>t;
+
+function basicsHTML(){
+  return `<section class="step" id="s-basics" data-step="basics">
+    <div class="head">
+      <span class="eyebrow">Step 0 · Start here</span>
+      <h2>The basics</h2>
+      <p class="lede">The gas laws describe how four properties of a gas are related. In each law, some properties change while the others stay constant. Learn the letters first, then work through the six laws in order.</p>
+    </div>
+    <div class="card">
+      <h3>What the letters mean</h3>
+      <div class="symbols">
+        <div class="sym"><span class="l">P</span><b>Pressure</b><span>How hard gas particles push on the walls</span><span class="u">atm, kPa, mmHg</span></div>
+        <div class="sym"><span class="l">V</span><b>Volume</b><span>How much space the gas takes up</span><span class="u">L, mL</span></div>
+        <div class="sym"><span class="l">n</span><b>Amount of gas</b><span>Number of particles, in moles</span><span class="u">mol</span></div>
+        <div class="sym"><span class="l">T</span><b>Temperature</b><span>How fast the particles move</span><span class="u">K (kelvin)</span></div>
+        <div class="sym"><span class="l">R</span><b>Gas constant</b><span>A fixed number used in PV = nRT</span><span class="u">0.0821 L·atm/(mol·K)</span></div>
+      </div>
+    </div>
+    <div class="grid2 even">
+      <div class="card kconv">
+        <h3>Always use kelvin</h3>
+        <p>Every gas law problem needs temperature in kelvin. To convert, add 273.</p>
+        <div class="formula"><div class="eq">K = °C + 273</div></div>
+        <div class="answer"><label for="c-in">Try it:</label><input id="c-in" type="number" value="25" inputmode="decimal"><span class="unit">°C</span><span class="unit">=</span><span class="big" id="k-out">298 K</span></div>
+        <p class="callout">Why kelvin? 0 K is the coldest possible temperature, where particles stop moving. Going from 10 °C to 20 °C is not twice as hot. In kelvin it is 283 K to 293 K, only about 3.5% hotter. Ratios only work when zero really means zero.</p>
+      </div>
+      <div class="card">
+        <h3>Useful conversions</h3>
+        <ul class="tryit">
+          <li><span class="mono">1 atm = 101.3 kPa = 760 mmHg</span></li>
+          <li><span class="mono">1 L = 1000 mL</span></li>
+        </ul>
+        <h3 style="margin-top:8px">Problem-solving steps</h3>
+        <ol class="method">
+          <li>List what you know (P₁, V₁, T₁ …) and what you need to find.</li>
+          <li>Convert temperatures to kelvin and make sure units match.</li>
+          <li>Pick the law that fits: what changes and what stays constant?</li>
+          <li>Rearrange the formula, plug in the numbers, and solve.</li>
+          <li>Check your answer: does it make sense (bigger or smaller)?</li>
+        </ol>
+      </div>
+    </div>
+  </section>`;
+}
+
+function lawHTML(law, i){
+  const ctrls = Object.entries(law.sim.controls).map(([k,[mn,mx,st]])=>`
+    <div class="ctl"><label for="${law.id}-${k}"><span>${NAMES[k]} (${k})</span><output for="${law.id}-${k}"></output></label>
+    <input type="range" id="${law.id}-${k}" data-k="${k}" min="${mn}" max="${mx}" step="${st}" value="${law.sim.init[k]}"></div>`).join("");
+  const relChip = law.rel==="inverse" ? `<span class="chip inverse">Relationship: <b>inverse</b></span>` : law.rel==="direct" ? `<span class="chip direct">Relationship: <b>direct</b></span>` : `<span class="chip">Relationship: <b>${law.rel==="mixed"?"mixed":"all four linked"}</b></span>`;
+  return `<section class="step" id="s-${law.id}" data-step="${law.id}">
+    <div class="head">
+      <span class="eyebrow">Step ${i+1} · Law ${i+1} of 6</span>
+      <h2>${law.name}</h2>
+      <p class="lede">${law.pair}. ${law.relText}</p>
+      <div class="chips"><span class="chip">Changes: <b>${law.changes}</b></span><span class="chip">Held constant: <b>${law.held}</b></span>${relChip}</div>
+    </div>
+    <div class="grid2">
+      <div class="bench" id="bench-${law.id}">
+        <div class="bench-top"><span class="label">Gas lab · try it</span><button class="ghost reset" type="button">Reset</button></div>
+        <canvas class="sim-canvas" aria-label="Animated container of gas particles with a pressure gauge and thermometer. Use the sliders below to change it."></canvas>
+        <div class="controls">${ctrls}</div>
+        <div class="readouts"></div>
+        <div class="invariant"></div>
+        ${law.sim.graph?`<div class="graph-wrap"><canvas class="graph-canvas" aria-label="Graph of ${law.sim.graph.y} against ${law.sim.graph.x}, with a dot at the current state."></canvas></div>`:""}
+      </div>
+      <div class="card">
+        <h3>The big idea</h3>
+        <p>${law.idea}</p>
+        <ul class="tryit">${law.tryit.map(t=>`<li><span>${t}</span></li>`).join("")}</ul>
+        <div class="formula"><div class="eq"><span>${law.formula}</span></div><div class="cap">${law.formulaCap}</div></div>
+        <figure class="illus" style="margin:0">${ILLUS[law.id==="gay-lussac"?"gay":law.id]()}<figcaption><b>Everyday example.</b> ${law.everyday}</figcaption></figure>
+      </div>
+    </div>
+    <div class="grid2 even">
+      <div class="card worked">
+        <h3>Worked example</h3>
+        <p class="problem">${law.worked.q}</p>
+        <ol class="steps"></ol>
+        <div class="row"><button class="btn next-step" type="button">Show step 1</button><button class="btn secondary show-all" type="button">Show all steps</button></div>
+      </div>
+      <div class="card practice">
+        <h3>Your turn</h3>
+        <p class="problem">${law.practice.q}</p>
+        <form class="answer" novalidate>
+          <label for="ans-${law.id}" class="mono" style="font-weight:600">${law.id==="ideal"?"n":law.practice.unit==="atm"?"P₂":"V₂"} =</label>
+          <input id="ans-${law.id}" type="text" inputmode="decimal" autocomplete="off" placeholder="your answer">
+          <span class="unit">${law.practice.unit}</span>
+          <button class="btn" type="submit">Check</button>
+        </form>
+        <div class="fb-slot"></div>
+        <ul class="hints"></ul>
+        <div class="row"><button class="btn secondary hint-btn" type="button">Give me a hint</button><button class="btn secondary sol-btn" type="button" hidden>Show full solution</button></div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function whichHTML(){
+  const rows=[["Boyle’s","P₁V₁ = P₂V₂","P and V","T, n","Inverse"],["Charles’s","V₁/T₁ = V₂/T₂","V and T","P, n","Direct"],["Gay-Lussac’s","P₁/T₁ = P₂/T₂","P and T","V, n","Direct"],["Avogadro’s","V₁/n₁ = V₂/n₂","V and n","P, T","Direct"],["Combined","P₁V₁/T₁ = P₂V₂/T₂","P, V and T","n","Mixed"],["Ideal","PV = nRT","One set of conditions","—","All four linked"]];
+  const qs=[["A bag of chips puffs up when you drive up a mountain.","boyle","The air pressure outside drops as you go up, so the gas sealed in the bag expands. Pressure down, volume up, temperature about the same."],
+            ["A beach ball gets smaller after sitting outside on a cold night.","charles","The temperature drops while the outside pressure stays about the same, so the volume shrinks."],
+            ["A pressure cooker’s pressure rises as it heats up on the stove.","gay-lussac","The pot is rigid, so its volume can’t change. Heating it raises the pressure."],
+            ["You inflate a pool float by blowing more air into it.","avogadro","Each breath adds more gas particles (more moles), so the volume grows."]];
+  const opts=[["boyle","Boyle’s"],["charles","Charles’s"],["gay-lussac","Gay-Lussac’s"],["avogadro","Avogadro’s"]];
+  return `<section class="step" id="s-which" data-step="which">
+    <div class="head">
+      <span class="eyebrow">Step 7 · Put it together</span>
+      <h2>Which law do I use?</h2>
+      <p class="lede">Ask two questions. Is there a “before” and “after”? And which properties change? The ones that change tell you the law.</p>
+    </div>
+    <div class="grid2 even">
+      <div class="card">
+        <h3>Law finder</h3>
+        <p>Tap the properties that change in the problem.</p>
+        <div class="toggles" id="finder">${["P","V","T","n"].map(k=>`<button class="tog" type="button" aria-pressed="false" data-k="${k}">${k}</button>`).join("")}</div>
+        <p class="result" id="finder-out" aria-live="polite">Pick two or more.</p>
+        <p class="callout">No “before” and “after”? Only one set of conditions, or you need to find moles? Use the ideal gas law, PV = nRT.</p>
+      </div>
+      <div class="card">
+        <h3>Summary</h3>
+        <div class="tablewrap"><table><thead><tr><th>Law</th><th>Formula</th><th>Changes</th><th>Constant</th><th>Relationship</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td class="f">${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join("")}</tbody></table></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Check your understanding</h3>
+      <p>For each situation, pick the gas law that explains it.</p>
+      <div class="quiz">${qs.map((q,i)=>`<div class="q" data-q="${i}" data-ans="${q[1]}" data-why="${q[2]}"><p><b>${i+1}.</b> ${q[0]}</p>
+        <div class="opts">${opts.map(o=>`<button class="opt" type="button" data-v="${o[0]}">${o[1]}</button>`).join("")}</div><div class="fb-slot" aria-live="polite"></div></div>`).join("")}</div>
+    </div>
+  </section>`;
+}
+
+main.innerHTML = basicsHTML() + LAWS.map(lawHTML).join("") + whichHTML() + `<div class="pager" id="pager"></div>`;
+
+/* ---------- wire basics ---------- */
+const cin=document.getElementById("c-in"), kout=document.getElementById("k-out");
+cin.addEventListener("input",()=>{ const v=parseFloat(cin.value); kout.textContent = isNaN(v) ? "— K" : (Math.round((v+273)*10)/10)+" K"; });
+
+/* ---------- wire worked + practice ---------- */
+LAWS.forEach(law=>{
+  const sec=document.getElementById("s-"+law.id);
+  // worked
+  const ol=sec.querySelector(".worked .steps"), nb=sec.querySelector(".next-step"), all=sec.querySelector(".show-all");
+  let shown=0;
+  const reveal=()=>{ const st=law.worked.steps[shown]; const li=document.createElement("li"); li.innerHTML=`<div><span class="m">${st[0]}</span><span class="why">${st[1]}</span></div>`; ol.appendChild(li); shown++;
+    if(shown>=law.worked.steps.length){ nb.hidden=true; all.hidden=true; } else nb.textContent=`Show step ${shown+1}`; };
+  nb.addEventListener("click",reveal);
+  all.addEventListener("click",()=>{ while(shown<law.worked.steps.length) reveal(); });
+  // practice
+  const p=law.practice, form=sec.querySelector(".practice form"), inp=form.querySelector("input"), slot=sec.querySelector(".practice .fb-slot"),
+        hl=sec.querySelector(".practice .hints"), hb=sec.querySelector(".hint-btn"), sb=sec.querySelector(".sol-btn");
+  let hintN=0, attempts=0;
+  const fb=(cls,html)=>{ slot.innerHTML=`<div class="fb ${cls}" role="status">${html}</div>`; };
+  hb.addEventListener("click",()=>{ if(hintN<p.hints.length){ hl.insertAdjacentHTML("beforeend",`<li><b>Hint ${hintN+1}</b>${p.hints[hintN]}</li>`); hintN++; }
+    if(hintN>=p.hints.length){ hb.hidden=true; sb.hidden=false; } });
+  sb.addEventListener("click",()=>{ hl.insertAdjacentHTML("beforeend",`<li><b>Solution</b><span class="mono">${p.solution[0]}</span><br><span class="mono">${p.solution[1]}</span><br>${p.solution[2]}</li>`); sb.hidden=true; hb.hidden=true; });
+  form.addEventListener("submit",e=>{
+    e.preventDefault();
+    const v=parseFloat(String(inp.value).replace(/,/g,"").replace(/[^\d.\-eE]/g,""));
+    if(isNaN(v)){ fb("warn","Type a number first, like 2.50."); return; }
+    attempts++; if(attempts>=1) sb.hidden = hintN<p.hints.length ? false : sb.hidden;
+    const err=Math.abs(v-p.answer)/p.answer;
+    if(err<=0.015){ fb("good",`Correct! ${p.solution[1]}. ${p.solution[2]}`); progress.done[law.id]=true; save(); paintStepper(); return; }
+    if(err<=0.05){ fb("good",`Very close. The exact answer is ${p.solution[1].split("= ")[1]}. Check your rounding: keep three significant figures.`); progress.done[law.id]=true; save(); paintStepper(); return; }
+    const trap=p.traps.find(t=>Math.abs(v-t.v)/t.v<0.03);
+    if(trap){ fb("warn",trap.msg); return; }
+    if(p.dir && p.start!=null){
+      const went = v>p.start ? "bigger" : "smaller";
+      if(went!==p.dir){ fb("bad",`Not quite. Your answer got ${went}, but it should get <b>${p.dir}</b>. ${p.dir==="bigger"?"Think about which way the gas is pushed.":"Think about which change wins."} Try a hint.`); return; }
+    }
+    fb("bad","Not quite. You’re heading the right way. Try a hint, or check your rearranged formula.");
+  });
+});
+
+/* ---------- which law ---------- */
+const picked=new Set(), fout=document.getElementById("finder-out");
+const LAWMAP={"PV":"Boyle’s law · P₁V₁ = P₂V₂","TV":"Charles’s law · V₁/T₁ = V₂/T₂","PT":"Gay-Lussac’s law · P₁/T₁ = P₂/T₂","Vn":"Avogadro’s law · V₁/n₁ = V₂/n₂","PTV":"Combined gas law · P₁V₁/T₁ = P₂V₂/T₂"};
+document.querySelectorAll("#finder .tog").forEach(b=>b.addEventListener("click",()=>{
+  const k=b.dataset.k; picked.has(k)?picked.delete(k):picked.add(k); b.setAttribute("aria-pressed",picked.has(k));
+  const key=["P","T","V","n"].filter(x=>picked.has(x)).join("");
+  fout.textContent = picked.size<2 ? "Pick two or more." : (LAWMAP[key] || "No single before/after law covers that. Try the ideal gas law, PV = nRT.");
+}));
+document.querySelectorAll(".q").forEach(q=>{
+  const slot=q.querySelector(".fb-slot");
+  const answer=(v,silent)=>{
+    q.querySelectorAll(".opt").forEach(o=>{ o.classList.remove("right","wrong"); if(o.dataset.v===v) o.classList.add(v===q.dataset.ans?"right":"wrong"); });
+    const ok=v===q.dataset.ans;
+    slot.innerHTML=`<div class="fb ${ok?"good":"bad"}">${ok?"Yes! ":"Not this one. Think about what changes and what stays the same. "}${ok?q.dataset.why:""}</div>`;
+    progress.quiz[q.dataset.q]=v; if(!silent) save();
+    const allRight=[...document.querySelectorAll(".q")].every(x=>progress.quiz[x.dataset.q]===x.dataset.ans);
+    if(allRight){ progress.done.which=true; save(); paintStepper(); }
+  };
+  q.querySelectorAll(".opt").forEach(o=>o.addEventListener("click",()=>answer(o.dataset.v)));
+  if(progress.quiz[q.dataset.q]) answer(progress.quiz[q.dataset.q],true);
+});
+
+/* ---------- navigation ---------- */
+const stepper=document.getElementById("stepper"), pager=document.getElementById("pager");
+stepper.innerHTML = STEPS.map((s,i)=>`<button type="button" data-go="${s.id}"><span class="n">${i}</span>${s.short}</button>`).join("");
+stepper.addEventListener("click",e=>{ const b=e.target.closest("[data-go]"); if(b) go(b.dataset.go,true); });
+function paintStepper(){ stepper.querySelectorAll("button").forEach(b=>b.classList.toggle("done",!!progress.done[b.dataset.go])); }
+const sims={}; let active=null;
+function go(id,scroll){
+  if(!STEPS.find(s=>s.id===id)) id="basics";
+  active=id;
+  document.querySelectorAll(".step").forEach(sec=>sec.hidden = sec.dataset.step!==id);
+  stepper.querySelectorAll("button").forEach(b=>{ if(b.dataset.go===id){ b.setAttribute("aria-current","step"); b.scrollIntoView({block:"nearest",inline:"center"}); } else b.removeAttribute("aria-current"); });
+  const i=STEPS.findIndex(s=>s.id===id), prev=STEPS[i-1], next=STEPS[i+1];
+  pager.innerHTML = (prev?`<button type="button" data-go="${prev.id}"><small>Back</small><span>${prev.name||"The basics"}</span></button>`:"") +
+                    (next?`<button type="button" class="next" data-go="${next.id}"><small>Next</small><span>${next.name||"Which law do I use?"}</span></button>`:"");
+  const law=LAWS.find(l=>l.id===id);
+  if(law && !sims[id]) sims[id]=Sim(document.getElementById("bench-"+id), law);
+  progress.step=id; save();
+  try{ if(location.hash.slice(1)!==id) history.replaceState(null,"","#"+id); }catch(e){}
+  if(scroll) window.scrollTo({top:0, behavior:reduce?"auto":"smooth"});
+}
+pager.addEventListener("click",e=>{ const b=e.target.closest("[data-go]"); if(b) go(b.dataset.go,true); });
+window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(h && h!==active) go(h,true); });
+paintStepper();
+go(location.hash.slice(1) || progress.step || "basics", false);
+
+let last=performance.now();
+function loop(now){ const dt=Math.min(0.05,(now-last)/1000); last=now; if(sims[active]) sims[active].tick(dt); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
