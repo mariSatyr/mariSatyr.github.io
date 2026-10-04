@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Two-Step Equations Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+   :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #f5f8fc; --paper: #ffffff; --ink: #172033; --muted: #5b6579;
+    --line: #d5dce8; --grid: #e7edf6;
+    --accent: #0f766e; --accent-soft: #e0f2ef;
+    --good: #15803d; --good-soft: #e7f6ec;
+    --bad: #b42318; --bad-soft: #fdecea;
+    --bar: #1a8fd0; --bar-light: #8fcdf0; --bar-pale: #e3f2fb;
+    --flour: #f3e3b8; --need: #e8841a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1420; --paper: #171e2d; --ink: #e8edf6; --muted: #a2acc0; --line: #2d374c; --grid: #1a2233;
+      --accent: #2dd4bf; --accent-soft: #123330; --good: #4ade80; --good-soft: #10291a; --bad: #f87171; --bad-soft: #341717;
+      --bar: #3aa6e6; --bar-light: #2a6f99; --bar-pale: #16283b; --flour: #6b5a2e; --need: #f5a04a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1420; --paper: #171e2d; --ink: #e8edf6; --muted: #a2acc0; --line: #2d374c; --grid: #1a2233;
+    --accent: #2dd4bf; --accent-soft: #123330; --good: #4ade80; --good-soft: #10291a; --bad: #f87171; --bad-soft: #341717;
+    --bar: #3aa6e6; --bar-light: #2a6f99; --bar-pale: #16283b; --flour: #6b5a2e; --need: #f5a04a;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; color: var(--ink); background-color: var(--bg);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    font-family: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif; font-size: 18px; line-height: 1.5;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "Atkinson Hyperlegible", "Segoe UI", sans-serif; line-height: 1.15; }
+  h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 800; margin: .3rem 0 .3rem; letter-spacing: -0.01em; }
+  h2 { font-size: 1.35rem; margin: 0 0 .4rem; font-weight: 800; }
+  p { margin: .4rem 0; }
+  .lede { color: var(--muted); max-width: 60ch; margin: 0 0 1.2rem; }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.2rem; }
+  .tab {
+    font: inherit; font-size: 1rem; cursor: pointer; border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+    padding: .5rem .95rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .55rem;
+  }
+  .tab[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tab .pips { display: inline-flex; gap: 3px; }
+  .tab .pip { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .tab .pip.on { background: var(--good); }
+  .tab[aria-selected="true"] .pip:not(.on) { background: color-mix(in srgb, var(--paper) 35%, transparent); }
+
+  .layout { display: grid; grid-template-columns: 1.15fr 1fr; gap: 1.2rem; align-items: start; }
+  @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+  .panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: 14px; padding: 1.2rem 1.25rem; }
+
+  .setup { font-size: 1.05rem; margin-bottom: .9rem; }
+  .stepno { color: var(--accent); font-weight: 700; font-size: .95rem; margin-bottom: .15rem; }
+  .question { font-size: 1.2rem; font-weight: 700; margin: 0 0 .9rem; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  @media (max-width: 480px) { .choices { grid-template-columns: 1fr; } }
+  .choice {
+    font: inherit; font-size: 1.1rem; text-align: left; cursor: pointer; color: var(--ink);
+    background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: .7rem .85rem;
+    display: flex; gap: .65rem; align-items: center; min-height: 3.2rem;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--accent); }
+  .choice .key { flex: none; width: 1.7rem; height: 1.7rem; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: .85rem; color: var(--muted); }
+  .choice.wrong { border-color: var(--bad); background: var(--bad-soft); cursor: default; }
+  .choice.wrong .key { border-color: var(--bad); color: var(--bad); }
+  .choice.right { border-color: var(--good); background: var(--good-soft); }
+  .choice.right .key { border-color: var(--good); background: var(--good); color: var(--paper); }
+  .choice:disabled { cursor: default; }
+  .choice:disabled:not(.right):not(.wrong) { opacity: .5; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .feedback { margin-top: 1rem; border-radius: 12px; padding: .75rem .95rem; font-size: 1.02rem; }
+  .feedback.bad { background: var(--bad-soft); border: 1.5px solid var(--bad); }
+  .feedback.good { background: var(--good-soft); border: 1.5px solid var(--good); }
+  .feedback b.tag { display: block; margin-bottom: .1rem; }
+  .feedback.bad b.tag { color: var(--bad); }
+  .feedback.good b.tag { color: var(--good); }
+  .actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; }
+  .btn { font: inherit; font-weight: 700; cursor: pointer; border-radius: 10px; padding: .6rem 1.1rem; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+
+  .work h2 { font-size: 1.1rem; }
+  .worklines { list-style: none; padding: 0; margin: .8rem 0 0; font-size: 1.05rem; }
+  .worklines li { padding: .35rem 0; border-top: 1px dashed var(--line); }
+  .worklines li:first-child { border-top: 0; }
+  .worklines .empty { color: var(--muted); font-style: italic; }
+  .worklines li.fresh { animation: pop .5s ease; }
+  @keyframes pop { from { background: var(--accent-soft); } to { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .worklines li.fresh, .bar .cell, .cupfill, .gap { animation: none !important; transition: none !important; } }
+
+  .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-size: .82em; line-height: 1.05; margin: 0 .08em; }
+  .frac span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 .15em; }
+
+  .bar { margin: .4rem 0 .2rem; font-weight: 700; text-align: center; }
+  .bar .total { color: var(--accent); width: 100%; border-bottom: 3px solid var(--accent); border-left: 3px solid var(--accent); border-right: 3px solid var(--accent); border-radius: 8px 8px 0 0; position: relative; }
+  .bar .total span { position: absolute; left: 50%; top: -1.55rem; transform: translateX(-50%); white-space: nowrap; background: var(--paper); padding: 0 .4rem; }
+  .bar .row { display: flex; }
+  .bar .cell { border: 1.5px solid var(--paper); padding: .55rem 0; transition: box-shadow .3s, background .3s; }
+  .bar .top .c13 { flex: 3; background: var(--bar); color: #fff; }
+  .bar .top .c3 { flex: 1; background: var(--bar-light); color: #fff; }
+  .bar .bot .cell { flex: 1; background: var(--bar-pale); font-style: italic; }
+  .bar .hl { box-shadow: inset 0 0 0 3px var(--need); }
+  .bar-wrap { padding-top: 1.7rem; }
+
+  .compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: .6rem; align-items: center; margin-top: .4rem; }
+  .side { border: 2px solid var(--line); border-radius: 12px; padding: .8rem .5rem; text-align: center; font-size: 1.25rem; font-weight: 700; min-height: 4.2rem; display: grid; place-items: center; }
+  .side small { display: block; font-size: .78rem; color: var(--muted); font-weight: 400; }
+  .rel { font-size: 1.8rem; font-weight: 800; color: var(--muted); }
+  .rel.eq { color: var(--good); }
+  .verdict { margin-top: .7rem; text-align: center; font-weight: 700; color: var(--good); min-height: 1.5em; }
+
+  .cupbox { display: flex; gap: 1rem; align-items: center; }
+  .cupbox svg { width: 210px; flex: none; }
+  .cuplegend { font-size: .95rem; }
+  .cuplegend div { display: flex; gap: .45rem; align-items: center; margin: .3rem 0; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; flex: none; }
+  .cupfill { transition: y .6s ease, height .6s ease; }
+
+  .done h2 { font-size: 1.5rem; }
+  .score { font-size: 2.4rem; font-weight: 800; font-family: "Bricolage Grotesque", sans-serif; color: var(--accent); }
+  footer { margin-top: 2rem; font-size: .9rem; color: var(--muted); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Two-Step Equations Practice</h1>
+  <p class="lede">Pick an answer for each step. If you miss one, read the hint and try again. Your work builds up on the right as you go.</p>
+
+  <div class="tabs" role="tablist" id="tabs" aria-label="Problems"></div>
+
+  <div class="layout">
+    <section class="panel" id="main" aria-live="polite"></section>
+    <aside class="panel work" id="work" aria-label="Your work"></aside>
+  </div>
+
+  <footer>Tip: press 1–4 to choose an answer and Enter to go to the next step. <button class="btn ghost" id="resetAll" style="margin-left:.4rem;padding:.25rem .7rem;font-size:.85rem">Start all over</button></footer>
+</div>
+
+<script>
+(function () {
+  function fr(n, d) { return '<span class="frac"><span>' + n + '</span><span>' + d + '</span></span>'; }
+
+  var PROBLEMS = [
+    {
+      id: "p2", tab: "Problem 2", title: "Use the bar diagram",
+      setup: "Preston uses a bar diagram to represent <b>4x − 3 = 13</b>. Use it to solve for x.",
+      visual: "bar",
+      qs: [
+        { q: "How many equal parts are in the bottom bar?", hl: "bottom",
+          c: [["4", 1, "Yes. There are 4 boxes, and each one is x."],
+              ["3", 0, "Count every box in the bottom row, including the last one under the 3."],
+              ["13", 0, "13 is a number in the top bar. Count the boxes in the bottom row."],
+              ["16", 0, "Count the boxes in the bottom row, not a total."]],
+          work: "The bottom bar has 4 equal parts." },
+        { q: "Each part is x. What expression does the whole bottom bar show?", hl: "bottom",
+          c: [["4x", 1, "Right. Four x's together is 4x."],
+              ["x + 4", 0, "That would be x plus four ones. Here there are four x's, so multiply."],
+              ["4x − 3", 0, "The bottom bar has no − 3 in it. It's just the four x's."],
+              ["x", 0, "That's one part. The whole bar has four of them."]],
+          work: "Bottom bar: x + x + x + x = 4x" },
+        { q: "The top bar shows 13 plus what number?", hl: "three",
+          c: [["3", 1, "Yes. The small section on the right is 3."],
+              ["4", 0, "4 is how many x's there are. Look at the small section in the top bar."],
+              ["13", 0, "13 is the big section. What's in the small section next to it?"],
+              ["x", 0, "The top bar has numbers only. Read the small section on the right."]],
+          work: "Top bar: 13 + 3" },
+        { q: "So the whole bar is worth 13 + 3 = ?", hl: "top",
+          c: [["16", 1, "Correct. The total is 16."],
+              ["10", 0, "That's 13 − 3. The bar puts 13 and 3 together, so add."],
+              ["39", 0, "That's 13 × 3. The two sections sit side by side, so add them."],
+              ["13", 0, "13 is only part of the bar. Add the 3 too."]],
+          work: "Whole bar: 13 + 3 = 16" },
+        { q: "To go from 4x − 3 = 13 to 4x = 16, what do you do to both sides?", hl: "three",
+          c: [["Add 3", 1, "Yes. Adding 3 undoes the − 3."],
+              ["Subtract 3", 0, "Subtracting 3 would give 4x − 6. Use the opposite of − 3."],
+              ["Divide by 4", 0, "That comes next. First get 4x by itself by undoing the − 3."],
+              ["Multiply by 3", 0, "Nothing is multiplied by 3 here. Undo the − 3 with the opposite operation."]],
+          work: "4x − 3 + 3 = 13 + 3  →  4x = 16" },
+        { q: "4x = 16. What do you do to both sides next?", hl: "bottom",
+          c: [["Divide by 4", 1, "Right. Splitting 16 into 4 equal parts undoes the × 4."],
+              ["Subtract 4", 0, "4x means 4 times x. Undo multiplying with the opposite operation."],
+              ["Multiply by 4", 0, "That would make it 16x = 64. Use the opposite of × 4."],
+              ["Add 4", 0, "4x means 4 times x, not 4 plus x. Undo the multiplying."]],
+          work: "4x ÷ 4 = 16 ÷ 4" },
+        { q: "What is x?", hl: "bottom",
+          c: [["4", 1, "Yes. x = 4, so each box is worth 4."],
+              ["12", 0, "That's 16 − 4. You need 16 split into 4 equal parts."],
+              ["64", 0, "That's 16 × 4. Divide instead: 16 ÷ 4."],
+              ["2.5", 0, "That's 10 ÷ 4. Use the total, 16, not 13 − 3."]],
+          work: "x = 4" },
+        { q: "Check it: 4(4) − 3 = ?", hl: "",
+          c: [["13", 1, "It checks out. 16 − 3 = 13, which matches the equation."],
+              ["16", 0, "You multiplied 4 × 4. Now subtract the 3."],
+              ["41", 0, "4(4) means 4 × 4, not the digits 4 and 4 side by side."],
+              ["19", 0, "You added 3. The equation says − 3."]],
+          work: "Check: 4(4) − 3 = 16 − 3 = 13 ✓" }
+      ]
+    },
+    {
+      id: "p3", tab: "Problem 3", title: "Check Clara's answer",
+      setup: "Clara solved <b>6p − 12 = 72</b> and says <b>p = 14</b>. How can you check whether she is correct?",
+      visual: "compare",
+      qs: [
+        { q: "What's the best way to check her answer?",
+          c: [["Substitute 14 for p in the original equation", 1, "Yes. If both sides come out equal, the answer is right."],
+              ["Add 14 to both sides", 0, "That changes the equation. To check, put her answer in place of p."],
+              ["See if 14 is close to 72", 0, "Being close doesn't prove anything. Put 14 into the equation and see if it works."],
+              ["Divide 72 by 14", 0, "That skips the − 12 and the 6. Put 14 in for p in the whole equation."]],
+          work: "Plan: replace p with 14" },
+        { q: "Which shows p replaced with 14?",
+          c: [["6(14) − 12 = 72", 1, "Right. 6p means 6 times p, so write 6(14)."],
+              ["614 − 12 = 72", 0, "6p means 6 times p. Use parentheses: 6(14)."],
+              ["6 + 14 − 12 = 72", 0, "6p means multiply, not add."],
+              ["6(14 − 12) = 72", 0, "Only p gets replaced. The − 12 stays outside the parentheses."]],
+          work: "6(14) − 12 = 72" },
+        { q: "Multiply first. 6 × 14 = ?",
+          c: [["84", 1, "Correct. 6 × 14 = 84."],
+              ["20", 0, "That's 6 + 14. The 6 multiplies the 14."],
+              ["64", 0, "Close. Try 6 × 10 = 60 and 6 × 4 = 24, then add."],
+              ["74", 0, "Try 6 × 10 = 60 and 6 × 4 = 24, then add them."]],
+          work: "84 − 12 = 72" },
+        { q: "Now subtract. 84 − 12 = ?",
+          c: [["72", 1, "Yes. The left side works out to 72."],
+              ["96", 0, "That's 84 + 12. The equation says − 12."],
+              ["62", 0, "Check the tens: 8 − 1 = 7, so the answer is in the 70s."],
+              ["70", 0, "Check the ones place: 4 − 2 = 2."]],
+          work: "72 = 72" },
+        { q: "72 = 72. Is this a true statement?",
+          c: [["True", 1, "Right. Both sides are equal."],
+              ["False", 0, "Look again: both sides are 72, so they are equal."]],
+          work: "72 = 72 is true" },
+        { q: "So, is Clara correct?",
+          c: [["Yes, p = 14 makes both sides equal 72", 1, "Exactly. Clara's answer checks out."],
+              ["No, because 14 is less than 72", 0, "The size of p doesn't matter. What matters is whether both sides come out equal."],
+              ["No, because the check gave 84", 0, "84 was a middle step. After subtracting 12, you got 72."]],
+          work: "Clara is correct: p = 14 ✓" },
+        { q: "Another way: solve 6p − 12 = 72 yourself. What do you do to both sides first?",
+          c: [["Add 12", 1, "Yes. That gives 6p = 84."],
+              ["Subtract 12", 0, "That gives 6p − 24. Use the opposite of − 12."],
+              ["Divide by 6", 0, "Undo the − 12 first, then divide."],
+              ["Subtract 6", 0, "The 6 multiplies p. Start by undoing the − 12."]],
+          work: "6p − 12 + 12 = 72 + 12  →  6p = 84" },
+        { q: "6p = 84. What is p?",
+          c: [["14", 1, "Same answer as Clara, so she's correct."],
+              ["78", 0, "That's 84 − 6. 6p means 6 times p, so divide."],
+              ["504", 0, "That's 84 × 6. Divide instead."],
+              ["12", 0, "Check: 6 × 12 = 72, not 84."]],
+          work: "p = 84 ÷ 6 = 14" }
+      ]
+    },
+    {
+      id: "p4", tab: "Problem 4", title: "Clyde's flour",
+      setup: "A recipe needs <b>1⅓ cups</b> of flour. Clyde has <b>2 cups</b>, but he is <b>doubling</b> the recipe. How much more flour does he need? Let <b>c</b> be the flour he still needs.",
+      visual: "cup",
+      qs: [
+        { q: "How much flour does one recipe need?",
+          c: [["1⅓ cups", 1, "Right. That's for one batch."],
+              ["2 cups", 0, "2 cups is how much Clyde already has."],
+              ["2⅔ cups", 0, "That's for the doubled recipe. How much for one batch?"],
+              ["⅓ cup", 0, "Read the recipe again: one and one-third cups."]],
+          work: "One recipe: 1⅓ cups" },
+        { q: "Doubling the recipe means multiplying by…",
+          c: [["2", 1, "Yes. Double means two times as much."],
+              ["½", 0, "That would make half the recipe."],
+              ["1⅓", 0, "1⅓ is the flour amount. Doubling means times 2."],
+              ["4", 0, "That's making four batches. Double is two."]],
+          work: "Doubled: 2 × 1⅓" },
+        { q: "Write 1⅓ as an improper fraction.",
+          c: [[fr(4, 3), 1, "Correct. 1 whole is " + fr(3, 3) + ", plus " + fr(1, 3) + " makes " + fr(4, 3) + "."],
+              [fr(13, 3), 0, "That puts the 1 and 3 side by side. 1 whole = " + fr(3, 3) + ", plus " + fr(1, 3) + "."],
+              [fr(1, 3), 0, "That leaves out the whole cup. Add 1 = " + fr(3, 3) + "."],
+              [fr(3, 4), 0, "Flipped. Thirds stay on the bottom: 1 = " + fr(3, 3) + ", plus " + fr(1, 3) + "."]],
+          work: "1⅓ = " + fr(4, 3) },
+        { q: "2 × " + fr(4, 3) + " = ?",
+          c: [[fr(8, 3), 1, "Yes. Multiply the top: 2 × 4 = 8. The bottom stays 3."],
+              [fr(8, 6), 0, "Only the top gets multiplied. Thirds stay thirds."],
+              [fr(6, 3), 0, "That's 2 + 4 on top. Multiply: 2 × 4."],
+              [fr(4, 6), 0, "Multiply the top by 2, not the bottom."]],
+          work: "2 × " + fr(4, 3) + " = " + fr(8, 3) },
+        { q: "Write " + fr(8, 3) + " as a mixed number.",
+          c: [["2⅔", 1, "Right. 8 ÷ 3 = 2 with 2 left over. Clyde needs 2⅔ cups in all."],
+              ["2⅓", 0, "8 ÷ 3 = 2 with a remainder of 2, not 1."],
+              ["3⅔", 0, "3 thirds make 1 whole, so 8 thirds is only 2 wholes and 2 thirds."],
+              ["2⅛", 0, "The leftover is in thirds, not eighths."]],
+          work: "Total needed: 2⅔ cups" },
+        { q: "Part a: Which equation represents the problem?",
+          c: [["2 + c = 2 × 1⅓", 1, "Yes. What he has plus what he needs equals the total."],
+              ["2 + c = 1⅓", 0, "That's the flour for one batch. He's doubling it."],
+              ["2c = 1⅓", 0, "Clyde adds more flour to what he has. That's 2 + c, not 2 times c."],
+              ["c − 2 = 2 × 1⅓", 0, "He's adding flour to his 2 cups, so use 2 + c."]],
+          work: "Equation: 2 + c = 2 × 1⅓" },
+        { q: "Part b: 2 + c = 2⅔. How do you get c by itself?",
+          c: [["Subtract 2 from both sides", 1, "Right. Subtracting 2 undoes the + 2."],
+              ["Add 2 to both sides", 0, "That gives 4 + c. Use the opposite of + 2."],
+              ["Divide both sides by 2", 0, "The 2 is added, not multiplied. Undo it by subtracting."],
+              ["Multiply both sides by 2", 0, "The 2 is added. Use the opposite of adding."]],
+          work: "2 + c − 2 = 2⅔ − 2" },
+        { q: "What is c?",
+          c: [["⅔ cup", 1, "Yes. Clyde needs ⅔ cup more flour."],
+              ["4⅔ cups", 0, "That's 2⅔ + 2. Subtract the 2 instead."],
+              ["1⅓ cups", 0, "That's one batch. Subtract what he has from the total: 2⅔ − 2."],
+              ["⅓ cup", 0, "2⅔ − 2 leaves two-thirds, not one-third."]],
+          work: "c = ⅔ cup" },
+        { q: "Check it: 2 + ⅔ = ?",
+          c: [["2⅔", 1, "It matches the total. Clyde needs ⅔ cup more flour."],
+              ["2⅓", 0, "Adding ⅔ to 2 keeps the ⅔."],
+              ["3", 0, "⅔ is less than a whole cup, so you don't reach 3."],
+              [fr(2, 5), 0, "Write 2 as 2 wholes, then add the ⅔."]],
+          work: "Check: 2 + ⅔ = 2⅔ ✓" }
+      ]
+    }
+  ];
+
+  var KEY = "twostep-practice-v1";
+  function blank() {
+    var s = { cur: 0, p: {} };
+    PROBLEMS.forEach(function (p) { s.p[p.id] = { i: 0, first: 0, wrong: [], answered: false }; });
+    return s;
+  }
+  var S = blank();
+  try { var raw = localStorage.getItem(KEY); if (raw) { var saved = JSON.parse(raw); if (saved && saved.p) S = Object.assign(blank(), saved); } } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  function order(prob, qi, n) {
+    var idx = []; for (var k = 0; k < n; k++) idx.push(k);
+    var seed = 0, str = prob.id + ":" + qi;
+    for (var j = 0; j < str.length; j++) seed = (seed * 31 + str.charCodeAt(j)) >>> 0;
+    for (var m = n - 1; m > 0; m--) { seed = (seed * 1103515245 + 12345) >>> 0; var r = seed % (m + 1); var t = idx[m]; idx[m] = idx[r]; idx[r] = t; }
+    return idx;
+  }
+
+  var tabsEl = document.getElementById("tabs"), mainEl = document.getElementById("main"), workEl = document.getElementById("work");
+  var freshLine = -1;
+
+  function renderTabs() {
+    tabsEl.innerHTML = "";
+    PROBLEMS.forEach(function (p, k) {
+      var st = S.p[p.id];
+      var b = document.createElement("button");
+      b.className = "tab"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", k === S.cur ? "true" : "false");
+      var done = st.i + (st.answered ? 1 : 0);
+      var pips = '<span class="pips" aria-hidden="true">' + p.qs.map(function (_, qi) { return '<span class="pip' + (qi < done ? " on" : "") + '"></span>'; }).join("") + "</span>";
+      b.innerHTML = p.tab + pips + '<span class="sr">' + done + " of " + p.qs.length + " steps done</span>";
+      b.onclick = function () { S.cur = k; freshLine = -1; save(); renderAll(); };
+      tabsEl.appendChild(b);
+    });
+  }
+
+  function doneCount(p) { var st = S.p[p.id]; return st.i + (st.answered ? 1 : 0); }
+
+  function renderMain() {
+    var p = PROBLEMS[S.cur], st = S.p[p.id];
+    if (st.i >= p.qs.length) { renderDone(p, st); return; }
+    var q = p.qs[st.i];
+    var ord = order(p, st.i, q.c.length);
+    var html = '<h2>' + p.tab + ": " + p.title + '</h2><p class="setup">' + p.setup + '</p>' +
+      '<div class="stepno">Step ' + (st.i + 1) + " of " + p.qs.length + '</div><p class="question">' + q.q + '</p><div class="choices" role="group" aria-label="Answer choices">';
+    ord.forEach(function (ci, pos) {
+      var c = q.c[ci], cls = "choice";
+      var isWrong = st.wrong.indexOf(ci) >= 0;
+      if (isWrong) cls += " wrong";
+      if (st.answered && c[1]) cls += " right";
+      var dis = st.answered || isWrong ? " disabled" : "";
+      html += '<button class="' + cls + '" data-ci="' + ci + '"' + dis + '><span class="key">' + (pos + 1) + "</span><span>" + c[0] + "</span></button>";
+    });
+    html += "</div>";
+    var last = st.answered ? q.c.filter(function (c) { return c[1]; })[0] : (st.wrong.length ? q.c[st.wrong[st.wrong.length - 1]] : null);
+    if (last) {
+      html += '<div class="feedback ' + (st.answered ? "good" : "bad") + '"><b class="tag">' + (st.answered ? (st.wrong.length ? "Got it." : "Correct on the first try.") : "Not quite. Try again.") + '</b>' + last[2] + '</div>';
+    }
+    if (st.answered) html += '<div class="actions"><button class="btn" id="next">' + (st.i + 1 < p.qs.length ? "Next step" : "Finish " + p.tab) + "</button></div>";
+    mainEl.innerHTML = html;
+    mainEl.querySelectorAll(".choice").forEach(function (b) { b.onclick = function () { pick(+b.getAttribute("data-ci")); }; });
+    var nx = document.getElementById("next"); if (nx) { nx.onclick = next; nx.focus({ preventScroll: true }); }
+  }
+
+  function renderDone(p, st) {
+    var nextIdx = S.cur + 1 < PROBLEMS.length ? S.cur + 1 : -1;
+    var allDone = PROBLEMS.every(function (pp) { return S.p[pp.id].i >= pp.qs.length; });
+    var html = '<div class="done"><h2>' + p.tab + " complete</h2>" +
+      '<p class="score">' + st.first + " / " + p.qs.length + "</p><p>steps right on the first try.</p>" +
+      (st.first === p.qs.length ? "<p>Every step on the first try. Nice work.</p>" : "<p>Look over the steps you missed in your work on the right, then try this problem again to see if you can get all of them right on the first try.</p>");
+    if (allDone) {
+      var tot = 0, max = 0; PROBLEMS.forEach(function (pp) { tot += S.p[pp.id].first; max += pp.qs.length; });
+      html += '<p style="margin-top:1rem"><b>All three problems done:</b> ' + tot + " of " + max + " steps right on the first try.</p>";
+    }
+    html += '<div class="actions">' + (nextIdx >= 0 ? '<button class="btn" id="goNext">Go to ' + PROBLEMS[nextIdx].tab + "</button>" : "") +
+      '<button class="btn ghost" id="redo">Try ' + p.tab + " again</button></div></div>";
+    mainEl.innerHTML = html;
+    var g = document.getElementById("goNext"); if (g) g.onclick = function () { S.cur = nextIdx; freshLine = -1; save(); renderAll(); window.scrollTo({ top: 0 }); };
+    document.getElementById("redo").onclick = function () { S.p[p.id] = { i: 0, first: 0, wrong: [], answered: false }; freshLine = -1; save(); renderAll(); };
+  }
+
+  function pick(ci) {
+    var p = PROBLEMS[S.cur], st = S.p[p.id], q = p.qs[st.i];
+    if (st.answered || st.wrong.indexOf(ci) >= 0) return;
+    if (q.c[ci][1]) { st.answered = true; if (!st.wrong.length) st.first++; freshLine = st.i; }
+    else st.wrong.push(ci);
+    save(); renderAll();
+  }
+
+  function next() {
+    var p = PROBLEMS[S.cur], st = S.p[p.id];
+    if (!st.answered) return;
+    st.i++; st.wrong = []; st.answered = false; freshLine = -1;
+    save(); renderAll();
+    var qEl = mainEl.querySelector(".choice"); if (qEl) qEl.focus({ preventScroll: true });
+  }
+
+  function barVisual(p, n) {
+    var st = S.p[p.id];
+    var hl = (st.i < p.qs.length) ? p.qs[st.i].hl : "";
+    var total = n >= 4 ? "Total = 16" : "Total";
+    var xs = n >= 7 ? "x = 4" : "x";
+    function h(k) { return hl === k ? " hl" : ""; }
+    return '<div class="bar-wrap"><div class="bar" role="img" aria-label="Bar diagram: top bar 13 and 3, bottom bar four x boxes. ' + total + '">' +
+      '<div class="total"><span>' + total + "</span></div>" +
+      '<div class="row top"><div class="cell c13' + h("top") + '">13</div><div class="cell c3' + (hl === "three" || hl === "top" ? " hl" : "") + '">3</div></div>' +
+      '<div class="row bot">' + [0, 1, 2, 3].map(function () { return '<div class="cell' + h("bottom") + '">' + xs + "</div>"; }).join("") + "</div></div></div>";
+  }
+
+  function compareVisual(n) {
+    var left = ["6p − 12", "6p − 12", "6(14) − 12", "84 − 12", "72", "72", "72", "72", "72"][Math.min(n, 8)];
+    var rel = n >= 5 ? "=" : "?";
+    var verdict = n >= 6 ? "p = 14 works. Clara is correct." : "";
+    return '<div class="compare"><div class="side"><div><small>left side</small>' + left + '</div></div>' +
+      '<div class="rel' + (n >= 5 ? " eq" : "") + '" aria-label="' + (n >= 5 ? "equals" : "unknown") + '">' + rel + "</div>" +
+      '<div class="side"><div><small>right side</small>72</div></div></div><div class="verdict">' + verdict + "</div>";
+  }
+
+  function cupVisual(n) {
+    var top = 30, bot = 250, per = (bot - top) / 3;
+    function y(v) { return bot - v * per; }
+    var target = n >= 5, gap = n >= 8;
+    var svg = '<svg viewBox="0 0 230 270" role="img" aria-label="Measuring cup: Clyde has 2 cups' + (target ? ", needs 2 and two-thirds" : "") + (gap ? ", missing two-thirds cup" : "") + '" style="color:var(--ink);">' +
+      '<defs><clipPath id="cupclip"><rect x="70" y="' + top + '" width="100" height="' + (bot - top) + '" rx="10"/></clipPath>' +
+      '<pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--paper)"/><line x1="0" y1="0" x2="0" y2="8" stroke="var(--need)" stroke-width="2"/></pattern></defs>' +
+      '<g clip-path="url(#cupclip)"><rect class="cupfill" x="70" y="' + y(2) + '" width="100" height="' + (2 * per) + '" fill="var(--flour)"/>' +
+      (gap ? '<rect class="gap" x="70" y="' + y(8/3) + '" width="100" height="' + (per * 2 / 3) + '" fill="url(#hatch)"/>' : "") + '</g>' +
+      '<rect x="70" y="' + top + '" width="100" height="' + (bot - top) + '" rx="10" fill="none" stroke="currentColor" stroke-width="3"/>' +
+      '<path d="M170 70 q42 0 42 50 q0 50 -42 50" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>' +
+      '<line x1="70" x2="92" y1="' + y(1) + '" y2="' + y(1) + '" stroke="currentColor" stroke-width="2"/><text x="62" y="' + (y(1)+5) + '" font-size="12" fill="currentColor">1</text>' +
+      '<line x1="70" x2="92" y1="' + y(2) + '" y2="' + y(2) + '" stroke="currentColor" stroke-width="2"/><text x="62" y="' + (y(2)+5) + '" font-size="12" fill="currentColor">2</text>' +
+      '<line x1="70" x2="92" y1="' + y(3) + '" y2="' + y(3) + '" stroke="currentColor" stroke-width="2"/><text x="62" y="' + (y(3)+5) + '" font-size="12" fill="currentColor">3</text>' +
+      (target ? '<line x1="64" x2="176" y1="' + y(8/3) + '" y2="' + y(8/3) + '" stroke="var(--need)" stroke-width="3" stroke-dasharray="6 4"/>' : "") +
+      '</svg>';
+    var legend = '<div class="cuplegend"><div><span class="sw" style="background:var(--flour)"></span>Has: 2 cups</div>' +
+      (target ? '<div><span class="sw" style="background:var(--need)"></span>Needs: 2⅔ cups</div>' : '<div style="color:var(--muted)">Needs: ? (work it out)</div>') +
+      (gap ? '<div><span class="sw" style="background:repeating-linear-gradient(45deg,var(--need) 0 3px,transparent 3px 6px);border:1px solid var(--need)"></span><b>c = ⅔ cup more</b></div>' : '') + '</div>';
+    return '<div class="cupbox">' + svg + legend + '</div>';
+  }
+
+  function renderWork() {
+    var p = PROBLEMS[S.cur], n = doneCount(p);
+    var vis = p.visual === "bar" ? barVisual(p, n) : p.visual === "compare" ? compareVisual(n) : cupVisual(n);
+    var lines = "";
+    for (var k = 0; k < n; k++) lines += '<li' + (k === freshLine ? ' class="fresh"' : "") + ">" + p.qs[k].work + "</li>";
+    if (!lines) lines = '<li class="empty">Your steps will show up here.</li>';
+    workEl.innerHTML = "<h2>Your work</h2>" + vis + '<ol class="worklines">' + lines + "</ol>";
+  }
+
+  function renderAll() { renderTabs(); renderMain(); renderWork(); }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+    var btns = mainEl.querySelectorAll(".choice");
+    var k = parseInt(e.key, 10);
+    if (k >= 1 && k <= btns.length) { var b = btns[k - 1]; if (!b.disabled) b.click(); e.preventDefault(); }
+    if (e.key === "Enter") { var nx = document.getElementById("next"); if (nx && document.activeElement !== nx) { nx.click(); e.preventDefault(); } }
+  });
+  document.getElementById("resetAll").onclick = function () {
+    if (!confirm("Clear all your answers and start over?")) return;
+    S = blank(); freshLine = -1; save(); renderAll();
+  };
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
