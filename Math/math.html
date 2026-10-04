@@ -111,6 +111,14 @@
             background-color: #005662;
         }
 
+        /* --- Multiple modules grid --- */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
         /* --- Placeholder styles for FUTURE sections --- */
         #future-concepts {
             margin-top: 3rem;
@@ -156,6 +164,10 @@
             header h1 {
                 font-size: 2rem;
             }
+
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -181,24 +193,47 @@
                 </div>
             </section>
 
-            <!-- ALGEBRA SECTION -->
+            <!-- ALGEBRA 2 SECTION -->
             <section class="section">
-                <h3>Algebra</h3>
+                <h3>Algebra 2</h3>
                 <div class="topic-link-card">
-                    <h3>Algebra 2: Finding Maximum & Minimum</h3>
+                    <h3>Finding Maximum & Minimum</h3>
                     <p>Learn how to find the maximum and minimum values of functions in Algebra 2.</p>
-                    <a href="https://marisatyr.github.io/Math/Alg2_max_min.html" class="view-link">View Module →</a>
+                    <a href="https://marisatyr.github.io/Math/Algebra2/Alg2_max_min.html" class="view-link">View Module →</a>
                 </div>
             </section>
 
             <!-- PRE-ALGEBRA SECTION -->
             <section class="section">
                 <h3>Pre Algebra</h3>
-                <div class="topic-link-card">
-                    <h3>Order of Operations Practice</h3>
-                    <p>Build confidence with parentheses, exponents, multiplication, division, addition, and subtraction.</p>
-                    <a href="https://marisatyr.github.io/Math/PreAlgebra_OrderOfOperations.html" class="view-link">View Module →</a>
+                <div class="modules-grid">
+                    <div class="topic-link-card">
+                        <h3>Museum Math</h3>
+                        <p>Explore mathematical concepts through museum exhibits and real-world applications.</p>
+                        <a href="https://marisatyr.github.io/Math/PreAlgebra/museum-math.html" class="view-link">View Module →</a>
+                    </div>
+                    <div class="topic-link-card">
+                        <h3>Number Line Adder</h3>
+                        <p>Master addition on the number line with interactive visualizations.</p>
+                        <a href="https://marisatyr.github.io/Math/PreAlgebra/number-line-adder.html" class="view-link">View Module →</a>
+                    </div>
+                    <div class="topic-link-card">
+                        <h3>FOIL Lab</h3>
+                        <p>Practice multiplying binomials using the FOIL method step-by-step.</p>
+                        <a href="https://marisatyr.github.io/Math/PreAlgebra/foil-lab.html" class="view-link">View Module →</a>
+                    </div>
+                    <div class="topic-link-card">
+                        <h3>Factor Lab</h3>
+                        <p>Learn factorization techniques through guided practice and exploration.</p>
+                        <a href="https://marisatyr.github.io/Math/PreAlgebra/factor-lab.html" class="view-link">View Module →</a>
+                    </div>
                 </div>
+            </section>
+
+            <!-- GEOMETRY SECTION -->
+            <section class="section">
+                <h3>Geometry</h3>
+                <p style="color: #888; font-style: italic;">Coming soon! Check back for geometry modules.</p>
             </section>
 
             <!-- ARITHMETIC SECTION -->
@@ -218,15 +253,15 @@
                 <ul class="concept-placeholder-list">
                     <li class="placeholder-item">
                         <strong>Geometry Basics</strong>
-                        (Placeholders for theorems, shape properties, and proofs)
+                        (Theorems, shape properties, and proofs)
                     </li>
                     <li class="placeholder-item">
                         <strong>Calculus Introduction</strong>
-                        (Placeholders for limits, derivatives, and integral concepts)
+                        (Limits, derivatives, and integral concepts)
                     </li>
                     <li class="placeholder-item">
                         <strong>Trigonometry Review</strong>
-                        (Placeholders for sine/cosine functions, unit circle, and identities)
+                        (Sine/cosine functions, unit circle, and identities)
                     </li>
                 </ul>
             </section>
