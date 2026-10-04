@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cones &amp; Spheres — Working Drawings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0a2038;
+    --navy:#0e2a45;
+    --navy-panel:#0f2f52;
+    --grid-line:#1c3f65;
+    --ink:#eaf2ff;
+    --ink-dim:#9db6d6;
+    --ink-faint:#6c88ab;
+    --cone:#ff9452;
+    --cone-dim:#7a5030;
+    --sphere:#4fd8c9;
+    --sphere-dim:#2c6a63;
+    --paper-edge:#274a72;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+
+  body{
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/40px 40px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/40px 40px,
+      var(--navy-deep);
+    background-blend-mode:normal;
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  header{
+    padding:2rem 3rem;
+    border-bottom:1px solid var(--paper-edge);
+    margin-bottom:2rem;
+  }
+
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:2.2rem;
+    font-weight:700;
+    margin:0 0 0.5rem;
+    letter-spacing:-1px;
+  }
+
+  p{
+    margin:0 0 0.5rem;
+    color:var(--ink-dim);
+    max-width:60ch;
+    line-height:1.6;
+  }
+
+  .container{
+    max-width:1400px;
+    margin:0 auto;
+    padding:0 3rem 3rem;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));
+    gap:2rem;
+  }
+
+  .shape-card{
+    background:var(--navy-panel);
+    border:1px solid var(--paper-edge);
+    border-radius:8px;
+    padding:1.5rem;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .shape-card h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:1.3rem;
+    font-weight:600;
+    margin:0 0 0.5rem;
+    letter-spacing:-0.5px;
+  }
+
+  .shape-card.cone h2{ color:var(--cone); }
+  .shape-card.sphere h2{ color:var(--sphere); }
+
+  .shape-card p{
+    font-size:0.95rem;
+    color:var(--ink-faint);
+    margin-bottom:1.5rem;
+    flex-grow:1;
+  }
+
+  .formula{
+    background:rgba(0,0,0,0.3);
+    padding:1rem;
+    border-radius:4px;
+    border-left:3px solid;
+    font-family:'Space Grotesk', monospace;
+    font-size:0.9rem;
+    margin-bottom:1rem;
+    overflow-x:auto;
+  }
+
+  .shape-card.cone .formula{ border-left-color:var(--cone); }
+  .shape-card.sphere .formula{ border-left-color:var(--sphere); }
+
+  button{
+    background:rgba(255,255,255,0.1);
+    border:1px solid;
+    color:var(--ink);
+    padding:0.75rem 1.5rem;
+    border-radius:4px;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:0.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+
+  .shape-card.cone button{
+    border-color:var(--cone);
+    color:var(--cone);
+  }
+
+  .shape-card.cone button:hover{
+    background:rgba(255, 148, 82, 0.15);
+  }
+
+  .shape-card.sphere button{
+    border-color:var(--sphere);
+    color:var(--sphere);
+  }
+
+  .shape-card.sphere button:hover{
+    background:rgba(79, 216, 201, 0.15);
+  }
+
+  .modal{
+    display:none;
+    position:fixed;
+    z-index:1;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    background-color:rgba(10,32,56,0.9);
+  }
+
+  .modal.active{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .modal-content{
+    background:var(--navy-panel);
+    border:1px solid var(--paper-edge);
+    border-radius:8px;
+    padding:2rem;
+    max-width:600px;
+    max-height:80vh;
+    overflow-y:auto;
+    position:relative;
+  }
+
+  .close-btn{
+    position:absolute;
+    top:1rem;
+    right:1rem;
+    background:none;
+    border:none;
+    color:var(--ink-dim);
+    font-size:1.5rem;
+    cursor:pointer;
+    padding:0;
+    width:2rem;
+    height:2rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .close-btn:hover{
+    color:var(--ink);
+  }
+
+  svg{
+    width:100%;
+    height:auto;
+    margin:1rem 0;
+  }
+
+  footer{
+    text-align:center;
+    padding:2rem;
+    color:var(--ink-faint);
+    font-size:0.9rem;
+    border-top:1px solid var(--paper-edge);
+    margin-top:4rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>3D Shapes — Working Drawings</h1>
+  <p>Interactive visualizations of cones and spheres with formulas and cross-sections.</p>
+</header>
+
+<div class="container">
+  <div class="grid">
+    <div class="shape-card cone">
+      <h2>Cone</h2>
+      <p>A cone is a 3D shape with a circular base and a point at the top (apex). The height is measured from the base to the apex.</p>
+      <div class="formula">
+        Volume = (1/3)πr²h<br>
+        Surface Area = πr² + πrl<br>
+        (where l = slant height)
+      </div>
+      <button onclick="openModal('coneModal')">View Diagram</button>
+    </div>
+
+    <div class="shape-card sphere">
+      <h2>Sphere</h2>
+      <p>A sphere is a perfectly round 3D shape. Every point on its surface is the same distance (radius) from the center.</p>
+      <div class="formula">
+        Volume = (4/3)πr³<br>
+        Surface Area = 4πr²
+      </div>
+      <button onclick="openModal('sphereModal')">View Diagram</button>
+    </div>
+  </div>
+</div>
+
+<div id="coneModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('coneModal')">&times;</button>
+    <h2>Cone — Cross Section</h2>
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Base circle -->
+      <ellipse cx="200" cy="200" rx="80" ry="30" fill="none" stroke="#ff9452" stroke-width="2"/>
+      
+      <!-- Height line -->
+      <line x1="200" y1="200" x2="200" y2="60" stroke="#9db6d6" stroke-width="2" stroke-dasharray="5,5"/>
+      <text x="210" y="130" font-family="Source Serif 4" font-size="14" fill="#9db6d6">h</text>
+      
+      <!-- Radius line -->
+      <line x1="200" y1="200" x2="280" y2="200" stroke="#ff9452" stroke-width="2"/>
+      <text x="235" y="220" font-family="Source Serif 4" font-size="14" fill="#ff9452">r</text>
+      
+      <!-- Slant height -->
+      <line x1="200" y1="60" x2="280" y2="200" stroke="#4fd8c9" stroke-width="2"/>
+      <text x="225" y="120" font-family="Source Serif 4" font-size="14" fill="#4fd8c9">l</text>
+      
+      <!-- Apex -->
+      <circle cx="200" cy="60" r="4" fill="#ff9452"/>
+      
+      <!-- Labels -->
+      <text x="50" y="30" font-family="Space Grotesk" font-size="16" font-weight="600" fill="#eaf2ff">Cone Geometry</text>
+    </svg>
+  </div>
+</div>
+
+<div id="sphereModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal('sphereModal')">&times;</button>
+    <h2>Sphere — Cross Section</h2>
+    <svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+      <!-- Sphere outline -->
+      <circle cx="200" cy="150" r="80" fill="none" stroke="#4fd8c9" stroke-width="2"/>
+      
+      <!-- Horizontal diameter -->
+      <line x1="120" y1="150" x2="280" y2="150" stroke="#9db6d6" stroke-width="2" stroke-dasharray="5,5"/>
+      
+      <!-- Vertical diameter -->
+      <line x1="200" y1="70" x2="200" y2="230" stroke="#9db6d6" stroke-width="2" stroke-dasharray="5,5"/>
+      
+      <!-- Radius -->
+      <line x1="200" y1="150" x2="280" y2="150" stroke="#4fd8c9" stroke-width="2"/>
+      <text x="235" y="140" font-family="Source Serif 4" font-size="14" fill="#4fd8c9">r</text>
+      
+      <!-- Center point -->
+      <circle cx="200" cy="150" r="3" fill="#eaf2ff"/>
+      
+      <!-- Labels -->
+      <text x="50" y="30" font-family="Space Grotesk" font-size="16" font-weight="600" fill="#eaf2ff">Sphere Geometry</text>
+    </svg>
+  </div>
+</div>
+
+<footer>
+  <p>These diagrams are part of the interactive geometry collection. Use them to understand 3D shape properties and formulas.</p>
+</footer>
+
+<script>
+function openModal(modalId){
+  document.getElementById(modalId).classList.add('active');
+}
+
+function closeModal(modalId){
+  document.getElementById(modalId).classList.remove('active');
+}
+
+// Close modal when clicking outside of it
+window.onclick=function(event){
+  if(event.target.classList.contains('modal')){
+    event.target.classList.remove('active');
+  }
+}
+</script>
+
+</body>
+</html>
