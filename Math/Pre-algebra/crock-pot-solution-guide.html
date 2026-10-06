@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crock Pot Caper: Solving Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f6f8fb;
+  --grid: #dde6f0;
+  --ink: #1d2a44;
+  --ink-soft: #55627a;
+  --pencil: #c8352e;
+  --highlight: #ffe45c;
+  --card: #ffffff;
+  --rule: #b9c7d8;
+  --done: #2f7a55;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #141b29; --grid: #1f2a3d; --ink: #e6ecf5; --ink-soft: #9aa8bf;
+    --pencil: #ff7a6e; --highlight: #8a7300; --card: #1a2335; --rule: #34445f; --done: #6fd09d;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #141b29; --grid: #1f2a3d; --ink: #e6ecf5; --ink-soft: #9aa8bf;
+  --pencil: #ff7a6e; --highlight: #8a7300; --card: #1a2335; --rule: #34445f; --done: #6fd09d;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
+  font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+header h1 {
+  font-family: "Kalam", "Comic Sans MS", cursive;
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  line-height: 1.05;
+  margin: 0 0 6px;
+}
+header p { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+
+.moves {
+  margin: 26px 0 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0;
+  border: 2px solid var(--ink);
+  background: var(--card);
+}
+.moves div { padding: 14px 16px; border-right: 1px dashed var(--rule); }
+.moves div:last-child { border-right: 0; background: var(--highlight); color: var(--ink); }
+.moves b { font-family: "Kalam", cursive; font-size: 1.35rem; display: block; line-height: 1.1; margin-bottom: 4px; }
+.moves span { font-size: .95rem; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .moves div:last-child { color: #fff; } }
+
+.layout { display: grid; grid-template-columns: 168px 1fr; gap: 26px; align-items: start; }
+nav {
+  position: sticky; top: calc(14px + env(safe-area-inset-top, 0px));
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+}
+nav p { grid-column: 1 / -1; margin: 0 0 4px; font-weight: 700; font-size: .9rem; }
+nav button {
+  font: inherit; font-weight: 700; font-size: .95rem;
+  height: 36px; border: 1.5px solid var(--ink); background: var(--card); color: var(--ink);
+  cursor: pointer; border-radius: 3px;
+}
+nav button[aria-current="true"] { background: var(--ink); color: var(--paper); }
+nav button.seen:not([aria-current="true"]) { border-color: var(--done); color: var(--done); }
+nav button:focus-visible, .controls button:focus-visible { outline: 3px solid var(--pencil); outline-offset: 2px; }
+
+.sheet {
+  background: var(--card);
+  border: 2px solid var(--ink);
+  padding: 26px clamp(18px, 4vw, 40px) 30px;
+  min-height: 520px;
+  position: relative;
+}
+.sheet::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; background: var(--pencil); opacity: .85;
+}
+.pnum { font-family: "Kalam", cursive; font-size: 1.2rem; color: var(--pencil); margin: 0; }
+.problem { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; margin: 2px 0 18px; overflow-x: auto; }
+.math i { font-family: Georgia, "Times New Roman", serif; font-weight: inherit; }
+
+ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; }
+ol.steps li {
+  counter-increment: s;
+  display: grid; grid-template-columns: 34px 1fr; gap: 4px 12px;
+  padding: 12px 0; border-top: 1px solid var(--rule);
+  animation: write .35s ease-out;
+}
+ol.steps li::before {
+  content: counter(s); grid-row: span 2;
+  font-family: "Kalam", cursive; font-weight: 700; font-size: 1.25rem; color: var(--ink-soft);
+}
+.line { font-size: 1.35rem; font-weight: 700; overflow-x: auto; }
+.why { color: var(--ink-soft); font-size: 1rem; }
+.flip { display: inline; background: var(--highlight); color: var(--ink); padding: 1px 6px; font-weight: 700; border-radius: 2px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .flip { color: #fff; } }
+:root[data-theme="dark"] .flip, :root[data-theme="dark"] .moves div:last-child { color: #fff; }
+@keyframes write { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { ol.steps li { animation: none; } }
+
+.answer {
+  margin-top: 16px; padding: 16px 18px; border: 2px dashed var(--done);
+}
+.answer h3 { margin: 0 0 4px; font-size: 1rem; color: var(--done); }
+.answer .final { font-size: 1.7rem; font-weight: 700; margin: 0 0 8px; }
+.answer svg { width: 100%; max-width: 560px; height: auto; display: block; }
+.answer p.note { margin: 6px 0 0; color: var(--ink-soft); font-size: .95rem; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.controls button {
+  font: inherit; font-weight: 700; padding: 10px 18px; cursor: pointer; border-radius: 3px;
+  border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+}
+.controls button.primary { background: var(--ink); color: var(--paper); }
+.controls button:disabled { opacity: .4; cursor: default; }
+.tryfirst { margin: 0 0 16px; color: var(--ink-soft); font-style: italic; }
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  nav { position: static; grid-template-columns: repeat(8, 1fr); }
+  .moves div { border-right: 0; border-bottom: 1px dashed var(--rule); }
+}
+@media (max-width: 420px) { nav { grid-template-columns: repeat(6, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The Crock Pot Caper: how to crack each clue</h1>
+    <p>Pick a problem, try it on paper first, then reveal one step at a time to check your thinking. This guide shows the answer and its graph, but not the code letters. Dale still needs you to do that part.</p>
+  </header>
+
+  <section class="moves" aria-label="The plan for every problem">
+    <div><b>Clear parentheses</b><span>Distribute the number outside to every term inside, signs included.</span></div>
+    <div><b>Combine like terms</b><span>Tidy up each side. Then move variables to one side, numbers to the other.</span></div>
+    <div><b>Isolate the variable</b><span>Divide by the number stuck to the variable.</span></div>
+    <div><b>Negative? Flip it.</b><span>Multiply or divide by a negative and the inequality sign turns around.</span></div>
+  </section>
+
+  <div class="layout">
+    <nav aria-label="Choose a problem" id="nav"><p>Problems</p></nav>
+    <main class="sheet" id="sheet" aria-live="polite"></main>
+  </div>
+</div>
+
+<script>
+// Each step: [math line, explanation, flip?]
+// ans: {v: variable, op, n} or {kind: "none"|"all"}
+const P = [
+ {q:"3 < −5n + 2n", s:[
+  ["3 < −3n","Combine like terms on the right: −5n + 2n = −3n."],
+  ["−1 > n","Divide both sides by −3.",true],
+  ["n < −1","Read it with the variable first. “−1 is greater than n” means “n is less than −1.”"]],
+  a:{v:"n",op:"<",n:-1}},
+ {q:"6x + 2 + 6x < 14", s:[
+  ["12x + 2 < 14","Combine like terms: 6x + 6x = 12x."],
+  ["12x < 12","Subtract 2 from both sides."],
+  ["x < 1","Divide both sides by 12. It's positive, so the sign stays."]],
+  a:{v:"x",op:"<",n:1}},
+ {q:"−p − 4p > −10", s:[
+  ["−5p > −10","Combine like terms: −p − 4p = −5p."],
+  ["p < 2","Divide both sides by −5.",true]],
+  a:{v:"p",op:"<",n:2}},
+ {q:"18 ≥ 5k + 4k", s:[
+  ["18 ≥ 9k","Combine like terms: 5k + 4k = 9k."],
+  ["2 ≥ k","Divide both sides by 9. Positive, so no flip."],
+  ["k ≤ 2","Rewrite with the variable first."]],
+  a:{v:"k",op:"≤",n:2}},
+ {q:"9 ≥ −2m + 2 − 3", s:[
+  ["9 ≥ −2m − 1","Combine the constants: 2 − 3 = −1."],
+  ["10 ≥ −2m","Add 1 to both sides."],
+  ["−5 ≤ m","Divide both sides by −2.",true],
+  ["m ≥ −5","Rewrite with the variable first."]],
+  a:{v:"m",op:"≥",n:-5}},
+ {q:"−3 − 6(4x + 6) > −111", s:[
+  ["−3 − 24x − 36 > −111","Distribute −6: −6 · 4x = −24x and −6 · 6 = −36."],
+  ["−24x − 39 > −111","Combine the constants: −3 − 36 = −39."],
+  ["−24x > −72","Add 39 to both sides."],
+  ["x < 3","Divide both sides by −24.",true]],
+  a:{v:"x",op:"<",n:3}},
+ {q:"6 − 4(6n + 7) ≥ 122", s:[
+  ["6 − 24n − 28 ≥ 122","Distribute −4: −4 · 6n = −24n and −4 · 7 = −28."],
+  ["−24n − 22 ≥ 122","Combine the constants: 6 − 28 = −22."],
+  ["−24n ≥ 144","Add 22 to both sides."],
+  ["n ≤ −6","Divide both sides by −24.",true]],
+  a:{v:"n",op:"≤",n:-6}},
+ {q:"−138 ≥ −6(6b − 7)", s:[
+  ["−138 ≥ −36b + 42","Distribute −6: −6 · 6b = −36b and −6 · (−7) = +42."],
+  ["−180 ≥ −36b","Subtract 42 from both sides."],
+  ["5 ≤ b","Divide both sides by −36.",true],
+  ["b ≥ 5","Rewrite with the variable first."]],
+  a:{v:"b",op:"≥",n:5}},
+ {q:"167 < 6 + 7(2 − 7r)", s:[
+  ["167 < 6 + 14 − 49r","Distribute 7: 7 · 2 = 14 and 7 · (−7r) = −49r."],
+  ["167 < 20 − 49r","Combine the constants: 6 + 14 = 20."],
+  ["147 < −49r","Subtract 20 from both sides."],
+  ["−3 > r","Divide both sides by −49.",true],
+  ["r < −3","Rewrite with the variable first."]],
+  a:{v:"r",op:"<",n:-3}},
+ {q:"5(6 + 3r) + 7 ≥ 127", s:[
+  ["30 + 15r + 7 ≥ 127","Distribute 5: 5 · 6 = 30 and 5 · 3r = 15r."],
+  ["15r + 37 ≥ 127","Combine the constants: 30 + 7 = 37."],
+  ["15r ≥ 90","Subtract 37 from both sides."],
+  ["r ≥ 6","Divide both sides by 15. Positive, so no flip."]],
+  a:{v:"r",op:"≥",n:6}},
+ {q:"−8x + 2x − 16 < −5x + 7x", s:[
+  ["−6x − 16 < 2x","Combine like terms on each side: −8x + 2x = −6x and −5x + 7x = 2x."],
+  ["−16 < 8x","Add 6x to both sides so the x-term stays positive."],
+  ["−2 < x","Divide both sides by 8. Positive, so no flip."],
+  ["x > −2","Rewrite with the variable first."]],
+  a:{v:"x",op:">",n:-2}},
+ {q:"−1 − 6x − 6 > −11 − 7x", s:[
+  ["−6x − 7 > −11 − 7x","Combine the constants on the left: −1 − 6 = −7."],
+  ["x − 7 > −11","Add 7x to both sides: −6x + 7x = x."],
+  ["x > −4","Add 7 to both sides."]],
+  a:{v:"x",op:">",n:-4}},
+ {q:"a − 6 ≤ 15 + 8a", s:[
+  ["−7a − 6 ≤ 15","Subtract 8a from both sides: a − 8a = −7a."],
+  ["−7a ≤ 21","Add 6 to both sides."],
+  ["a ≥ −3","Divide both sides by −7.",true]],
+  a:{v:"a",op:"≥",n:-3}},
+ {q:"13 + 2v − 8 + 6 > −7 − v", s:[
+  ["2v + 11 > −7 − v","Combine the constants on the left: 13 − 8 + 6 = 11."],
+  ["3v + 11 > −7","Add v to both sides."],
+  ["3v > −18","Subtract 11 from both sides."],
+  ["v > −6","Divide both sides by 3. Positive, so no flip."]],
+  a:{v:"v",op:">",n:-6}},
+ {q:"−5n − 6n ≤ 8 − 8n − n", s:[
+  ["−11n ≤ 8 − 9n","Combine like terms on each side."],
+  ["−2n ≤ 8","Add 9n to both sides: −11n + 9n = −2n."],
+  ["n ≥ −4","Divide both sides by −2.",true]],
+  a:{v:"n",op:"≥",n:-4}},
+ {q:"−x < −x + 7(x − 2)", s:[
+  ["−x < −x + 7x − 14","Distribute 7: 7 · x = 7x and 7 · (−2) = −14."],
+  ["−x < 6x − 14","Combine like terms on the right: −x + 7x = 6x."],
+  ["−7x < −14","Subtract 6x from both sides."],
+  ["x > 2","Divide both sides by −7.",true]],
+  a:{v:"x",op:">",n:2}},
+ {q:"−5n + 6 ≥ −7(5n − 6) − 6n", s:[
+  ["−5n + 6 ≥ −35n + 42 − 6n","Distribute −7: −7 · 5n = −35n and −7 · (−6) = +42."],
+  ["−5n + 6 ≥ −41n + 42","Combine like terms on the right: −35n − 6n = −41n."],
+  ["36n + 6 ≥ 42","Add 41n to both sides."],
+  ["36n ≥ 36","Subtract 6 from both sides."],
+  ["n ≥ 1","Divide both sides by 36. Positive, so no flip."]],
+  a:{v:"n",op:"≥",n:1}},
+ {q:"3(p − 3) − 5p > −3p − 6", s:[
+  ["3p − 9 − 5p > −3p − 6","Distribute 3: 3 · p = 3p and 3 · (−3) = −9."],
+  ["−2p − 9 > −3p − 6","Combine like terms on the left: 3p − 5p = −2p."],
+  ["p − 9 > −6","Add 3p to both sides."],
+  ["p > 3","Add 9 to both sides."]],
+  a:{v:"p",op:">",n:3}},
+ {q:"28 − k ≥ 7(k − 4)", s:[
+  ["28 − k ≥ 7k − 28","Distribute 7: 7 · k = 7k and 7 · (−4) = −28."],
+  ["28 ≥ 8k − 28","Add k to both sides."],
+  ["56 ≥ 8k","Add 28 to both sides."],
+  ["7 ≥ k","Divide both sides by 8. Positive, so no flip."],
+  ["k ≤ 7","Rewrite with the variable first."]],
+  a:{v:"k",op:"≤",n:7}},
+ {q:"28 − 7x ≤ −4(−7x − 7)", s:[
+  ["28 − 7x ≤ 28x + 28","Distribute −4: −4 · (−7x) = +28x and −4 · (−7) = +28."],
+  ["−7x ≤ 28x","Subtract 28 from both sides."],
+  ["−35x ≤ 0","Subtract 28x from both sides."],
+  ["x ≥ 0","Divide both sides by −35. Zero divided by anything is still 0.",true]],
+  a:{v:"x",op:"≥",n:0}},
+ {q:"−6(1 + 7k) + 7(1 + 6k) ≤ −2", s:[
+  ["−6 − 42k + 7 + 42k ≤ −2","Distribute both: −6 · 1 = −6, −6 · 7k = −42k, 7 · 1 = 7, 7 · 6k = 42k."],
+  ["1 ≤ −2","Combine like terms. −42k + 42k = 0, so the variable disappears!"],
+  ["False statement","Is 1 less than or equal to −2? No. No value of k can ever make this true."]],
+  a:{kind:"none"}},
+ {q:"−2(2 − 2x) − 4(x + 5) ≤ −24", s:[
+  ["−4 + 4x − 4x − 20 ≤ −24","Distribute: −2 · 2 = −4, −2 · (−2x) = +4x, −4 · x = −4x, −4 · 5 = −20."],
+  ["−24 ≤ −24","Combine like terms. 4x − 4x = 0, so the variable disappears!"],
+  ["True statement","Is −24 less than or equal to −24? Yes, they're equal. That's true no matter what x is."]],
+  a:{kind:"all"}},
+ {q:"3(1 − 2x) > 3 − 6x", s:[
+  ["3 − 6x > 3 − 6x","Distribute 3: 3 · 1 = 3 and 3 · (−2x) = −6x."],
+  ["3 > 3","Add 6x to both sides. The variable disappears!"],
+  ["False statement","Is 3 greater than 3? No, they're equal. So nothing works."]],
+  a:{kind:"none"}},
+ {q:"−2(5 + 6n) < 6(8 − 2n)", s:[
+  ["−10 − 12n < 48 − 12n","Distribute: −2 · 5 = −10, −2 · 6n = −12n, 6 · 8 = 48, 6 · (−2n) = −12n."],
+  ["−10 < 48","Add 12n to both sides. The variable disappears!"],
+  ["True statement","Is −10 less than 48? Yes, always. Every number works."]],
+  a:{kind:"all"}}
+];
+
+const VARS = /(?<![A-Za-z'’])([a-z])(?![A-Za-z’'])/g;
+function fmt(t) {
+  if (/statement/.test(t)) return t;
+  return t.replace(VARS, "<i>$1</i>");
+}
+
+function numberLine(a) {
+  const W = 560, H = 74, pad = 30, y = 34;
+  const lo = a.kind ? -5 : a.n - 5, hi = a.kind ? 5 : a.n + 5;
+  const X = v => pad + (v - lo) * (W - 2 * pad) / (hi - lo);
+  const ink = "var(--ink)", hl = "var(--pencil)";
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Number line graph">`;
+  s += `<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${ink}"/></marker>
+        <marker id="arh" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${hl}"/></marker></defs>`;
+  s += `<line x1="6" y1="${y}" x2="${W - 6}" y2="${y}" stroke="${ink}" stroke-width="1.5" marker-start="url(#ar)" marker-end="url(#ar)"/>`;
+  for (let v = lo; v <= hi; v++) {
+    s += `<line x1="${X(v)}" y1="${y - 6}" x2="${X(v)}" y2="${y + 6}" stroke="${ink}" stroke-width="1.2"/>`;
+    s += `<text x="${X(v)}" y="${y + 24}" font-size="13" text-anchor="middle" fill="${ink}" font-family="Atkinson Hyperlegible, sans-serif">${v < 0 ? "−" + (-v) : v}</text>`;
+  }
+  if (a.kind === "all") {
+    s += `<line x1="10" y1="${y}" x2="${W - 10}" y2="${y}" stroke="${hl}" stroke-width="5" marker-start="url(#arh)" marker-end="url(#arh)"/>`;
+  } else if (!a.kind) {
+    const left = a.op === "<" || a.op === "≤";
+    const closed = a.op === "≤" || a.op === "≥";
+    const x0 = X(a.n);
+    s += `<line x1="${x0}" y1="${y}" x2="${left ? 10 : W - 10}" y2="${y}" stroke="${hl}" stroke-width="5" marker-end="url(#arh)"/>`;
+    s += `<circle cx="${x0}" cy="${y}" r="7" fill="${closed ? hl : "var(--card)"}" stroke="${hl}" stroke-width="3"/>`;
+  }
+  return s + "</svg>";
+}
+
+function answerText(a) {
+  if (a.kind === "none") return "No solution";
+  if (a.kind === "all") return "All real numbers";
+  return fmt(`${a.v} ${a.op} ${a.n < 0 ? "−" + (-a.n) : a.n}`);
+}
+function answerNote(a) {
+  if (a.kind === "none") return "The number line stays empty: no point is shaded.";
+  if (a.kind === "all") return "Shade the entire number line, arrows on both ends.";
+  const closed = a.op === "≤" || a.op === "≥";
+  const left = a.op === "<" || a.op === "≤";
+  return `${closed ? "Closed (filled) dot" : "Open dot"} at ${a.n < 0 ? "−" + (-a.n) : a.n} because the sign ${closed ? "includes" : "does not include"} “equal to.” Shade to the ${left ? "left (smaller numbers)" : "right (bigger numbers)"}.`;
+}
+
+let cur = 0, shown = 0;
+const seen = new Set();
+const nav = document.getElementById("nav");
+const sheet = document.getElementById("sheet");
+
+P.forEach((_, i) => {
+  const b = document.createElement("button");
+  b.textContent = i + 1;
+  b.setAttribute("aria-label", "Problem " + (i + 1));
+  b.onclick = () => go(i);
+  nav.appendChild(b);
+});
+
+function go(i) {
+  cur = i; shown = 0;
+  try { localStorage.setItem("cp-cur", i); } catch (e) {}
+  render();
+  if (window.innerWidth < 760) sheet.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function render() {
+  const p = P[cur], total = p.s.length;
+  [...nav.querySelectorAll("button")].forEach((b, i) => {
+    b.setAttribute("aria-current", i === cur ? "true" : "false");
+    b.classList.toggle("seen", seen.has(i));
+  });
+  let h = `<p class="pnum">Problem ${cur + 1} of 24</p>
+    <div class="problem math">${fmt(p.q)}</div>`;
+  if (shown === 0) h += `<p class="tryfirst">Try it on paper first. Then check your work one step at a time.</p>`;
+  h += `<ol class="steps">`;
+  p.s.slice(0, shown).forEach(([m, w, f]) => {
+    h += `<li><div class="line math">${fmt(m)}</div><div class="why">${fmt(w)}${f ? ' <span class="flip">Negative! Flip the sign.</span>' : ""}</div></li>`;
+  });
+  h += `</ol>`;
+  if (shown >= total) {
+    seen.add(cur);
+    nav.children[cur + 1].classList.add("seen");
+    h += `<div class="answer"><h3>Answer and graph</h3>
+      <p class="final math">${answerText(p.a)}</p>${numberLine(p.a)}<p class="note">${answerNote(p.a)}</p></div>`;
+  }
+  h += `<div class="controls">
+    <button class="primary" id="next" ${shown >= total ? "disabled" : ""}>${shown === 0 ? "Show first step" : "Show next step"}</button>
+    <button id="all" ${shown >= total ? "disabled" : ""}>Show all steps</button>
+    <button id="reset" ${shown === 0 ? "disabled" : ""}>Hide steps</button>
+    <button id="np" ${cur === 23 ? "disabled" : ""}>Next problem</button>
+  </div>`;
+  sheet.innerHTML = h;
+  document.getElementById("next").onclick = () => { shown++; render(); };
+  document.getElementById("all").onclick = () => { shown = total; render(); };
+  document.getElementById("reset").onclick = () => { shown = 0; render(); };
+  document.getElementById("np").onclick = () => go(cur + 1);
+}
+
+try { const c = parseInt(localStorage.getItem("cp-cur"), 10); if (c >= 0 && c < 24) cur = c; } catch (e) {}
+render();
+</script>
+</body>
+</html>
