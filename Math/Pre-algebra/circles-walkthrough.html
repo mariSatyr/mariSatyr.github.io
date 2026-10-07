@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Circles Unit Walkthrough</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one working column — problem chips on top, then the problem sheet with a figure and a stack of unlockable steps */
+:root{
+  --paper:#F4F7FB; --card:#FFFFFF; --ink:#15243A; --muted:#566880; --line:#D5DEE9;
+  --accent:#1E5BC6; --accent-soft:#E3ECFB; --mark:#FFD55C; --mark-ink:#5A4200;
+  --ok:#1C7F4F; --ok-soft:#E1F3EA; --bad:#B83C34; --bad-soft:#FBE7E5;
+  --shade-a:rgba(30,91,198,.16); --shade-b:rgba(255,190,40,.45);
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E151F; --card:#16202D; --ink:#E5ECF5; --muted:#97A7BC; --line:#2A384A;
+  --accent:#7AA8FF; --accent-soft:#1D2D47; --mark:#E2B23C; --mark-ink:#1A1300;
+  --ok:#53C58E; --ok-soft:#163327; --bad:#F2837A; --bad-soft:#3A1E1D;
+  --shade-a:rgba(122,168,255,.18); --shade-b:rgba(226,178,60,.38); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E151F; --card:#16202D; --ink:#E5ECF5; --muted:#97A7BC; --line:#2A384A;
+  --accent:#7AA8FF; --accent-soft:#1D2D47; --mark:#E2B23C; --mark-ink:#1A1300;
+  --ok:#53C58E; --ok-soft:#163327; --bad:#F2837A; --bad-soft:#3A1E1D;
+  --shade-a:rgba(122,168,255,.18); --shade-b:rgba(226,178,60,.38); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:400 17px/1.55 var(--body);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;background:var(--paper);opacity:.82;pointer-events:none;z-index:-1}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-block:28px 64px;display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font:700 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font:800 clamp(30px,6vw,44px)/1.05 var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1 .pi{color:var(--accent)}
+.lede{margin:0;color:var(--muted);max-width:60ch}
+
+nav.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:700 16px/1 var(--mono);min-width:48px;height:48px;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);
+  background:var(--card);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;position:relative}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.chip .tick{font-size:12px;color:var(--ok)}
+.chip[aria-current="true"] .tick{color:var(--card)}
+.chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+
+.sheet{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:22px clamp(16px,4vw,30px) 26px;display:flex;flex-direction:column;gap:20px;box-shadow:0 1px 0 var(--line)}
+.sheet-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.num{font:800 46px/0.9 var(--display);color:var(--accent)}
+.sheet-head h2{font:600 22px/1.2 var(--display);margin:0;flex:1;min-width:0;text-wrap:balance}
+.meter{font:500 13px/1 var(--mono);color:var(--muted);white-space:nowrap}
+.prompt{margin:0;padding:14px 16px;border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:0 10px 10px 0}
+.prompt p{margin:0}
+.prompt p+p{margin-top:8px}
+.choices-given{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:4px 16px;margin-top:10px;font-family:var(--mono);font-size:15px}
+figure{margin:0;display:flex;justify-content:center;overflow-x:auto}
+figure svg{max-width:100%;height:auto}
+svg .shape{fill:none;stroke:var(--ink);stroke-width:2.5}
+svg .dash{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 5;fill:none}
+svg .lbl{fill:var(--ink);font:700 15px var(--mono)}
+svg .lbl.small{font-size:13px;fill:var(--muted)}
+svg .lbl.acc{fill:var(--accent)}
+svg .fa{fill:var(--shade-a)} svg .fb{fill:var(--shade-b)}
+svg .dot{fill:var(--accent)}
+svg .accline{stroke:var(--accent);stroke-width:2.5}
+
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.part{font:700 13px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-top:6px}
+.step{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.step.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.step.done{background:var(--paper)}
+.step-top{display:flex;gap:12px;align-items:flex-start}
+.badge{flex:none;width:28px;height:28px;border-radius:50%;font:700 13px/28px var(--mono);text-align:center;background:var(--accent-soft);color:var(--accent)}
+.step.done .badge{background:var(--ok);color:var(--card)}
+.step.shown .badge{background:var(--mark);color:var(--mark-ink)}
+.q{margin:0;min-width:0;flex:1}
+.q p{margin:0} .q p+p{margin-top:6px}
+.m{font-family:var(--mono);font-size:.94em;white-space:nowrap}
+.hl{background:linear-gradient(transparent 55%,var(--mark) 55%);color:inherit;padding:0 2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-left:40px}
+input.ans{font:700 18px var(--mono);width:12ch;padding:9px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+input.ans:disabled{opacity:1;background:transparent;border-style:dashed}
+.unit{font:500 15px var(--mono);color:var(--muted)}
+button.btn{font:700 15px var(--body);padding:10px 16px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent);color:var(--card);cursor:pointer}
+button.btn.ghost{background:transparent;color:var(--accent)}
+button.btn:hover{filter:brightness(1.08)}
+button.link{font:700 14px var(--body);background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:6px 4px}
+.opt{font:700 15px var(--body);padding:10px 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;text-align:left}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.picked-ok{border-color:var(--ok);background:var(--ok-soft)}
+.opt.picked-bad{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through}
+.opt:disabled{cursor:default}
+.fb{margin-left:40px;padding:10px 14px;border-radius:10px;font-size:16px}
+.fb.ok{background:var(--ok-soft);color:var(--ink);border-left:4px solid var(--ok)}
+.fb.bad{background:var(--bad-soft);color:var(--ink);border-left:4px solid var(--bad)}
+.fb.shown{background:var(--accent-soft);border-left:4px solid var(--mark)}
+.fb strong{font-family:var(--display)}
+.fb p{margin:0} .fb p+p{margin-top:6px}
+.work{font-family:var(--mono);font-size:15px;line-height:1.7;margin-top:6px;overflow-x:auto;white-space:nowrap}
+
+.final{border:2px solid var(--ok);border-radius:14px;padding:16px 18px;background:var(--ok-soft);display:flex;flex-direction:column;gap:6px}
+.final h3{margin:0;font:800 14px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ok)}
+.final .big{font:800 26px/1.2 var(--display)}
+.final p{margin:0}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.tip{font-size:14px;color:var(--muted);margin:0}
+@media (max-width:480px){.row,.fb{padding-left:0;margin-left:0}}
+@media (prefers-reduced-motion:no-preference){.step.active{animation:pop .25s ease-out}@keyframes pop{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Grade 7 · Unit 3 · Problems 5–11</span>
+    <h1>Circles, one step at a <span class="pi">time</span></h1>
+    <p class="lede">Pick a problem. Answer each small step to unlock the next one. Stuck? A wrong answer gives you a hint, and you can always ask to see the step.</p>
+  </header>
+  <nav class="chips" id="chips" aria-label="Problems"></nav>
+  <main id="sheet" class="sheet" aria-live="polite"></main>
+  <p class="tip">Calculator tip: use the π key, not 3.14, so your answers match the answer choices. You can type answers like <span class="m">31.4</span>, <span class="m">10pi</span> or <span class="m">10π</span>.</p>
+</div>
+
+<script>
+const PI = Math.PI;
+const m = s => `<span class="m">${s}</span>`;
+
+const FIG = {
+  p6: (pieces) => `<svg viewBox="0 0 270 240" width="270" role="img" aria-label="A 10 by 10 square whose bottom-right 5 by 5 corner is replaced by a quarter circle of radius 5">
+    ${pieces ? `<rect x="40" y="20" width="90" height="90" class="fa"/><rect x="130" y="20" width="90" height="90" class="fa"/><rect x="40" y="110" width="90" height="90" class="fa"/>
+    <path d="M130,110 H220 A90,90 0 0 1 130,200 Z" class="fb"/>
+    <line x1="130" y1="20" x2="130" y2="110" class="dash"/><line x1="40" y1="110" x2="130" y2="110" class="dash"/>
+    <text x="85" y="70" class="lbl small" text-anchor="middle">25</text><text x="175" y="70" class="lbl small" text-anchor="middle">25</text><text x="85" y="160" class="lbl small" text-anchor="middle">25</text>
+    <text x="160" y="145" class="lbl small" text-anchor="middle">¼ circle</text>` : ''}
+    <path d="M40,20 H220 V110 A90,90 0 0 1 130,200 H40 Z" class="shape"/>
+    <line x1="130" y1="110" x2="220" y2="110" class="dash"/><line x1="130" y1="110" x2="130" y2="200" class="dash"/>
+    <path d="M130,100 h10 v10" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+    <text x="130" y="14" class="lbl" text-anchor="middle">10</text>
+    <text x="24" y="115" class="lbl" text-anchor="middle">10</text>
+    <text x="236" y="70" class="lbl" text-anchor="middle">5</text>
+    <text x="85" y="222" class="lbl" text-anchor="middle">5</text>
+    ${pieces ? '' : `<text x="175" y="104" class="lbl small" text-anchor="middle">5</text><text x="118" y="160" class="lbl small" text-anchor="middle">5</text>`}
+  </svg>`,
+  p7: `<svg viewBox="0 0 240 200" width="240" role="img" aria-label="Circular field 290 feet in diameter">
+    <circle cx="120" cy="100" r="85" class="fa"/><circle cx="120" cy="100" r="85" class="shape"/>
+    <line x1="35" y1="100" x2="205" y2="100" class="accline"/><circle cx="120" cy="100" r="3.5" class="dot"/>
+    <text x="120" y="92" class="lbl acc" text-anchor="middle">290 ft</text>
+    <text x="120" y="122" class="lbl small" text-anchor="middle">diameter</text></svg>`,
+  p8: `<svg viewBox="0 0 330 170" width="330" role="img" aria-label="Round pan with 10 inch diameter and rectangular pan 10 by 7 inches">
+    <circle cx="80" cy="85" r="60" class="shape"/><line x1="20" y1="85" x2="140" y2="85" class="accline"/>
+    <text x="80" y="77" class="lbl acc" text-anchor="middle">10 in.</text>
+    <text x="80" y="165" class="lbl small" text-anchor="middle">round pan</text>
+    <rect x="180" y="43" width="120" height="84" class="shape"/>
+    <text x="240" y="34" class="lbl" text-anchor="middle">10 in.</text>
+    <text x="308" y="90" class="lbl">7</text>
+    <text x="240" y="165" class="lbl small" text-anchor="middle">rectangular pan</text></svg>`,
+  p9: `<svg viewBox="0 0 280 170" width="280" role="img" aria-label="Earth and Moon drawn to scale by radius">
+    <circle cx="90" cy="85" r="72" class="fa"/><circle cx="90" cy="85" r="72" class="shape"/>
+    <line x1="90" y1="85" x2="162" y2="85" class="accline"/><circle cx="90" cy="85" r="3" class="dot"/>
+    <text x="126" y="78" class="lbl acc" text-anchor="middle">6,371</text>
+    <text x="90" y="128" class="lbl small" text-anchor="middle">Earth</text>
+    <circle cx="225" cy="85" r="19.6" class="fb"/><circle cx="225" cy="85" r="19.6" class="shape"/>
+    <line x1="225" y1="85" x2="244.6" y2="85" class="accline"/>
+    <text x="235" y="58" class="lbl acc" text-anchor="middle">1,737.5</text>
+    <text x="225" y="125" class="lbl small" text-anchor="middle">Moon</text>
+    <text x="140" y="165" class="lbl small" text-anchor="middle">radii in km · drawn to scale</text></svg>`,
+  p10: `<svg viewBox="0 0 220 180" width="220" role="img" aria-label="Circle with circumference 15 pi centimeters">
+    <circle cx="110" cy="90" r="70" fill="none" stroke="var(--accent)" stroke-width="5"/>
+    <text x="110" y="86" class="lbl" text-anchor="middle">C = 15π cm</text>
+    <text x="110" y="108" class="lbl small" text-anchor="middle">r = ?</text></svg>`,
+  p11: `<svg viewBox="0 0 300 190" width="300" role="img" aria-label="Blueprint circle with 18 cm diameter and scale 3 cm to 4 ft">
+    <circle cx="100" cy="90" r="70" class="fa"/><circle cx="100" cy="90" r="70" class="shape"/>
+    <line x1="30" y1="90" x2="170" y2="90" class="accline"/>
+    <text x="100" y="82" class="lbl acc" text-anchor="middle">18 cm</text>
+    <text x="100" y="180" class="lbl small" text-anchor="middle">on the blueprint</text>
+    <g transform="translate(200,70)">
+      <line x1="0" y1="20" x2="80" y2="20" stroke="var(--ink)" stroke-width="3"/>
+      <line x1="0" y1="12" x2="0" y2="28" stroke="var(--ink)" stroke-width="2"/><line x1="80" y1="12" x2="80" y2="28" stroke="var(--ink)" stroke-width="2"/>
+      <text x="40" y="8" class="lbl" text-anchor="middle">3 cm</text>
+      <text x="40" y="48" class="lbl acc" text-anchor="middle">= 4 ft</text>
+      <text x="40" y="68" class="lbl small" text-anchor="middle">scale</text></g></svg>`
+};
+
+const C_OR_A = ['Circumference','Area'];
+const PROBLEMS = [
+ {id:5, title:'Circumference or area?',
+  prompt:`<p>For each quantity, decide whether <b>circumference</b> or <b>area</b> would be needed to calculate it. Explain your reasoning.</p>`,
+  steps:[
+   {type:'info', q:`<p><b>Quick check before you start.</b> Circumference is the <span class="hl">distance around</span> a circle, a length. Area is the <span class="hl">space inside</span>, measured in squares. Ask yourself: am I going <i>around</i> the edge, or <i>covering</i> the inside?</p>`},
+   {part:'a', type:'choice', q:`<p>The distance around a circular track.</p>`, options:C_OR_A, answer:0,
+    hint:`Picture running one lap. Are you covering the field or tracing the edge?`,
+    explain:`“Distance around” is the length of the circle’s edge, so it’s <b>circumference</b>.`},
+   {part:'b', type:'choice', q:`<p>The total number of equally sized tiles on a circular floor.</p>`, options:C_OR_A, answer:1,
+    hint:`Tiles sit all over the floor, not just along the edge.`,
+    explain:`Tiles cover the whole surface inside the circle, so you need <b>area</b>.`},
+   {part:'c', type:'choice', q:`<p>The amount of oil it takes to cover the bottom of a frying pan.</p>`, options:C_OR_A, answer:1,
+    hint:`The key word is “cover.”`,
+    explain:`The oil spreads across the whole bottom surface, so it’s <b>area</b>.`},
+   {part:'d', type:'choice', q:`<p>The distance your car will go with one turn of the wheels.</p>`, options:C_OR_A, answer:0,
+    hint:`Imagine painting the tire and rolling it once. How long is the stripe it leaves on the road?`,
+    explain:`One full turn rolls out the tire’s edge onto the road once, so the car moves one <b>circumference</b>.`}
+  ],
+  final:`<div class="big">a. C &nbsp; b. A &nbsp; c. A &nbsp; d. C</div><p>Around the edge → circumference. Covering the inside → area.</p>`},
+
+ {id:6, title:'Square plus a quarter circle',
+  prompt:`<p>This figure is made from part of a square and part of a circle.</p><p><b>a.</b> What is the perimeter, to the nearest unit? &nbsp; <b>b.</b> What is the area, to the nearest square unit?</p>`,
+  figure: FIG.p6(false),
+  steps:[
+   {type:'info', q:`<p><b>Break the shape into pieces.</b> It’s a 10 × 10 square with one corner swapped for a quarter circle. That leaves three 5 × 5 squares plus a quarter circle.</p>${FIG.p6(true)}`},
+   {type:'num', q:`<p>The quarter circle’s center is the little right-angle mark. What is its <b>radius</b>?</p>`, answer:5, tol:0, unit:'units',
+    hint:`The dashed lines go from the center to the curve. How long are they?`,
+    explain:`Each dashed line runs from the center to the arc and is 5 long, so ${m('r = 5')}.`},
+   {part:'a · perimeter', type:'info', q:`<p><b>Perimeter</b> means walking all the way around the <i>outside</i>. Go around: top 10, left 10, bottom 5, right 5, then the curved arc. The dashed lines are inside the shape, so they don’t count.</p>`},
+   {type:'num', q:`<p>Add up the four straight outside edges.</p>`, answer:30, tol:0, unit:'units',
+    hint:`Add 10 + 10 + 5 + 5.`, explain:`${m('10 + 10 + 5 + 5 = 30')}`},
+   {type:'num', q:`<p>If the arc were a <b>whole</b> circle with radius 5, what would its circumference be? (Round to the tenth.)</p>`, answer:10*PI, tol:0.11, unit:'units',
+    hint:`Circumference = 2 × π × r.`, explain:`${m('C = 2πr = 2 × π × 5 = 10π ≈ 31.4')}`},
+   {type:'num', q:`<p>The arc is only <b>one quarter</b> of that circle. How long is the arc? (Round to the hundredth.)</p>`, answer:2.5*PI, tol:0.06, unit:'units',
+    hint:`Divide the full circumference by 4.`, explain:`${m('31.42 ÷ 4 ≈ 7.85')}`},
+   {type:'num', q:`<p>Now put it together. What’s the perimeter, <b>to the nearest unit</b>?</p>`, answer:38, tol:0, unit:'units',
+    hint:`Straight edges + arc, then round to a whole number.`,
+    explain:`${m('30 + 7.85 = 37.85 ≈ 38 units')}`},
+   {part:'b · area', type:'num', q:`<p>Find the area of the three 5 × 5 squares together.</p>`, answer:75, tol:0, unit:'sq units',
+    hint:`One small square is 5 × 5. There are three.`,
+    explain:`${m('3 × (5 × 5) = 3 × 25 = 75')}. (Or: the big square is 100, minus the 25 corner.)`},
+   {type:'num', q:`<p>Area of a <b>whole</b> circle with radius 5? (Round to the tenth.)</p>`, answer:25*PI, tol:0.11, unit:'sq units',
+    hint:`Area = π × r × r.`, explain:`${m('A = πr² = π × 5 × 5 = 25π ≈ 78.5')}`},
+   {type:'num', q:`<p>Area of just the <b>quarter</b> circle? (Round to the tenth.)</p>`, answer:25*PI/4, tol:0.06, unit:'sq units',
+    hint:`Divide the whole circle’s area by 4.`, explain:`${m('78.54 ÷ 4 ≈ 19.6')}`},
+   {type:'num', q:`<p>Total area, <b>to the nearest square unit</b>?</p>`, answer:95, tol:0, unit:'sq units',
+    hint:`Squares + quarter circle, then round.`, explain:`${m('75 + 19.6 = 94.6 ≈ 95 square units')}`}
+  ],
+  final:`<div class="big">a. ≈ 38 units &nbsp; b. ≈ 95 sq units</div><p>Perimeter traces the outside edge only. Area adds up every piece inside.</p>`},
+
+ {id:7, title:'Grass seed for a circular field',
+  prompt:`<p>A groundskeeper needs grass seed to cover a circular field, <b>290 feet in diameter</b>. A store sells <b>50-pound bags</b>. One pound covers about <b>400 square feet</b>.</p><p>What is the smallest number of bags the groundskeeper must buy? Explain or show your reasoning.</p>`,
+  figure: FIG.p7,
+  steps:[
+   {type:'info', q:`<p><b>Plan.</b> “Cover a field” means we need <span class="hl">area</span>. Then we turn square feet into pounds, and pounds into bags.</p>`},
+   {type:'num', q:`<p>What is the <b>radius</b> of the field?</p>`, answer:145, tol:0, unit:'ft',
+    hint:`The radius is half the diameter.`, explain:`${m('290 ÷ 2 = 145 ft')}`},
+   {type:'num', q:`<p>Find the area of the field. (Round to the nearest whole square foot.)</p>`, answer:PI*145*145, tol:40, unit:'sq ft',
+    hint:`Area = π × r × r = π × 145 × 145.`, explain:`${m('A = π × 145² = 21,025π ≈ 66,052 sq ft')}`},
+   {type:'num', q:`<p>Each pound covers 400 sq ft. How many <b>pounds</b> of seed are needed? (Round to the tenth.)</p>`, answer:PI*145*145/400, tol:0.2, unit:'lb',
+    hint:`Divide the area by 400.`, explain:`${m('66,052 ÷ 400 ≈ 165.1 lb')}`},
+   {type:'num', q:`<p>Bags hold 50 pounds each. What is the <b>smallest number of bags</b> to buy?</p>`, answer:4, tol:0, unit:'bags',
+    hint:`165.1 ÷ 50 is a little more than 3. Would 3 bags be enough seed?`,
+    explain:`${m('165.1 ÷ 50 ≈ 3.3')}. Three bags is only 150 lb, which falls short. You can’t buy part of a bag, so round <b>up</b> to <b>4 bags</b>.`}
+  ],
+  final:`<div class="big">4 bags</div><p>Area ≈ 66,052 sq ft → ≈ 165.1 lb of seed → 3.3 bags → round up to 4.</p>`},
+
+ {id:8, title:'Brownie pans',
+  prompt:`<p>Jordan is baking brownies and will use either a round pan or a rectangular pan. Which statement correctly describes how the area of the bottom of the round pan compares to the area of the bottom of the rectangular pan?</p>
+   <div class="choices-given"><span>A. round greater by ≈ 8.5 in²</span><span>B. round greater by ≈ 244.2 in²</span><span>C. round less by ≈ 7.2 in²</span><span>D. round less by ≈ 38.6 in²</span></div>`,
+  figure: FIG.p8,
+  steps:[
+   {type:'num', q:`<p>Start with the easy one. What is the area of the <b>rectangular</b> pan?</p>`, answer:70, tol:0, unit:'sq in',
+    hint:`Rectangle area = length × width.`, explain:`${m('10 × 7 = 70 in²')}`},
+   {type:'num', q:`<p>The round pan has a 10-inch diameter. What is its <b>radius</b>?</p>`, answer:5, tol:0, unit:'in',
+    hint:`Half the diameter.`, explain:`${m('10 ÷ 2 = 5 in')}`},
+   {type:'num', q:`<p>Area of the <b>round</b> pan? (Round to the tenth.)</p>`, answer:25*PI, tol:0.11, unit:'sq in',
+    hint:`π × r × r, with r = 5. Watch out: don’t use the diameter here.`,
+    explain:`${m('A = π × 5² = 25π ≈ 78.5 in²')}`},
+   {type:'choice', q:`<p>Which pan has the bigger bottom?</p>`, options:['Round pan','Rectangular pan'], answer:0,
+    hint:`Compare 78.5 and 70.`, explain:`78.5 is more than 70, so the <b>round</b> pan is bigger.`},
+   {type:'num', q:`<p>By about how much? (Round to the tenth.)</p>`, answer:25*PI-70, tol:0.11, unit:'sq in',
+    hint:`Subtract: round area − rectangle area.`, explain:`${m('78.54 − 70 ≈ 8.5 in²')}`},
+   {type:'choice', q:`<p>Pick the matching answer choice.</p>`, options:['A','B','C','D'], answer:0,
+    hint:`Find the statement that says “round is greater” by about the amount you found.`,
+    explain:`<b>A</b>: the round pan is greater by about 8.5 in². Choice B comes from using the diameter in the area formula, π × 10², a common trap.`}
+  ],
+  final:`<div class="big">A</div><p>Round ≈ 78.5 in², rectangle = 70 in², difference ≈ 8.5 in².</p>`},
+
+ {id:9, title:'Earth vs. the Moon',
+  prompt:`<p>The mean radius of Earth is <b>6,371.0 km</b> and the mean radius of the Moon is <b>1,737.5 km</b>. What is the approximate difference in their mean circumferences, in kilometers? Round to the nearest tenth.</p>
+   <div class="choices-given"><span>A. 40,030.2</span><span>B. 29,113.1</span><span>C. 14,556.6</span><span>D. 10,917.0</span></div>`,
+  figure: FIG.p9,
+  steps:[
+   {type:'info', q:`<p><b>Plan.</b> Find each circumference with ${m('C = 2πr')}, then subtract. The question asks for the <span class="hl">difference</span>, so there will be a subtraction at the end.</p>`},
+   {type:'num', q:`<p>Earth’s circumference? (Round to the tenth, use the π key.)</p>`, answer:2*PI*6371, tol:1, unit:'km',
+    hint:`2 × π × 6,371`, explain:`${m('C = 2 × π × 6,371 ≈ 40,030.2 km')}`},
+   {type:'num', q:`<p>The Moon’s circumference? (Round to the tenth.)</p>`, answer:2*PI*1737.5, tol:1, unit:'km',
+    hint:`2 × π × 1,737.5`, explain:`${m('C = 2 × π × 1,737.5 ≈ 10,917.0 km')}`},
+   {type:'num', q:`<p>Now the difference. (Round to the tenth.)</p>`, answer:2*PI*(6371-1737.5), tol:1, unit:'km',
+    hint:`Bigger circumference − smaller circumference.`,
+    explain:`${m('40,030.2 − 10,917.0 ≈ 29,113.1 km')}<br>Shortcut: ${m('2π × (6,371 − 1,737.5) = 2π × 4,633.5 ≈ 29,113.1')}`},
+   {type:'choice', q:`<p>Pick the matching answer choice.</p>`, options:['A','B','C','D'], answer:1,
+    hint:`Look for the difference you just found.`,
+    explain:`<b>B</b>. Notice the traps: A is Earth’s circumference alone and D is the Moon’s alone. C only uses π × r, forgetting the 2.`}
+  ],
+  final:`<div class="big">B · ≈ 29,113.1 km</div><p>Two circumferences, then subtract.</p>`},
+
+ {id:10, title:'Area in terms of π',
+  prompt:`<p>The circumference of a circle is <b>15π centimeters</b>. What is the area of the circle in terms of π?</p>
+   <div class="choices-given"><span>A. 7.5π cm²</span><span>B. 15π cm²</span><span>C. 56.25π cm²</span><span>D. 225π cm²</span></div>`,
+  figure: FIG.p10,
+  steps:[
+   {type:'info', q:`<p><b>“In terms of π”</b> means leave π as a symbol. No calculator decimals needed. Since ${m('C = π × d')}, a circumference of ${m('15π')} tells us the diameter right away.</p>`},
+   {type:'num', q:`<p>${m('π × d = 15π')}. What is the <b>diameter</b>?</p>`, answer:15, tol:0, unit:'cm',
+    hint:`What number times π gives 15π?`, explain:`${m('d = 15 cm')}`},
+   {type:'num', q:`<p>What is the <b>radius</b>?</p>`, answer:7.5, tol:0, unit:'cm',
+    hint:`Half the diameter.`, explain:`${m('15 ÷ 2 = 7.5 cm')}`},
+   {type:'num', q:`<p>Area uses ${m('r²')}. What is ${m('7.5 × 7.5')}?</p>`, answer:56.25, tol:0, unit:'',
+    hint:`Multiply 7.5 by itself (not by 2).`, explain:`${m('7.5 × 7.5 = 56.25')}`},
+   {type:'choice', q:`<p>So ${m('A = π × r² = ?')} Pick the answer choice.</p>`, options:['A. 7.5π','B. 15π','C. 56.25π','D. 225π'], answer:2,
+    hint:`Put π next to the r² you just found.`,
+    explain:`<b>C. 56.25π cm²</b>. B just repeats the circumference, D squares the diameter instead of the radius, and A forgot to square.`}
+  ],
+  final:`<div class="big">C · 56.25π cm²</div><p>C = 15π → d = 15 → r = 7.5 → A = 7.5²π = 56.25π.</p>`},
+
+ {id:11, title:'Fountain from a blueprint',
+  prompt:`<p>On a blueprint, the base of a circular fountain has a diameter of <b>18 cm</b>. The scale is <b>3 cm to 4 feet</b>. What will be the actual area of the base, in square feet? Round to the nearest tenth. Show your work.</p>`,
+  figure: FIG.p11,
+  steps:[
+   {type:'info', q:`<p><b>Plan.</b> Convert the blueprint diameter to real feet <span class="hl">first</span>, then find the area. (Converting area directly is tricky, because areas don’t scale the same way lengths do.)</p>`},
+   {type:'num', q:`<p>How many groups of 3 cm fit in 18 cm?</p>`, answer:6, tol:0, unit:'groups',
+    hint:`18 ÷ 3`, explain:`${m('18 ÷ 3 = 6')}`},
+   {type:'num', q:`<p>Each 3 cm stands for 4 ft. What is the <b>actual diameter</b>?</p>`, answer:24, tol:0, unit:'ft',
+    hint:`6 groups × 4 ft each.`, explain:`${m('6 × 4 = 24 ft')}`},
+   {type:'num', q:`<p>What is the actual <b>radius</b>?</p>`, answer:12, tol:0, unit:'ft',
+    hint:`Half of 24.`, explain:`${m('24 ÷ 2 = 12 ft')}`},
+   {type:'num', q:`<p>Actual area of the base, <b>to the nearest tenth</b>?</p>`, answer:144*PI, tol:0.11, unit:'sq ft',
+    hint:`π × 12 × 12`, explain:`${m('A = π × 12² = 144π ≈ 452.4 sq ft')}`}
+  ],
+  final:`<div class="big">≈ 452.4 sq ft</div><div class="work">18 cm ÷ 3 = 6 → 6 × 4 ft = 24 ft diameter<br>r = 24 ÷ 2 = 12 ft<br>A = π × 12² = 144π ≈ 452.4 ft²</div>`}
+];
+
+/* ---------- state ---------- */
+const KEY = 'circles-walkthrough-v1';
+let state = {cur:0, p:{}};
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.p) state = s; } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+const ps = id => (state.p[id] ||= {pos:0, res:{}, tries:{}});
+const isDone = pr => ps(pr.id).pos >= pr.steps.length;
+
+function parseAns(raw){
+  let v = String(raw).toLowerCase().replace(/[,\s]/g,'').replace(/π/g,'pi')
+    .replace(/(square|sq\.?|units?|feet|ft|in\.?|cm|km|lbs?|bags?|groups?|²|\^2)/g,'');
+  const pm = v.match(/^(-?\d*\.?\d*)\*?pi$/);
+  if (pm){ const c = pm[1]===''?1:pm[1]==='-'?-1:parseFloat(pm[1]); return c*PI; }
+  return /^-?\d*\.?\d+$/.test(v) ? parseFloat(v) : NaN;
+}
+const fmt = n => Number.isInteger(n) ? n.toLocaleString() : (Math.round(n*100)/100).toLocaleString();
+
+/* ---------- render ---------- */
+const chipsEl = document.getElementById('chips'), sheet = document.getElementById('sheet');
+
+function renderChips(){
+  chipsEl.innerHTML = PROBLEMS.map((pr,i)=>`<button class="chip" id="chip-${pr.id}" data-i="${i}" aria-current="${i===state.cur}">${pr.id}${isDone(pr)?'<span class="tick" aria-label="done">✓</span>':''}</button>`).join('');
+}
+
+function renderSheet(focus){
+  const pr = PROBLEMS[state.cur], s = ps(pr.id);
+  let html = `<div class="sheet-head"><span class="num">${pr.id}</span><h2>${pr.title}</h2><span class="meter">${Math.min(s.pos,pr.steps.length)} / ${pr.steps.length} steps</span></div>
+    <div class="prompt">${pr.prompt}</div>${pr.figure?`<figure>${pr.figure}</figure>`:''}<ol class="steps">`;
+  pr.steps.forEach((st,i)=>{
+    if (i > s.pos) return;
+    if (st.part) html += `<li class="part">Part ${st.part}</li>`;
+    const r = s.res[i], active = i===s.pos;
+    const cls = ['step', active?'active':'', r?(r.how==='shown'?'done shown':'done'):''].join(' ');
+    html += `<li class="${cls}" data-i="${i}"><div class="step-top"><span class="badge">${r?(r.how==='shown'?'!':'✓'):i+1}</span><div class="q">${st.q}</div></div>`;
+    if (st.type==='info'){
+      if (active) html += `<div class="row"><button class="btn" data-act="next">Got it, next step</button></div>`;
+    } else if (st.type==='num'){
+      const val = r ? (r.how==='shown' ? fmt(st.answer) : r.val) : '';
+      html += `<form class="row" data-act="check"><label class="sr" for="in-${pr.id}-${i}" hidden>Your answer</label>
+        <input class="ans" id="in-${pr.id}-${i}" inputmode="decimal" autocomplete="off" value="${val}" ${r?'disabled':''} placeholder="?">
+        ${st.unit?`<span class="unit">${st.unit}</span>`:''}
+        ${r?'':`<button class="btn" type="submit">Check</button>${s.tries[i]?`<button class="link" type="button" data-act="show">Show me this step</button>`:''}`}</form>`;
+    } else {
+      html += `<div class="row">${st.options.map((o,k)=>{
+        let c='opt'; if (r && k===st.answer) c+=' picked-ok'; else if (!r && s.tries[i] && (s.wrong?.[i]||[]).includes(k)) c+=' picked-bad';
+        return `<button class="${c}" data-act="pick" data-k="${k}" ${r?'disabled':''}>${o}</button>`;}).join('')}
+        ${!r && s.tries[i]?`<button class="link" data-act="show">Show me this step</button>`:''}</div>`;
+    }
+    if (r) html += `<div class="fb ${r.how==='shown'?'shown':'ok'}"><p><strong>${r.how==='shown'?'Here’s how:':'Yes!'}</strong> ${st.explain||''}</p></div>`;
+    else if (s.tries[i]) html += `<div class="fb bad"><p><strong>Not quite.</strong> Hint: ${st.hint}</p></div>`;
+    html += `</li>`;
+  });
+  html += `</ol>`;
+  if (isDone(pr)) html += `<section class="final"><h3>Answer</h3>${pr.final}</section>`;
+  const nextPr = PROBLEMS[state.cur+1];
+  html += `<div class="foot"><button class="link" data-act="reset">Start this problem over</button>
+    ${nextPr?`<button class="btn ${isDone(pr)?'':'ghost'}" data-act="goto" data-i="${state.cur+1}">Problem ${nextPr.id} →</button>`:''}</div>`;
+  sheet.innerHTML = html;
+  if (focus){
+    const a = sheet.querySelector('.step.active input, .step.active .opt, .step.active .btn') || sheet.querySelector('.final');
+    if (a){ a.focus?.({preventScroll:true}); a.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); }
+  }
+}
+function render(focus){ renderChips(); renderSheet(focus); save(); }
+
+/* ---------- actions ---------- */
+function advance(pr, s, i, how, val){ s.res[i] = {how, val}; s.pos = i+1; render(true); }
+
+sheet.addEventListener('submit', e=>{
+  e.preventDefault();
+  const li = e.target.closest('.step'); const i = +li.dataset.i;
+  const pr = PROBLEMS[state.cur], s = ps(pr.id), st = pr.steps[i];
+  const raw = li.querySelector('input').value; const x = parseAns(raw);
+  if (raw.trim()==='') return;
+  if (!isNaN(x) && Math.abs(x - st.answer) <= st.tol + 1e-9) advance(pr, s, i, 'ok', raw.trim());
+  else { s.tries[i] = (s.tries[i]||0)+1; render(false); const inp = sheet.querySelector(`#in-${pr.id}-${i}`); inp.value = raw; inp.focus(); inp.select(); }
+});
+sheet.addEventListener('click', e=>{
+  const b = e.target.closest('[data-act]'); if (!b || b.tagName==='FORM') return;
+  const pr = PROBLEMS[state.cur], s = ps(pr.id); const li = b.closest('.step'); const i = li ? +li.dataset.i : -1;
+  const act = b.dataset.act;
+  if (act==='next') advance(pr, s, i, 'ok');
+  else if (act==='show') advance(pr, s, i, 'shown');
+  else if (act==='pick'){
+    const k = +b.dataset.k, st = pr.steps[i];
+    if (k===st.answer) advance(pr, s, i, 'ok');
+    else { s.tries[i]=(s.tries[i]||0)+1; (s.wrong ||= {}); (s.wrong[i] ||= []).push(k); render(false); }
+  }
+  else if (act==='reset'){ state.p[pr.id] = {pos:0,res:{},tries:{}}; render(true); }
+  else if (act==='goto'){ state.cur = +b.dataset.i; render(false); window.scrollTo({top:0}); }
+});
+chipsEl.addEventListener('click', e=>{
+  const b = e.target.closest('.chip'); if (!b) return;
+  state.cur = +b.dataset.i; render(false);
+});
+render(false);
+</script>
+</body>
+</html>
