@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two-Step Equations Coach</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fb; color: #172033;
+  }
+  header {
+    background: #315c9b; color: white; padding: 22px 18px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 7px; font-size: 30px; }
+  header p { margin: 0; font-size: 16px; }
+  .app { max-width: 1050px; margin: 24px auto; padding: 0 16px; }
+  .layout { display: grid; grid-template-columns: 230px 1fr; gap: 18px; }
+  .panel, .card {
+    background: white; border-radius: 14px; padding: 20px;
+    box-shadow: 0 3px 14px rgba(0,0,0,.08);
+  }
+  .problem-list { max-height: 650px; overflow-y: auto; }
+  .problem-list h2 { margin-top: 0; font-size: 18px; }
+  .buttons { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; }
+  button {
+    border: 0; border-radius: 9px; padding: 10px; cursor: pointer;
+    font-weight: bold; font-size: 14px;
+  }
+  .num { background: #e8eef8; color: #315c9b; }
+  .num.active { background: #315c9b; color: white; }
+  .num.done { outline: 3px solid #7bc67b; }
+  .main h2 { margin-top: 0; }
+  .equation {
+    font-size: 34px; text-align: center; padding: 20px;
+    background: #f0f5ff; border-radius: 12px; margin: 15px 0 22px;
+    font-family: Georgia, serif;
+  }
+  .goal {
+    padding: 12px 15px; background: #fff8dd; border-left: 5px solid #e4b52d;
+    border-radius: 8px; margin-bottom: 18px;
+  }
+  .step {
+    border: 2px solid #dbe4f1; border-radius: 12px; padding: 17px;
+    margin-top: 14px;
+  }
+  .step.current { border-color: #5d83bd; background: #f8fbff; }
+  .step h3 { margin: 0 0 9px; font-size: 18px; }
+  .operation { font-size: 19px; margin: 8px 0; }
+  input {
+    width: 120px; padding: 10px; border: 2px solid #bdc9da;
+    border-radius: 8px; font-size: 18px;
+  }
+  .check { background: #315c9b; color: white; margin-left: 7px; }
+  .hint { background: #f0f2f5; color: #333; margin-top: 10px; }
+  .feedback { margin-top: 10px; font-weight: bold; min-height: 22px; }
+  .success { color: #267a35; }
+  .error { color: #b33434; }
+  .progress {
+    height: 12px; background: #e3e8ef; border-radius: 99px; overflow: hidden;
+    margin: 12px 0 20px;
+  }
+  .bar { height: 100%; background: #5e9f68; width: 0%; transition: width .25s; }
+  .next {
+    background: #5e9f68; color: white; margin-top: 18px; font-size: 16px;
+  }
+  .hidden { display:none; }
+  .explain {
+    background:#eef8f0; padding:13px; border-radius:9px; margin-top:12px;
+  }
+  .footer-note { color:#667085; font-size:14px; margin-top:18px; }
+  @media(max-width:750px) {
+    .layout { grid-template-columns: 1fr; }
+    .problem-list { max-height:none; }
+    .buttons { grid-template-columns: repeat(6,1fr); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Two-Step Equations Coach</h1>
+  <p>Undo the operations one at a time. Your goal is to get the variable alone.</p>
+</header>
+
+<div class="app">
+  <div class="layout">
+    <aside class="panel problem-list">
+      <h2>Choose a Problem</h2>
+      <div class="buttons" id="problemButtons"></div>
+      <p class="footer-note">Green outline = completed.</p>
+    </aside>
+
+    <main class="card main">
+      <div id="content"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+const problems = [
+ {n:1, eq:"6 = a/4 + 2", steps:[
+  ["Subtract 2 from both sides.","6 − 2 = a/4 + 2 − 2","4 = a/4",4,"We removed the +2."],
+  ["Multiply both sides by 4.","4 × 4 = (a/4) × 4","a = 16",16,"The 4 and the denominator cancel."]
+ ]},
+ {n:2, eq:"−6 + x/4 = −5", steps:[
+  ["Add 6 to both sides.","−6 + 6 + x/4 = −5 + 6","x/4 = 1",1,"We undo −6 by adding 6."],
+  ["Multiply both sides by 4.","(x/4) × 4 = 1 × 4","x = 4",4,"The 4 cancels the denominator."]
+ ]},
+ {n:3, eq:"9x − 7 = −7", steps:[
+  ["Add 7 to both sides.","9x = 0",0,"We undo −7 by adding 7."],
+  ["Divide both sides by 9.","x = 0 ÷ 9","x = 0",0,"9x divided by 9 leaves x."]
+ ]},
+ {n:4, eq:"0 = 4 + n/5", steps:[
+  ["Subtract 4 from both sides.","−4 = n/5",-4,"We undo +4 by subtracting 4."],
+  ["Multiply both sides by 5.","−4 × 5 = n","n = −20",-20,"The denominator 5 is removed."]
+ ]},
+ {n:5, eq:"−4 = r/20 − 5", steps:[
+  ["Add 5 to both sides.","1 = r/20",1,"We undo −5 by adding 5."],
+  ["Multiply both sides by 20.","20 = r",20,"The denominator 20 is removed."]
+ ]},
+ {n:6, eq:"−1 = (5 + x)/6", steps:[
+  ["Multiply both sides by 6.","−6 = 5 + x",-6,"First remove the denominator."],
+  ["Subtract 5 from both sides.","−11 = x",-11,"Now x is alone."]
+ ]},
+ {n:7, eq:"(v + 9)/3 = 8", steps:[
+  ["Multiply both sides by 3.","v + 9 = 24",24,"Remove the denominator first."],
+  ["Subtract 9 from both sides.","v = 15",15,"Now v is alone."]
+ ]},
+ {n:8, eq:"2(n + 5) = −2", steps:[
+  ["Divide both sides by 2.","n + 5 = −1",-1,"Remove the multiplication by 2."],
+  ["Subtract 5 from both sides.","n = −6",-6,"Now n is alone."]
+ ]},
+ {n:9, eq:"−9x + 1 = −80", steps:[
+  ["Subtract 1 from both sides.","−9x = −81",-81,"Undo +1 by subtracting 1."],
+  ["Divide both sides by −9.","x = 9",9,"A negative divided by a negative is positive."]
+ ]},
+ {n:10, eq:"−6 = n/2 − 10", steps:[
+  ["Add 10 to both sides.","4 = n/2",4,"Undo −10 by adding 10."],
+  ["Multiply both sides by 2.","n = 8",8,"Remove the denominator."]
+ ]},
+ {n:11, eq:"−2 = 2 + v/4", steps:[
+  ["Subtract 2 from both sides.","−4 = v/4",-4,"Undo +2."],
+  ["Multiply both sides by 4.","v = −16",-16,"Remove the denominator."]
+ ]},
+ {n:12, eq:"144 = −12(x + 5)", steps:[
+  ["Divide both sides by −12.","−12 = x + 5",-12,"Remove the multiplication by −12."],
+  ["Subtract 5 from both sides.","x = −17",-17,"Now x is alone."]
+ ]},
+ {n:13, eq:"−15 = −4m + 5", steps:[
+  ["Subtract 5 from both sides.","−20 = −4m",-20,"Undo +5."],
+  ["Divide both sides by −4.","m = 5",5,"A negative divided by a negative is positive."]
+ ]},
+ {n:14, eq:"10 − 6v = −104", steps:[
+  ["Subtract 10 from both sides.","−6v = −114",-114,"Undo +10."],
+  ["Divide both sides by −6.","v = 19",19,"Now v is alone."]
+ ]},
+ {n:15, eq:"8n + 7 = 31", steps:[
+  ["Subtract 7 from both sides.","8n = 24",24,"Undo +7."],
+  ["Divide both sides by 8.","n = 3",3,"Now n is alone."]
+ ]},
+ {n:16, eq:"−9x − 13 = −103", steps:[
+  ["Add 13 to both sides.","−9x = −90",-90,"Undo −13 by adding 13."],
+  ["Divide both sides by −9.","x = 10",10,"Now x is alone."]
+ ]},
+ {n:17, eq:"(n + 5)/(−16) = −1", steps:[
+  ["Multiply both sides by −16.","n + 5 = 16",16,"Remove the denominator −16."],
+  ["Subtract 5 from both sides.","n = 11",11,"Now n is alone."]
+ ]},
+ {n:18, eq:"−10 = −10 + 7m", steps:[
+  ["Add 10 to both sides.","0 = 7m",0,"The −10 terms cancel."],
+  ["Divide both sides by 7.","m = 0",0,"Now m is alone."]
+ ]},
+ {n:19, eq:"−10 = 10(k − 9)", steps:[
+  ["Divide both sides by 10.","−1 = k − 9",-1,"Remove the multiplication by 10."],
+  ["Add 9 to both sides.","k = 8",8,"Now k is alone."]
+ ]},
+ {n:20, eq:"m/9 − 1 = −2", steps:[
+  ["Add 1 to both sides.","m/9 = −1",-1,"Undo −1."],
+  ["Multiply both sides by 9.","m = −9",-9,"Remove the denominator."]
+ ]},
+ {n:21, eq:"9 + 9n = 9", steps:[
+  ["Subtract 9 from both sides.","9n = 0",0,"The 9 terms cancel."],
+  ["Divide both sides by 9.","n = 0",0,"Now n is alone."]
+ ]},
+ {n:22, eq:"7(9 + k) = 84", steps:[
+  ["Divide both sides by 7.","9 + k = 12",12,"Remove the multiplication by 7."],
+  ["Subtract 9 from both sides.","k = 3",3,"Now k is alone."]
+ ]},
+ {n:23, eq:"8 + b/(−4) = 5", steps:[
+  ["Subtract 8 from both sides.","b/(−4) = −3",-3,"Undo +8."],
+  ["Multiply both sides by −4.","b = 12",12,"Remove the denominator −4."]
+ ]},
+ {n:24, eq:"−243 = −9(10 + x)", steps:[
+  ["Divide both sides by −9.","27 = 10 + x",27,"Remove the multiplication by −9."],
+  ["Subtract 10 from both sides.","x = 17",17,"Now x is alone."]
+ ]}
+];
+
+let current = 0;
+let completed = new Set();
+let stepIndex = 0;
+
+function renderButtons() {
+  const box = document.getElementById("problemButtons");
+  box.innerHTML = problems.map((p,i) =>
+    `<button class="num ${i===current?'active':''} ${completed.has(i)?'done':''}" onclick="loadProblem(${i})">${p.n}</button>`
+  ).join("");
+}
+
+function loadProblem(i) {
+  current = i; stepIndex = 0; renderButtons(); render();
+}
+
+function render() {
+  const p = problems[current];
+  const s = p.steps[stepIndex];
+  const isLast = stepIndex === p.steps.length - 1;
+  document.getElementById("content").innerHTML = `
+    <h2>Problem ${p.n}</h2>
+    <div class="progress"><div class="bar" style="width:${(stepIndex/p.steps.length)*100}%"></div></div>
+    <div class="equation">${p.eq}</div>
+    <div class="goal"><strong>Goal:</strong> Get the variable by itself.</div>
+
+    <div class="step current">
+      <h3>Step ${stepIndex+1}: ${s[0]}</h3>
+      <div class="operation">${s[1]}</div>
+      <p><strong>What should the number on the right/left become?</strong></p>
+      <input id="answer" type="number" step="any" autocomplete="off"
+             onkeydown="if(event.key==='Enter') checkAnswer()">
+      <button class="check" onclick="checkAnswer()">Check</button>
+      <button class="hint" onclick="showHint()">💡 Hint</button>
+      <div id="feedback" class="feedback"></div>
+      <div id="hint" class="explain hidden"><strong>Hint:</strong> ${s[4]}</div>
+    </div>
+
+    <div id="completedStep"></div>
+  `;
+  document.getElementById("answer").focus();
+}
+
+function checkAnswer() {
+  const p = problems[current], s = p.steps[stepIndex];
+  const val = Number(document.getElementById("answer").value);
+  const feedback = document.getElementById("feedback");
+  if (Number.isFinite(val) && val === s[3]) {
+    feedback.className = "feedback success";
+    feedback.textContent = "✓ Correct! Nice work.";
+    document.getElementById("completedStep").innerHTML = `
+      <div class="explain"><strong>Next equation:</strong> ${s[2]}</div>
+      <button class="next" onclick="nextStep()">${stepIndex === p.steps.length-1 ? "Finish Problem ✓" : "Go to Next Step →"}</button>
+    `;
+  } else {
+    feedback.className = "feedback error";
+    feedback.textContent = "Not quite. Try the operation again, or use the hint.";
+  }
+}
+
+function showHint() {
+  document.getElementById("hint").classList.remove("hidden");
+}
+
+function nextStep() {
+  const p = problems[current];
+  if (stepIndex < p.steps.length - 1) {
+    stepIndex++;
+    render();
+  } else {
+    completed.add(current);
+    if (completed.size === problems.length) {
+      document.getElementById("content").innerHTML = `
+        <h2>🎉 You finished all 24 problems!</h2>
+        <p>You practiced undoing operations step by step.</p>
+        <button class="next" onclick="loadProblem(0)">Practice Again</button>
+      `;
+    } else {
+      const next = problems.findIndex((_,i)=>!completed.has(i));
+      current = next < 0 ? 0 : next;
+      stepIndex = 0;
+      renderButtons(); render();
+    }
+  }
+}
+
+renderButtons();
+render();
+</script>
+</body>
+</html>

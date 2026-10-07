@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+<title>Fraction Number Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lexend:wght@400;600;700&display=swap">
+<style>
+/* Layout: the number line is the hero across the top; below it, fractions on the left and the step-by-step coach on the right (stacks on phones) */
+:root{
+  --bg:#EEF3F6; --card:#FFFFFF; --ink:#18232F; --muted:#5B6B7B; --line:#CBD6E0; --rule:#2B3A4A;
+  --accent:#0E7A83; --accent-soft:#DDF0F1; --ok:#23804A; --ok-soft:#E2F4EA; --bad:#B4412F; --bad-soft:#FBE8E3; --warn-soft:#FFF3D6;
+  --f0:#D9480F; --f1:#6741D9; --f2:#1971C2; --f3:#2B8A3E; --f4:#C2255C;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Lexend","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F161D; --card:#17212B; --ink:#E6EDF3; --muted:#98A8B8; --line:#2C3B4A; --rule:#C9D5E0;
+  --accent:#4FC3CC; --accent-soft:#163238; --ok:#5BCB88; --ok-soft:#173326; --bad:#F08A78; --bad-soft:#3A201B; --warn-soft:#332B14;
+  --f0:#FF8A4C; --f1:#A48BFF; --f2:#5AAEFF; --f3:#5FD07A; --f4:#FF6FA3; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F161D; --card:#17212B; --ink:#E6EDF3; --muted:#98A8B8; --line:#2C3B4A; --rule:#C9D5E0;
+  --accent:#4FC3CC; --accent-soft:#163238; --ok:#5BCB88; --ok-soft:#173326; --bad:#F08A78; --bad-soft:#3A201B; --warn-soft:#332B14;
+  --f0:#FF8A4C; --f1:#A48BFF; --f2:#5AAEFF; --f3:#5FD07A; --f4:#FF6FA3; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--body)}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:24px 56px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 20px}
+h1{font:800 clamp(30px,6vw,46px)/1 var(--display);margin:0;letter-spacing:-.01em}
+h1 .bar{display:inline-block;width:.9em;height:.12em;background:var(--accent);border-radius:3px;vertical-align:.28em;margin:0 .12em}
+.sub{margin:0;color:var(--muted);max-width:52ch}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px clamp(14px,3vw,22px)}
+.lineCard{display:flex;flex-direction:column;gap:10px}
+.lineTop{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.lineTop .lab{font:700 13px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+#box{width:100%;min-width:0;overflow:hidden;border-radius:10px}
+#box svg{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:18px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+h2{font:800 22px/1.1 var(--display);margin:0}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+form.add{display:flex;gap:8px;flex-wrap:wrap}
+input.txt{font:600 18px var(--body);padding:10px 12px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);width:9.5ch;font-variant-numeric:tabular-nums}
+input.txt:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{font:700 15px var(--body);padding:10px 16px;border-radius:10px;border:1.5px solid var(--accent);background:var(--accent);color:var(--card);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.07)}
+.link{font:600 14px var(--body);background:none;border:0;padding:4px 2px;color:var(--muted);text-decoration:underline;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.builder{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:14px;border-radius:14px;background:var(--bg)}
+.bstack{display:flex;flex-direction:column;align-items:center;gap:6px}
+.spin{display:flex;align-items:center;gap:8px}
+.spin output{font:800 36px/1 var(--display);min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.sb{width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:700 24px/1 var(--body);cursor:pointer}
+.sb:hover:not(:disabled){border-color:var(--accent)}
+.sb:disabled{opacity:.35;cursor:not-allowed}
+.bline{width:64px;height:4px;background:var(--ink);border-radius:2px}
+.slab{font:600 11px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bside{display:flex;flex-direction:column;gap:10px;flex:1;min-width:170px}
+.minibar{display:flex;flex-direction:column;gap:4px}
+.mb{display:flex;height:22px;border:1.5px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--card)}
+.mb span{flex:1;border-right:1.5px solid var(--rule)} .mb span:last-child{border-right:0}
+.mb span.on{background:var(--accent)}
+.quick{display:flex;flex-wrap:wrap;gap:6px}
+.qb{padding:5px 9px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.qb:hover{border-color:var(--accent)}
+.qb .frac{font-size:15px}
+.err{margin:0;color:var(--bad);font-size:14px;font-weight:600}
+.note{margin:0;font-size:14px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;list-style:none;margin:0;padding:0}
+.fchip{display:inline-flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:12px;border:2px solid var(--c);background:var(--card)}
+.fchip .dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
+.fchip .x{border:0;background:none;color:var(--muted);font:700 18px/1 var(--body);width:28px;height:28px;border-radius:8px;cursor:pointer}
+.fchip .x:hover{background:var(--bg);color:var(--ink)}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font:700 1.15em/1.05 var(--body);font-variant-numeric:tabular-nums;vertical-align:middle;color:var(--c,inherit)}
+.frac > span + span{border-top:2.5px solid currentColor;padding-top:1px;min-width:1.3em;text-align:center}
+.coach{display:flex;flex-direction:column;gap:14px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.steps li{font:600 12px/1 var(--body);padding:7px 10px;border-radius:999px;background:var(--bg);color:var(--muted)}
+.steps li.on{background:var(--accent);color:var(--card)}
+.steps li.done{background:var(--accent-soft);color:var(--accent)}
+.say{margin:0;font-size:17px;max-width:62ch}
+.mults{display:flex;flex-direction:column;gap:8px}
+.mrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mrow .lbl{font:700 13px var(--body);color:var(--muted);width:88px;flex:none}
+.mbtn{font:600 15px var(--body);font-variant-numeric:tabular-nums;min-width:40px;height:36px;padding:0 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.mbtn:hover{border-color:var(--accent)}
+.mbtn.tried{border-color:var(--bad);background:var(--bad-soft);text-decoration:line-through}
+.chk{margin:4px 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px}
+.mini{margin:0;font-size:15px}
+input.txt.sm{width:4.6ch;text-align:center;padding:6px}
+.mbtn.common{background:var(--warn-soft);border-color:var(--f0);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fb{padding:10px 14px;border-radius:10px;font-size:15px;border-left:4px solid}
+.fb p{margin:0} .fb p+p{margin-top:6px}
+.fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb.info{background:var(--accent-soft);border-color:var(--accent)}
+.rw{display:flex;flex-direction:column;gap:10px;list-style:none;margin:0;padding:0}
+.rw li{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:12px;border:1.5px solid var(--line)}
+.rw li.good{border-color:var(--ok);background:var(--ok-soft)}
+.eq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:18px}
+.eq .op{font:700 22px var(--body);color:var(--muted)}
+.slot{display:inline-flex;flex-direction:column;align-items:center;gap:2px}
+.slot input{width:4.2ch;text-align:center;padding:4px 4px;font-size:18px}
+.slot .den{border-top:2.5px solid var(--ink);min-width:3.4em;text-align:center;font:700 18px var(--body)}
+.times{font:600 13px var(--body);color:var(--accent);background:var(--accent-soft);padding:3px 8px;border-radius:999px}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.qcount{font:600 13px var(--body);color:var(--muted)}
+.qtext{margin:0;font-size:19px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:480px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font:700 13px var(--body)}
+.opt .frac{font-size:24px}
+.opt .let{color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .frac{text-decoration:line-through}
+.opt:disabled{cursor:default}
+.score{font:800 34px/1 var(--display);color:var(--accent)}
+.foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1.5px dashed var(--line);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){ .pop{animation:pop .35s ease-out} @keyframes pop{from{transform:scale(.2);opacity:0}to{transform:none;opacity:1}} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Fraction <span class="bar"></span> Line</h1>
+    <p class="sub">Every fraction you type shows up as a dot. Then find a common denominator and figure out what fits between them.</p>
+  </header>
+
+  <section class="panel lineCard" aria-label="Number line">
+    <div class="lineTop">
+      <span class="lab" id="lineLab">Number line</span>
+      <label class="toggle"><input type="checkbox" id="barsTog"> Show fraction bars</label>
+    </div>
+    <div id="box"></div>
+  </section>
+
+  <div class="grid">
+    <section class="panel col" aria-label="Your fractions">
+      <h2>Your fractions</h2>
+      <div class="builder" aria-label="Fraction builder">
+        <div class="bstack">
+          <span class="slab">Top</span>
+          <div class="spin"><button class="sb" type="button" data-b="n-" aria-label="Top number down">−</button><output id="bN" aria-label="Top number">1</output><button class="sb" type="button" data-b="n+" aria-label="Top number up">+</button></div>
+          <div class="bline"></div>
+          <div class="spin"><button class="sb" type="button" data-b="d-" aria-label="Bottom number down">−</button><output id="bD" aria-label="Bottom number">4</output><button class="sb" type="button" data-b="d+" aria-label="Bottom number up">+</button></div>
+          <span class="slab">Bottom</span>
+        </div>
+        <div class="bside">
+          <div class="minibar" id="bBar" aria-hidden="true"></div>
+          <p class="note" id="bSay"></p>
+          <button class="btn" type="button" id="bAdd">Put it on the line</button>
+        </div>
+      </div>
+      <div class="col" style="gap:6px"><span class="note">Or tap one to add it:</span><div class="quick" id="quick"></div></div>
+      <p class="err" id="addErr" hidden></p>
+      <ul class="chips" id="list"></ul>
+      <p class="note" id="listNote"></p>
+      <div class="row">
+        <button class="link" id="rand" type="button">Give me a new set</button>
+        <button class="link" id="clear" type="button">Clear all</button>
+      </div>
+      <p class="note">Use + and − to build a fraction. The dashed dot on the line shows where it will go. Up to 5 fractions.</p>
+    </section>
+
+    <section class="panel coach" id="coach" aria-live="polite"></section>
+  </div>
+</div>
+
+<script>
+/* ---------- math helpers ---------- */
+const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
+const NAMES={1:'wholes',2:'halves',3:'thirds',4:'fourths',5:'fifths',6:'sixths',7:'sevenths',8:'eighths',9:'ninths',10:'tenths',11:'elevenths',12:'twelfths',16:'sixteenths',20:'twentieths',24:'twenty-fourths'};
+const dname=d=>NAMES[d]||(d+(d%10===1&&d!==11?'sts':d%10===2&&d!==12?'nds':d%10===3&&d!==13?'rds':'ths'));
+const fr=(n,d,c)=>`<span class="frac"${c?` style="--c:var(${c})"`:''}><span>${n}</span><span>${d}</span></span>`;
+const COLORS=['--f0','--f1','--f2','--f3','--f4'];
+const MAX_PIECES=60;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* ---------- state ---------- */
+const S={fr:[],step:0,common:null,shown:4,hint:0,msg:null,pending:null,firstMsg:null,bars:false,example:true,nextId:0,bn:1,bd:4,qs:[],qi:0,newDot:null};
+function addFrac(n,d){const id=S.nextId++;S.fr.push({id,n,d,c:COLORS.find(c=>!S.fr.some(f=>f.c===c)),newN:null,ok:false,fb:null,hint:false,val:''});S.newDot=id;}
+[[1,2],[3,4]].forEach(([n,d])=>addFrac(n,d)); S.newDot=null;
+const ds=()=>[...new Set(S.fr.map(f=>f.d))].sort((a,b)=>a-b);
+const LCD=()=>ds().reduce(lcm,1);
+const maxWhole=()=>Math.max(1,Math.ceil(Math.max(...S.fr.map(f=>f.n/f.d),S.step===0?S.bn/S.bd:0,0)-1e-9));
+
+function resetSteps(){Object.assign(S,{cdTries:0,lastWrong:null,step:0,common:null,shown:4,hint:0,msg:null,pending:null,firstMsg:null,qs:[],qi:0});
+  S.fr.forEach(f=>{f.newN=null;f.ok=false;f.fb=null;f.hint=false;f.val='';f.stage='k';f.tries=0;});}
+
+function parseFrac(raw){
+  const s=raw.trim().replace(/\s+/g,' ');let m,n,d;
+  if(m=s.match(/^(\d+) (\d+) ?\/ ?(\d+)$/)){d=+m[3];n=+m[1]*d+ +m[2];}
+  else if(m=s.match(/^(\d+) ?\/ ?(\d+)$/)){n=+m[1];d=+m[2];}
+  else if(m=s.match(/^(\d+)$/)){n=+m[1];d=1;}
+  else return {err:'Type a fraction like 3/4, a mixed number like 1 1/2, or a whole number.'};
+  if(d===0) return {err:'The denominator can’t be 0. You can’t cut a whole into 0 pieces.'};
+  if(d>24) return {err:'Keep denominators at 24 or less so the pieces fit on the line.'};
+  if(n/d>4) return {err:'This number line goes up to 4. Try a smaller fraction.'};
+  return {n,d};
+}
+
+/* ---------- number line ---------- */
+const box=document.getElementById('box');
+function draw(){
+  const w=Math.max(280,box.clientWidth), W=maxWhole(), padL=26, padR=26;
+  const X=v=>padL+v/W*(w-padL-padR);
+  const showBars=S.bars&&S.fr.length>0;
+  const rowH=34, top=12, barsH=showBars?S.fr.length*rowH+8:0;
+  const q=S.step===4?S.qs[S.qi]:null;
+  let N=S.step>=3?S.common:null;
+  if(q&&(q.hintShown||q.done)) N=q.W;
+  // stacks of equal dots
+  const byVal={}; S.fr.forEach(f=>{const k=(f.n/f.d).toFixed(9);(byVal[k] ||= []).push(f);});
+  const maxStack=Math.max(1,...Object.values(byVal).map(a=>a.length));
+  const y=top+barsH+22+maxStack*44;
+  const h=y+64;
+  let g='';
+  if(showBars) S.fr.forEach((f,i)=>{
+    const ry=top+i*rowH, v=f.n/f.d;
+    g+=`<rect x="${X(0)}" y="${ry}" width="${X(W)-X(0)}" height="22" rx="4" fill="var(--bg)" stroke="var(--line)"/>`;
+    g+=`<rect x="${X(0)}" y="${ry}" width="${Math.max(0,X(v)-X(0))}" height="22" rx="4" fill="var(${f.c})" opacity=".85"/>`;
+    for(let k=1;k<W*f.d;k++) g+=`<line x1="${X(k/f.d)}" x2="${X(k/f.d)}" y1="${ry}" y2="${ry+22}" stroke="${k%f.d?'var(--line)':'var(--muted)'}" stroke-width="${k%f.d?1.5:2}"/>`;
+    const lx=X(v)+8, inside=lx+40>w-padR;
+    g+=`<text x="${inside?X(v)-8:lx}" y="${ry+16}" text-anchor="${inside?'end':'start'}" font-family="Lexend,system-ui,sans-serif" font-size="14" font-weight="700" fill="${inside?'var(--card)':`var(${f.c})`}">${f.n}/${f.d}</text>`;
+    g+=`<line x1="${X(v)}" x2="${X(v)}" y1="${ry+22}" y2="${y}" stroke="var(${f.c})" stroke-dasharray="3 4" stroke-width="1.5"/>`;
+  });
+  // highlighted gap for current question
+  if(q) g+=`<rect x="${X(q.a.n/q.a.d)}" y="${y-14}" width="${X(q.b.n/q.b.d)-X(q.a.n/q.a.d)}" height="28" rx="6" fill="var(--warn-soft)" stroke="var(--f0)" stroke-dasharray="4 3"/>`;
+  g+=`<line x1="${X(0)-14}" x2="${X(W)+14}" y1="${y}" y2="${y}" stroke="var(--rule)" stroke-width="3" stroke-linecap="round"/>`;
+  g+=`<path d="M${X(W)+20},${y} l-9,-6 v12 z M${X(0)-20},${y} l9,-6 v12 z" fill="var(--rule)"/>`;
+  if(N){
+    const total=W*N, gap=(X(1)-X(0))/N, labelEvery=gap>=26?1:gap>=13?2:gap>=7?4:0;
+    for(let k=1;k<total;k++){ if(k%N===0) continue;
+      g+=`<line x1="${X(k/N)}" x2="${X(k/N)}" y1="${y-9}" y2="${y+9}" stroke="var(--rule)" stroke-width="1.6"/>`;
+      if(labelEvery&&k%labelEvery===0)
+        g+=`<g font-family="Lexend,system-ui,sans-serif" font-size="12" fill="var(--muted)" text-anchor="middle"><text x="${X(k/N)}" y="${y+27}">${k}</text><line x1="${X(k/N)-7}" x2="${X(k/N)+7}" y1="${y+31}" y2="${y+31}" stroke="var(--muted)" stroke-width="1.2"/><text x="${X(k/N)}" y="${y+44}">${N}</text></g>`;
+    }
+  }
+  for(let k=0;k<=W;k++){
+    g+=`<line x1="${X(k)}" x2="${X(k)}" y1="${y-16}" y2="${y+16}" stroke="var(--rule)" stroke-width="3" stroke-linecap="round"/>`;
+    g+=`<text x="${X(k)}" y="${y+38}" text-anchor="middle" font-family="'Baloo 2',system-ui,sans-serif" font-size="22" font-weight="800" fill="var(--ink)">${k}</text>`;
+  }
+  // student's tried answers in the current question
+  if(q) q.tried.forEach(i=>{const c=q.choices[i], x=X(c.n/c.d), good=i===q.ans;
+    g+=`<circle cx="${x}" cy="${y}" r="8" fill="var(--card)" stroke="var(${good?'--ok':'--bad'})" stroke-width="3"/>`;
+    g+=`<g font-family="Lexend,system-ui,sans-serif" font-size="13" font-weight="700" fill="var(${good?'--ok':'--bad'})" text-anchor="middle"><text x="${x}" y="${y+60}">${c.n}/${c.d}${good?' ✓':' ✗'}</text></g>`;});
+  // the fraction dots
+  Object.values(byVal).forEach(group=>group.forEach((f,lvl)=>{
+    const x=X(f.n/f.d), ly=y-22-lvl*44;
+    const dim=q&&f.id!==q.a.id&&f.id!==q.b.id&&!(Math.abs(f.n/f.d-q.a.n/q.a.d)<1e-9)&&!(Math.abs(f.n/f.d-q.b.n/q.b.d)<1e-9);
+    g+=`<g opacity="${dim?.3:1}" ${f.id===S.newDot?'class="pop" style="transform-origin:'+x+'px '+y+'px"':''}><circle cx="${x}" cy="${y}" r="9" fill="var(${f.c})" stroke="var(--card)" stroke-width="2.5"/>
+      <g font-family="Lexend,system-ui,sans-serif" font-size="15" font-weight="700" fill="var(${f.c})" text-anchor="middle">
+      <text x="${x}" y="${ly-20}">${f.n}</text><line x1="${x-10}" x2="${x+10}" y1="${ly-15}" y2="${ly-15}" stroke="var(${f.c})" stroke-width="2.2"/><text x="${x}" y="${ly}">${f.d}</text></g></g>`;
+  }));
+  if(S.step===0){const x=X(S.bn/S.bd);
+    g+=`<g opacity=".85"><circle cx="${x}" cy="${y}" r="10" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="4 3"/>
+      <g font-family="Lexend,system-ui,sans-serif" font-size="13" font-weight="700" fill="var(--accent)" text-anchor="middle"><text x="${x}" y="${y+58}">${S.bn}/${S.bd} goes here</text></g></g>`;}
+  box.innerHTML=`<svg width="${w}" height="${h+ (q&&q.tried.length?14:0)}" viewBox="0 0 ${w} ${h+(q&&q.tried.length?14:0)}" role="img" aria-label="Number line from 0 to ${W} with ${S.fr.length} fraction dots${N?`, cut into ${dname(N)}`:''}">${g}</svg>`;
+  document.getElementById('lineLab').textContent = N ? `Number line · cut into ${dname(N)}` : 'Number line';
+  document.getElementById('barsTog').checked=S.bars;
+  S.newDot=null;
+}
+new ResizeObserver(()=>draw()).observe(box);
+
+/* ---------- list ---------- */
+const listEl=document.getElementById('list');
+function renderList(){
+  listEl.innerHTML=S.fr.map(f=>`<li class="fchip" style="--c:var(${f.c})"><span class="dot"></span>${fr(f.n,f.d,f.c)}<button class="x" data-rm="${f.id}" aria-label="Remove ${f.n}/${f.d}">×</button></li>`).join('');
+  document.getElementById('listNote').textContent = S.fr.length===0?'No fractions yet. Build one or tap one above and watch it land on the line.' : S.example?'These are example fractions. Remove them or clear all to use your own.':'';
+}
+
+/* ---------- between questions ---------- */
+const cmp=(a,b)=>a.n*b.d-b.n*a.d;           // sign of a-b
+const red=(n,d)=>{const g=gcd(n,d)||1;return {n:n/g,d:d/g};};
+function makeQ(a,b,mStart){
+  const N=S.common, p=a.n*N/a.d, q=b.n*N/b.d;
+  let m=mStart; while((q-p)*m<2) m++;
+  const W=N*m, P=p*m, Q=q*m;
+  const cn=P+1+Math.floor(Math.random()*(Q-P-1));
+  const correct=red(cn,W);
+  const endA=(P===a.n&&W===a.d)?{n:2*P,d:2*W}:{n:P,d:W};
+  const endB=(Q===b.n&&W===b.d)?{n:2*Q,d:2*W}:{n:Q,d:W};
+  const above=[red(Q+1,W),red(Q+m,W),red(Q+2,W)], below=P>=1?[red(P-1,W),red(Math.max(0,P-m),W)]:[];
+  const naive={n:a.n+1,d:a.d};                       // "just add one to the top" trap
+  const outside=x=>cmp(x,a)<=0||cmp(x,b)>=0;
+  const key=x=>x.n+'/'+x.d, used=new Set([key(correct)]), vals=new Set([(correct.n/correct.d).toFixed(9)]);
+  const take=x=>{if(!x||!outside(x)||used.has(key(x)))return false;const v=(x.n/x.d).toFixed(9);
+    if(vals.has(v)) return false;used.add(key(x));vals.add(v);return true;};
+  const ds=[], pools=[shuffle([endA,endB]),[naive],shuffle(above),shuffle(below)];
+  for(const pool of pools){ if(ds.length>=3) break; const x=pool.find(take); if(x) ds.push(x); }
+  for(const x of [...above,...below,endA,endB]){ if(ds.length>=3) break; if(take(x)) ds.push(x); }
+  const choices=shuffle([correct,...ds.slice(0,3)]);
+  return {a,b,N,m,W,P,Q,p,q,choices,ans:choices.findIndex(c=>c.n===correct.n&&c.d===correct.d),tried:[],done:false,hintShown:false,first:null};
+}
+function buildQuestions(){
+  const sorted=[...S.fr].sort(cmp), uniq=[];
+  sorted.forEach(f=>{if(!uniq.length||cmp(uniq[uniq.length-1],f)!==0) uniq.push(f);});
+  const qs=[];
+  for(let i=0;i+1<uniq.length&&qs.length<4;i++) qs.push(makeQ(uniq[i],uniq[i+1],1));
+  if(qs.length===1) qs.push(makeQ(uniq[0],uniq[1],qs[0].m+1));
+  if(qs.length===2&&uniq.length===3) qs.push(makeQ(uniq[0],uniq[2],1));
+  return qs;
+}
+function explainChoice(q,c){
+  const L=[q.a.d,q.b.d,c.d].reduce(lcm,1);
+  const t=x=>fr(x.n*L/x.d,L);
+  const s=`<p>${fr(q.a.n,q.a.d,q.a.c)} = ${t(q.a)} &nbsp; ${fr(c.n,c.d)} = ${t(c)} &nbsp; ${fr(q.b.n,q.b.d,q.b.c)} = ${t(q.b)}</p>`;
+  const cn=c.n*L/c.d, an=q.a.n*L/q.a.d, bn=q.b.n*L/q.b.d;
+  if(cn>an&&cn<bn) return `<p><strong>Yes!</strong> In ${dname(L)}, ${cn} is between ${an} and ${bn}.</p>`+s;
+  if(cn===an||cn===bn) return `<p><strong>Not quite.</strong> ${fr(c.n,c.d)} is <b>equal</b> to ${cn===an?fr(q.a.n,q.a.d,q.a.c):fr(q.b.n,q.b.d,q.b.c)}. It’s on the endpoint, not between.</p>`+s;
+  if(cn<an) return `<p><strong>Not quite.</strong> ${fr(c.n,c.d)} is <b>smaller</b> than ${fr(q.a.n,q.a.d,q.a.c)}, so it’s to the left of the gap.</p>`+s;
+  return `<p><strong>Not quite.</strong> ${fr(c.n,c.d)} is <b>bigger</b> than ${fr(q.b.n,q.b.d,q.b.c)}, so it’s past the gap.</p>`+s;
+}
+
+/* ---------- coach ---------- */
+const coach=document.getElementById('coach');
+const STEPNAMES=[[2,'Common denominator'],[3,'New numerators'],[4,'What’s between?']];
+function stepBar(){return `<ol class="steps">${STEPNAMES.map(([s,n],i)=>`<li class="${S.step===s?'on':S.step>s?'done':''}">${i+1}. ${n}</li>`).join('')}</ol>`;}
+const fbHtml=m=>m?`<div class="fb ${m.kind}">${m.html}</div>`:'';
+
+function renderCoach(){
+  let h=stepBar();
+  const D=ds();
+  if(S.step===0){
+    h+=`<h2>Put two fractions on the line</h2>`;
+    h+= S.fr.length===0
+      ? `<p class="say">Build a fraction on the left with + and −, or tap one. It appears as a dot on the number line.</p>`
+      : S.fr.length===1 ? `<p class="say">${fr(S.fr[0].n,S.fr[0].d,S.fr[0].c)} is on the line. Add <b>one more</b> fraction, then we’ll find a common denominator.</p>`
+      : `<p class="say">Try different fractions.</p>`;
+    h+=fbHtml(S.msg);
+  }
+  if(S.step===2){
+    const L=LCD();
+    if(S.hint>=2) S.shown=Math.max(S.shown,L/D[0]);
+    const rowsVals=D.map(d=>Array.from({length:Math.max(1,Math.min(30,Math.round(S.shown*D[0]/d)))},(_,i)=>d*(i+1)));
+    const inAll=v=>D.every(d=>v%d===0)&&rowsVals.every(r=>r.includes(v));
+    h+=`<h2>Find a common denominator</h2>
+      <p class="say">You have ${S.fr.map(f=>fr(f.n,f.d,f.c)).join(' and ')}. The bottom numbers are ${D.map(d=>`<b>${d}</b>`).join(' and ')} (${D.map(dname).join(' and ')}), so the pieces are <b>different sizes</b>.</p>
+      <p class="say">To compare them, we need <b>one</b> denominator that ${D.length>2?'every':'both'} bottom number${D.length>1?'s':''} divide${D.length>1?'':'s'} into evenly. Count by each denominator and look for a number that’s in <b>every</b> row. Tap it or type it.</p>
+      <div class="mults">${D.map((d,i)=>`<div class="mrow"><span class="lbl">Count by ${d}s</span>${rowsVals[i].map(v=>`<button class="mbtn ${S.hint>=2&&inAll(v)?'common':''} ${v===S.lastWrong?'tried':''}" data-try="${v}">${v}</button>`).join('')}</div>`).join('')}</div>
+      <div class="row"><button class="link" data-a="more">Show more multiples</button></div>
+      <form class="row" data-f="common"><label for="cdIn">Common denominator:</label>
+        <input class="txt" id="cdIn" inputmode="numeric" autocomplete="off" value="${S.pending??''}">
+        <button class="btn" type="submit">Check</button><button class="btn ghost" type="button" data-a="hint">Hint</button></form>`;
+    h+=fbHtml(S.msg);
+  }
+  if(S.step===3){
+    const N=S.common;
+    h+=`<h2>Find the new numerators</h2>
+      ${S.firstMsg===true?`<div class="fb ok"><p><strong>Yes! ${N} is the least common denominator.</strong> It’s the smallest number that ${D.join(' and ')} both divide into. Look at the line: it’s now cut into ${dname(N)}.</p></div>`
+        :S.firstMsg===false?`<div class="fb info"><p>We’ll use <b>${N}</b>. It works, even though a smaller one exists (${LCD()}).</p></div>`
+        :S.firstMsg==='same'?`<div class="fb info"><p>These already share the denominator <b>${N}</b>, so there’s nothing to change.</p></div>`:''}
+      <p class="say">Now give each fraction a bottom of <b>${N}</b>. The rule: whatever you multiply the bottom by, multiply the top by the <b>same</b> number.</p>
+      <ul class="rw">${S.fr.map(f=>{const k=N/f.d, active=S.fr.find(q=>!q.ok)===f;
+        if(f.ok) return `<li class="good"><div class="eq">${fr(f.n,f.d,f.c)}<span class="op">=</span>${fr(f.newN,N,f.c)}<span class="times">× ${k} on top and bottom</span></div>${f.fb?`<div class="fb ${f.fb.kind}">${f.fb.html}</div>`:''}</li>`;
+        let body=`<div class="eq">${fr(f.n,f.d,f.c)}<span class="op">=</span>${fr('?',N)}</div>`;
+        if(!active) return `<li data-id="${f.id}" style="opacity:.6">${body}<p class="mini">Up next.</p></li>`;
+        if(f.stage==='k'){
+          const seq=Array.from({length:k},(_,i)=>f.d*(i+1)).join(' → ');
+          body+=`<p class="mini"><b>Step A.</b> The bottom goes from ${f.d} to ${N}. What do you multiply ${f.d} by to get ${N}?</p>
+            <form class="eq" data-f="rwk"><span>${f.d} ×</span><label for="rk${f.id}" hidden>Multiply by</label><input class="txt sm" id="rk${f.id}" inputmode="numeric" autocomplete="off" value="${f.val}"><span>= ${N}</span>
+            <button class="btn" type="submit">Check</button><button class="btn ghost" type="button" data-a="rwhint">Hint</button></form>
+            ${f.hint?`<div class="fb info"><p><strong>Hint:</strong> Count by ${f.d}s until you reach ${N}: ${seq}. How many jumps is that?</p></div>`:''}`;
+        } else {
+          const hint=f.n===0?'0 times any number is 0.':k<=6?`${f.n} × ${k} means ${k} groups of ${f.n}: ${Array(k).fill(f.n).join(' + ')} = ?`:`Skip count by ${f.n}, ${k} times.`;
+          body+=`<p class="mini">✓ ${f.d} × ${k} = ${N}. <b>Step B.</b> Do the same thing to the top: multiply ${f.n} by ${k}.</p>
+            <form class="eq" data-f="rwn"><span>${f.n} × ${k} =</span><label for="rn${f.id}" hidden>New numerator</label><input class="txt sm" id="rn${f.id}" inputmode="numeric" autocomplete="off" value="${f.val}">
+            <button class="btn" type="submit">Check</button><button class="btn ghost" type="button" data-a="rwhint">Hint</button></form>
+            ${f.hint?`<div class="fb info"><p><strong>Hint:</strong> ${hint}</p></div>`:''}`;
+        }
+        return `<li data-id="${f.id}">${body}${f.fb?`<div class="fb ${f.fb.kind}">${f.fb.html}</div>`:''}</li>`;}).join('')}</ul>`;
+    if(S.fr.every(f=>f.ok)) h+=`<div class="fb ok"><p><strong>All rewritten.</strong> Every fraction is now counted in ${dname(N)}, so you can compare the top numbers.</p></div><div class="row"><button class="btn" data-a="to4">What’s between them?</button></div>`;
+  }
+  if(S.step===4){
+    if(!S.qs.length){
+      h+=`<h2>What’s between?</h2><p class="say">All your fractions are equal, so there’s no gap between them. Add a different fraction to get questions.</p>`;
+    } else if(S.qi<S.qs.length){
+      const q=S.qs[S.qi];
+      h+=`<div class="qhead"><h2>What’s between?</h2><span class="qcount">Question ${S.qi+1} of ${S.qs.length}</span></div>
+        <p class="qtext">Which fraction is between ${fr(q.a.n,q.a.d,q.a.c)} and ${fr(q.b.n,q.b.d,q.b.c)}?</p>
+        <div class="opts">${q.choices.map((c,i)=>{const t=q.tried.includes(i), right=i===q.ans;
+          return `<button class="opt ${t?(right?'right':'wrong'):''}" data-opt="${i}" ${q.done||t?'disabled':''}><span class="let">${'ABCD'[i]}</span>${fr(c.n,c.d)}</button>`;}).join('')}</div>`;
+      if(q.tried.length) h+=`<div class="fb ${q.done?'ok':'bad'}">${explainChoice(q,q.choices[q.tried[q.tried.length-1]])}</div>`;
+      if(q.hintShown&&!q.done) h+=`<div class="fb info">${q.m>1
+        ? `<p><strong>Hint:</strong> In ${dname(q.N)}, these are ${fr(q.p,q.N)} and ${fr(q.q,q.N)}.${q.q-q.p===1?' The numerators are next to each other, so nothing fits in ' + dname(q.N) + '.':''} Cut every piece into ${q.m}: that makes ${fr(q.P,q.W)} and ${fr(q.Q,q.W)}. The line now shows ${dname(q.W)}. What fits between ${q.P} and ${q.Q}?</p>`
+        : `<p><strong>Hint:</strong> In ${dname(q.N)}, these are ${fr(q.p,q.N)} and ${fr(q.q,q.N)}. Any numerator between ${q.p} and ${q.q} works. Rewrite each answer choice in ${dname(q.N)} to check.</p>`}</div>`;
+      h+=`<div class="row">${q.done?`<button class="btn" data-a="nextq">${S.qi+1<S.qs.length?'Next question':'See my results'}</button>`:`<button class="btn ghost" data-a="qhint">Hint</button>`}</div>`;
+    } else {
+      const first=S.qs.filter(q=>q.first===true).length;
+      h+=`<h2>Nice work!</h2><div class="row"><span class="score">${first} / ${S.qs.length}</span><span class="say">right on the first try</span></div>
+        <p class="say">Remember: to find a fraction between two others, write them with a common denominator. If the numerators are right next to each other, cut the pieces smaller (double the denominator) to make room.</p>
+        <div class="row"><button class="btn" data-a="newset">Try a new set</button><button class="btn ghost" data-a="own">Type my own</button><button class="btn ghost" data-a="redo">New questions, same fractions</button></div>`;
+    }
+  }
+  if(S.step>0&&!(S.step===4&&S.qi>=S.qs.length)) h+=`<div class="foot"><button class="link" data-a="restart">Start these fractions over</button></div>`;
+  coach.innerHTML=h;
+}
+function render(){renderBuilder();renderList();renderCoach();draw();}
+
+/* ---------- actions ---------- */
+function checkCommon(raw){
+  const D=ds(), L=LCD(), v=Number(String(raw).trim());
+  S.pending=raw;
+  if(!Number.isInteger(v)||v<=0){S.msg={kind:'bad',html:'<p>Type a whole number, like 12.</p>'};return;}
+  const miss=D.find(d=>v%d!==0);
+  if(miss){
+    S.cdTries++; S.lastWrong=v; S.pending='';
+    if(S.cdTries>=2) S.hint=Math.max(S.hint,2);
+    const checks=D.map(d=>v%d===0?`<li>✓ ${d} goes into ${v} (${d} × ${v/d} = ${v})</li>`:`<li>✗ ${d} does <b>not</b> go into ${v} (${v} ÷ ${d} = ${Math.floor(v/d)} remainder ${v%d})</li>`).join('');
+    const big=Math.max(...D);
+    const pre=v<big?`<p>A common denominator can’t be smaller than the biggest denominator, ${big}.</p>`:'';
+    const nudge=S.cdTries===1?`Look in the “Count by ${miss}s” row for a number that is also in the other row${D.length>2?'s':''}.`
+      :S.cdTries===2?`I highlighted the numbers that are in <b>every</b> row. Pick one of those.`
+      :`The smallest highlighted number is <b>${L}</b>. Try it!`;
+    S.msg={kind:'bad',html:`<p><strong>Not quite.</strong> ${v} has to work for every denominator:</p><ul class="chk">${checks}</ul>${pre}<p>${nudge}</p>`};return;}
+  if(v>MAX_PIECES){S.msg={kind:'info',html:`<p>${v} works, but that would cut each whole into ${v} tiny pieces. Look for a smaller one in the rows above.</p>`};return;}
+  if(v===L){S.msg=null;accept(v,true);return;}
+  S.msg={kind:'ok',html:`<p><strong>That works!</strong> ${D.join(', ')} all go into ${v} evenly. Is there a <b>smaller</b> number that also works?</p>
+    <div class="row" style="margin-top:8px"><button class="btn" data-a="use" data-v="${v}">Use ${v}</button><button class="btn ghost" data-a="smaller">Look for a smaller one</button></div>`};
+}
+function accept(v,least){
+  S.common=v; S.step=3; S.pending=null; S.firstMsg=least;
+  S.fr.forEach(f=>{ if(f.d===v){f.newN=f.n;f.ok=true;f.fb={kind:'ok',html:`<p>Already in ${dname(v)}. Nothing to change.</p>`};} });
+}
+function begin(){
+  if(S.fr.length<2){render();return;}
+  const L=LCD(), D=ds();
+  if(L>MAX_PIECES){S.msg={kind:'bad',html:`<p>These denominators need a common denominator of ${L}, which cuts the line into pieces too tiny to see. Try fractions with smaller denominators.</p>`};render();return;}
+  S.msg=null;
+  if(D.length===1){ S.common=D[0]; S.fr.forEach(f=>{f.newN=f.n;f.ok=true;}); S.firstMsg='same'; S.step=3; }
+  else S.step=2;
+  render();
+}
+function randomSet(){
+  const pool=[2,3,4,5,6,8,10,12];
+  for(let tries=0;tries<200;tries++){
+    const k=Math.random()<.55?2:3, set=[];
+    while(set.length<k){const d=pool[Math.floor(Math.random()*pool.length)], n=1+Math.floor(Math.random()*(d-1));
+      if(gcd(n,d)!==1) continue; if(set.some(s=>s.n*d===n*s.d)) continue; set.push({n,d});}
+    const L=set.map(s=>s.d).reduce(lcm,1), D=new Set(set.map(s=>s.d));
+    if(L<=24&&D.size>1) return set;
+  }
+  return [{n:1,d:3},{n:3,d:4}];
+}
+
+function tryAdd(n,d){
+  const err=document.getElementById('addErr'); err.hidden=true;
+  if(S.example){S.fr=[];S.example=false;}
+  if(S.fr.length>=5){err.textContent='That’s 5 fractions, the most this line holds. Remove one first.';err.hidden=false;render();return;}
+  if(S.fr.some(f=>f.n===n&&f.d===d)){err.textContent=`${n}/${d} is already on the line.`;err.hidden=false;render();return;}
+  addFrac(n,d); resetSteps(); if(S.fr.length>=2) begin(); else render();
+}
+function renderBuilder(){
+  const n=S.bn,d=S.bd;
+  document.getElementById('bN').textContent=n; document.getElementById('bD').textContent=d;
+  document.querySelector('[data-b="n-"]').disabled=n<=0; document.querySelector('[data-b="n+"]').disabled=n>=2*d;
+  document.querySelector('[data-b="d-"]').disabled=d<=1; document.querySelector('[data-b="d+"]').disabled=d>=12;
+  const bars=Math.max(1,Math.ceil(n/d)); let h='';
+  for(let b=0;b<bars;b++){h+='<div class="mb">';for(let i=0;i<d;i++)h+=`<span class="${b*d+i<n?'on':''}"></span>`;h+='</div>';}
+  document.getElementById('bBar').innerHTML=h;
+  document.getElementById('bSay').innerHTML= d===1?`${n} whole${n===1?'':'s'}`:
+    n<=d?`<b>${n}</b> out of <b>${d}</b> equal pieces`:`<b>${n}</b> pieces, each one ${d===2?'half':'1/'+d} of a whole. That’s more than 1!`;
+  document.getElementById('bAdd').textContent=`Put ${n}/${d} on the line`;
+}
+document.querySelector('.builder').addEventListener('click',e=>{
+  const b=e.target.closest('[data-b]'); if(!b) return;
+  const k=b.dataset.b;
+  if(k==='n-')S.bn=Math.max(0,S.bn-1); if(k==='n+')S.bn=Math.min(2*S.bd,S.bn+1);
+  if(k==='d-'){S.bd=Math.max(1,S.bd-1);S.bn=Math.min(S.bn,2*S.bd);} if(k==='d+')S.bd=Math.min(12,S.bd+1);
+  renderBuilder(); if(S.step===0) draw();
+});
+document.getElementById('bAdd').addEventListener('click',()=>tryAdd(S.bn,S.bd));
+const QUICK=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5],[3,5],[1,6],[5,6],[3,8],[5,8],[1,10],[7,10],[5,12]];
+document.getElementById('quick').innerHTML=QUICK.map(([n,d])=>`<button class="qb" type="button" data-q="${n}/${d}" aria-label="Add ${n}/${d}">${fr(n,d)}</button>`).join('');
+document.getElementById('quick').addEventListener('click',e=>{const b=e.target.closest('[data-q]');if(!b)return;const [n,d]=b.dataset.q.split('/').map(Number);tryAdd(n,d);});
+listEl.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;S.fr=S.fr.filter(f=>f.id!==+b.dataset.rm);S.example=false;resetSteps();if(S.fr.length>=2)begin();else render();});
+document.getElementById('clear').addEventListener('click',()=>{S.fr=[];S.example=false;resetSteps();render();document.getElementById('bAdd').focus();});
+const newSet=()=>{S.fr=[];S.example=false;randomSet().forEach(s=>addFrac(s.n,s.d));resetSteps();begin();};
+document.getElementById('rand').addEventListener('click',newSet);
+document.getElementById('barsTog').addEventListener('change',e=>{S.bars=e.target.checked;draw();});
+
+coach.addEventListener('submit',e=>{
+  e.preventDefault(); const f=e.target;
+  if(f.dataset.f==='common'){checkCommon(f.querySelector('input').value);render();coach.querySelector('#cdIn')?.focus();}
+  if(f.dataset.f==='rwk'||f.dataset.f==='rwn'){
+    const id=+f.closest('li').dataset.id, x=S.fr.find(q=>q.id===id), raw=f.querySelector('input').value.trim(), v=Number(raw), N=S.common, k=N/x.d;
+    x.val=raw; if(raw==='') return;
+    if(!Number.isInteger(v)){x.fb={kind:'bad',html:'<p>Type a whole number.</p>'};}
+    else if(f.dataset.f==='rwk'){
+      if(v===k){x.stage='n';x.val='';x.hint=false;x.tries=0;x.fb=null;}
+      else{ x.tries++;
+        const msg=x.d+v===N?`It looks like you <b>added</b>: ${x.d} + ${v} = ${N}. We need to <b>multiply</b>: ${x.d} × ? = ${N}.`
+          :`${x.d} × ${v} = ${x.d*v}. That’s too ${x.d*v<N?'small':'big'}. We need ${N}.`;
+        x.fb={kind:'bad',html:`<p><strong>Not quite.</strong> ${msg}</p>`}; if(x.tries>=2) x.hint=true; }
+    } else {
+      if(v===x.n*k){x.newN=v;x.ok=true;x.val='';x.fb={kind:'ok',html:`<p><strong>Right!</strong> ${x.n} × ${k} = ${v} and ${x.d} × ${k} = ${N}, so ${fr(x.n,x.d,x.c)} = ${fr(v,N,x.c)}. Same dot, new name. It sits on tick mark ${v} of the ${dname(N)}.</p>`};}
+      else{ x.tries++;
+        const msg=v===x.n?`The top has to be multiplied by ${k} too, just like the bottom.`
+          :v===x.n+k?`It looks like you <b>added</b> ${k}. Multiply instead: ${x.n} × ${k}.`
+          :v===x.n+(N-x.d)?`It looks like you added ${N-x.d}. Multiply the top by ${k}, the same number you used on the bottom.`
+          :`${x.n} × ${k} isn’t ${v}. Try again.`;
+        x.fb={kind:'bad',html:`<p><strong>Not quite.</strong> ${msg}</p>`}; if(x.tries>=2) x.hint=true; }
+    }
+    render();
+    const next=S.fr.find(q=>!q.ok); if(next) coach.querySelector(`#rk${next.id},#rn${next.id}`)?.focus();
+  }
+});
+coach.addEventListener('click',e=>{
+  const t=e.target.closest('[data-a],[data-try],[data-opt]'); if(!t) return;
+  if(t.dataset.try){checkCommon(t.dataset.try);render();return;}
+  if(t.dataset.opt!=null){
+    const q=S.qs[S.qi], i=+t.dataset.opt; if(q.done||q.tried.includes(i)) return;
+    q.tried.push(i); if(q.first===null) q.first=(i===q.ans); if(i===q.ans) q.done=true;
+    render(); coach.querySelector(q.done?'[data-a=nextq]':'.opt:not(:disabled)')?.focus(); return;
+  }
+  const a=t.dataset.a, D=ds();
+  if(a==='begin') begin();
+  else if(a==='to2'){S.step=2;render();coach.querySelector('#cdIn')?.focus();}
+  else if(a==='more'){S.shown=Math.min(30,S.shown+4);render();}
+  else if(a==='hint'){
+    S.hint++;
+    const tips=[`<p><strong>Hint:</strong> Look for a number that appears in <b>every</b> “Count by” row. Tap “Show more multiples” if you don’t see one yet.</p>`,
+      `<p><strong>Hint:</strong> The numbers that show up in every row are highlighted now. The smallest one is the <b>least</b> common denominator.</p>`,
+      `<p><strong>Backup trick:</strong> Multiplying the denominators always gives a common denominator: ${D.join(' × ')} = ${D.reduce((a,b)=>a*b,1)}. It might not be the smallest, though.</p>`];
+    S.msg={kind:'info',html:tips[Math.min(S.hint-1,2)]}; render();
+  }
+  else if(a==='use'){accept(+t.dataset.v,false);render();}
+  else if(a==='smaller'){S.hint=Math.max(S.hint,1);S.msg={kind:'info',html:`<p>Check the rows again. Is there a number <b>smaller than ${S.pending}</b> that shows up in every row?</p>`};S.pending='';render();coach.querySelector('#cdIn')?.focus();}
+  else if(a==='rwhint'){const x=S.fr.find(q=>q.id===+t.closest('li').dataset.id);x.hint=true;x.val=t.closest('form').querySelector('input').value;render();coach.querySelector(`#rk${x.id},#rn${x.id}`)?.focus();}
+  else if(a==='to4'||a==='redo'){S.step=4;S.qs=buildQuestions();S.qi=0;render();}
+  else if(a==='qhint'){S.qs[S.qi].hintShown=true;render();}
+  else if(a==='nextq'){S.qi++;render();coach.querySelector('.opt')?.focus();}
+  else if(a==='restart'){resetSteps();begin();}
+  else if(a==='newset') newSet();
+  else if(a==='own'){S.fr=[];S.example=false;resetSteps();render();document.getElementById('bAdd').focus();}
+});
+resetSteps(); begin();
+</script>
+</body>
+</html>
