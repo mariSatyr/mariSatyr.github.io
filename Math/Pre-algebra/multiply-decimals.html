@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multiply Decimals Step by Step</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--page:#E9F0EC;--paper:#fff;--ink:#1B2B27;--muted:#55685F;--board:#1F3D36;--chalk:#F4F7F2;--cy:#FFD966;--cp:#FF9CC2;--cb:#7FD1F5;--line:#C6D6CD;--btn:#F2B134;--onbtn:#2A1C00;--good:#DFF3E4;--goodink:#14532D;--bad:#FDE7E4;--badink:#8A1C12;--info:#E4F1FA;--infoink:#0F3D5C;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--page:#101A17;--paper:#182521;--ink:#E7F0EA;--muted:#9DB2A8;--line:#2B3F38;--good:#173A27;--goodink:#B7F0CB;--bad:#3F1D19;--badink:#FFC9C2;--info:#16303F;--infoink:#BFE3F8}}
+:root[data-theme="dark"]{--page:#101A17;--paper:#182521;--ink:#E7F0EA;--muted:#9DB2A8;--line:#2B3F38;--good:#173A27;--goodink:#B7F0CB;--bad:#3F1D19;--badink:#FFC9C2;--info:#16303F;--infoink:#BFE3F8}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:400 17px/1.55 Nunito,system-ui,sans-serif}
+main{max-width:1060px;margin:0 auto;padding:26px 18px 60px}
+h1,h2,.title{font-family:Fredoka,Nunito,system-ui,sans-serif;font-weight:600;margin:0}
+h1{font-size:clamp(28px,6vw,44px);line-height:1.1}
+.lead{color:var(--muted);max-width:58ch;margin:8px 0 20px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px;align-items:start}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.board{background:var(--board);color:var(--chalk);border:8px solid #7B5B3A;border-radius:14px;padding:18px 20px;min-height:320px;font:400 clamp(15px,3.8vw,20px)/1.5 "Space Mono",ui-monospace,monospace;overflow-x:auto}
+.ln{margin:12px 0}
+.lab{color:var(--cy);margin-right:.9em;font-size:.8em}
+.stack{display:inline-grid;grid-template-columns:auto auto;column-gap:16px;margin:8px 0;color:var(--cb)}
+.stack .v{text-align:right;font-weight:700}.stack .n{font-size:.7em;opacity:.8;align-self:center}
+.rule{border-top:3px solid var(--chalk)}
+.ans{color:var(--cp);font-weight:700}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:18px;padding:18px}
+.prog{display:flex;gap:4px;margin-bottom:14px}.prog i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.prog i.d{background:#2E9E6B}.prog i.c{background:var(--btn)}
+.title{font-size:22px;margin-bottom:6px}
+.q{margin:0 0 14px;font-size:18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0}
+button,select,input{font:700 17px Nunito,system-ui,sans-serif;color:var(--ink)}
+button{background:var(--paper);border:2px solid var(--ink);border-bottom-width:5px;border-radius:12px;padding:8px 16px;cursor:pointer;min-height:46px}
+button:active{border-bottom-width:2px;transform:translateY(3px)}
+button.main{background:var(--btn);color:var(--onbtn);border-color:var(--onbtn)}
+button:disabled{opacity:.5;cursor:default}
+input,select{border:2px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 10px;min-height:46px}
+#inp{width:min(100%,230px);font-size:22px}
+:focus-visible{outline:3px solid #2E9E6B;outline-offset:2px}
+.fb{min-height:3em;padding:10px 14px;border-radius:12px;font-weight:700;margin-top:6px}
+.fb:empty{display:none}
+.fb.good{background:var(--good);color:var(--goodink)}.fb.bad{background:var(--bad);color:var(--badink)}.fb.info{background:var(--info);color:var(--infoink)}
+.custom input{width:100px}
+.note{color:var(--muted);font-size:15px;margin:6px 0 0}
+ol{padding-left:22px;margin:8px 0}li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<main>
+<h1>Multiply decimals, one step at a time</h1>
+<p class="lead">Work through each step on the right. The chalkboard fills in with your work as you go.</p>
+
+<div class="bar">
+  <label for="lvl">Problem size</label>
+  <select id="lvl"><option value="3">xxx.xx × xx.xx</option><option value="2">xx.x × x.x</option><option value="1">x.x × x.x</option></select>
+  <button class="main" onclick="fresh()">New problem</button>
+</div>
+
+<div class="grid">
+  <div class="board" id="board" aria-label="Chalkboard with your work"></div>
+  <section class="card">
+    <div class="prog" id="prog" aria-hidden="true"></div>
+    <div id="work">
+      <div class="title" id="title"></div>
+      <p class="q" id="q"></p>
+      <div class="row" id="inRow">
+        <input id="inp" type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer">
+        <button class="main" id="chk">Check</button>
+      </div>
+      <div class="row">
+        <button id="hintBtn">Hint</button>
+        <button id="show" hidden>Show the answer</button>
+        <button class="main" id="next" hidden>Next step</button>
+      </div>
+      <div class="fb" id="fb" role="status" aria-live="polite"></div>
+    </div>
+    <div id="fin" hidden></div>
+  </section>
+</div>
+
+<section class="card custom" style="margin-top:18px">
+  <h2 style="font-size:22px">Try your own numbers</h2>
+  <div class="row">
+    <input id="ca" inputmode="decimal" value="45.6" aria-label="First number">
+    <span aria-hidden="true">×</span>
+    <input id="cb" inputmode="decimal" value="3.7" aria-label="Second number">
+    <button class="main" id="set">Use these numbers</button>
+  </div>
+  <p class="note" id="err" role="alert">Up to 3 digits before the point and 2 after. At least one number needs a decimal point.</p>
+</section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s), rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const ords=['ones','tens','hundreds','thousands','ten-thousands'];
+const digs=s=>s.replace('.','').replace(/^0+(?=\d)/,''), dec=s=>s.includes('.')?s.split('.')[1].length:0;
+const num=s=>parseFloat(String(s).replace(/[,\s]/g,'')), clean=n=>+n.toFixed(6);
+const place=x=>x>=100?[10,'ten']:x>=1?[1,'whole number']:[0.1,'tenth'];
+const est=x=>{const u=place(x)[0];return clean(Math.round(x/u)*u)};
+const norm=s=>{s=String(s).replace(/[,\s]/g,'');if(s.includes('.'))s=s.replace(/0+$/,'').replace(/\.$/,'');return s.replace(/^0+(?=\d)/,'')};
+const fmtD=(p,d)=>{const s=String(p).padStart(d+1,'0');return s.slice(0,-d)+'.'+s.slice(-d)};
+let A,B,ai,bi,ans,steps,idx,done,tries,ok;
+
+function build(){
+  const da=dec(A),db=dec(B),d=da+db,ea=est(+A),eb=est(+B),pe=clean(ea*eb),prod=ai*bi;
+  ans=norm(fmtD(prod,d));steps=[];
+  steps.push({title:'Estimate first',q:`Round ${A} to the nearest ${place(+A)[1]} and ${B} to the nearest ${place(+B)[1]}. Multiply the rounded numbers. What do you get?`,hint:`${A} rounds to ${ea} and ${B} rounds to ${eb}. Multiply those two numbers.`,ok:s=>Math.abs(num(s)-pe)<1e-6,ans:pe,line:`<span class="lab">Estimate</span>${ea} × ${eb} = ${pe}`});
+  steps.push({title:'Take out the decimal points',q:`Cover up the decimal points. Write ${A} and ${B} as whole numbers. Type both, with a space between them.`,hint:`Just slide the digits together and ignore the point. Do it for ${A}, then for ${B}.`,ok:s=>{const m=s.match(/\d+/g);return !!m&&m.length===2&&+m[0]===ai&&+m[1]===bi},ans:`${ai} ${bi}`,line:`<span class="lab">Whole numbers</span>${ai} × ${bi}`});
+  steps.push({title:'Count decimal places',q:`Count the digits after the decimal point in ${A}. Count them in ${B}. Add the two counts. What is the total?`,hint:`Look only at the digits to the right of each point, then add the two counts.`,ok:s=>num(s)===d,ans:d,line:`<span class="lab">Decimal places</span>${da} + ${db} = ${d}`});
+  String(bi).split('').reverse().forEach((c,k)=>{
+    const dg=+c,v=ai*dg*10**k;
+    steps.push({kind:'row',title:`Multiply by the ${ords[k]} digit`,
+      q:k?`The next digit of ${bi} is ${dg}, in the ${ords[k]} place. Put ${k} zero${k>1?'s':''} on the end as ${k>1?'placeholders':'a placeholder'}, then multiply ${ai} × ${dg}. Type the whole number, zeros included.`:`The ${ords[0]} digit of ${bi} is ${dg}. Multiply ${ai} × ${dg}.`,
+      hint:k?`First find ${ai} × ${dg}. Then stick ${k} zero${k>1?'s':''} on the end.`:`Multiply each digit of ${ai} by ${dg}, starting at the right. Carry when a product is 10 or more.`,
+      ok:s=>num(s)===v,ans:v,v,n:`${ai} × ${dg*10**k}`});
+  });
+  steps.push({kind:'sum',title:'Add the rows',q:'Add all the rows on the chalkboard. What is the total?',hint:'Line up the right-hand digits and add column by column. Carry when a column goes over 9.',ok:s=>num(s)===prod,ans:prod,v:prod});
+  steps.push({title:'Place the decimal point',q:`The whole-number answer is ${prod}. You counted ${d} decimal places, so start at the right end and move the point ${d} place${d>1?'s':''} to the left. What is ${A} × ${B}?`,hint:`Count ${d} digit${d>1?'s':''} in from the right end of ${prod} and put the point there.`,ok:s=>norm(s)===ans,ans:ans,line:`<span class="lab">Answer</span><span class="ans">${A} × ${B} = ${ans}</span>`});
+  steps.push({noInput:true,title:'Check with your estimate',q:`Your estimate was ${pe}. Your answer is ${ans}. If the decimal point were in the wrong place, these would be far apart. Are they close?`,hint:'',line:`<span class="lab">Check</span>${ans} is close to ${pe}`});
+}
+function render(){
+  let out=`<div class="ln"><span class="lab">Problem</span>${A} × ${B}</div>`,stack='';
+  const flush=()=>{if(stack){out+=`<div class="stack">${stack}</div>`;stack=''}};
+  steps.slice(0,done).forEach(s=>{
+    if(s.kind==='row')stack+=`<span class="v">${s.v}</span><span class="n">${s.n}</span>`;
+    else if(s.kind==='sum')stack+=`<span class="rule"></span><span></span><span class="v">${s.v}</span><span class="n">add the rows</span>`;
+    else{flush();out+=`<div class="ln">${s.line}</div>`}
+  });flush();
+  $('#board').innerHTML=out;
+  $('#prog').innerHTML=steps.map((s,i)=>`<i class="${i<done?'d':i===idx?'c':''}"></i>`).join('');
+}
+function say(t,c){const f=$('#fb');f.textContent=t;f.className='fb '+(c||'')}
+function load(){
+  ok=false;tries=0;const f=idx>=steps.length;
+  $('#work').hidden=f;$('#fin').hidden=!f;
+  if(f){$('#fin').innerHTML=`<div class="title">Great work!</div><p class="q">${A} × ${B} = <b>${ans}</b></p><ol><li>Estimate with rounded numbers.</li><li>Multiply as whole numbers, using placeholder zeros for each place.</li><li>Add the rows.</li><li>Count the decimal places in both numbers and move the point that many places left.</li><li>Check against your estimate.</li></ol><div class="row"><button class="main" onclick="fresh()">Try a new problem</button></div>`;return}
+  const st=steps[idx];
+  $('#title').textContent=`Step ${idx+1} of ${steps.length}: ${st.title}`;
+  $('#q').textContent=st.q;$('#inRow').hidden=!!st.noInput;
+  $('#inp').value='';$('#inp').disabled=false;$('#chk').disabled=false;
+  say('');$('#show').hidden=true;$('#hintBtn').hidden=!!st.noInput;
+  $('#next').hidden=!st.noInput;$('#next').textContent="Yes, they're close";
+  if(!st.noInput&&idx>0)$('#inp').focus();
+}
+function pass(t,c){
+  ok=true;done=idx+1;say(t,c||'good');
+  $('#inp').disabled=true;$('#chk').disabled=true;$('#show').hidden=true;
+  $('#next').hidden=false;$('#next').textContent=idx===steps.length-1?'Finish':'Next step';render();
+}
+function check(){
+  if(ok)return;const st=steps[idx];
+  if(st.ok($('#inp').value))pass('Correct! Look at the chalkboard.');
+  else{tries++;say('Not quite. Check your work and try again.','bad');if(tries>=2)$('#show').hidden=false}
+}
+$('#chk').onclick=check;
+$('#inp').addEventListener('keydown',e=>{if(e.key==='Enter')check()});
+$('#hintBtn').onclick=()=>say('Hint: '+steps[idx].hint,'info');
+$('#show').onclick=()=>pass(`The answer is ${steps[idx].ans}. Read it over, then keep going.`,'info');
+$('#next').onclick=()=>{if(steps[idx].noInput&&!ok){done=idx+1;ok=true}idx++;render();load()};
+function setup(a,b){A=a;B=b;ai=+digs(a);bi=+digs(b);build();idx=0;done=0;render();load()}
+function fresh(){
+  const [ia,fa,ib,fb]={1:[1,1,1,1],2:[2,1,1,1],3:[3,2,2,2]}[$('#lvl').value];
+  const n=(i,f)=>{let s='';for(let k=0;k<i+f;k++)s+=rnd(1,9);return s.slice(0,i)+'.'+s.slice(i)};
+  setup(n(ia,fa),n(ib,fb));
+}
+$('#set').onclick=()=>{
+  const a=$('#ca').value.trim(),b=$('#cb').value.trim(),re=/^\d{1,3}(\.\d{1,2})?$/,e=$('#err');
+  if(!re.test(a)||!re.test(b)){e.textContent='Type numbers like 45.6 or 123.45: up to 3 digits before the point and 2 after.';return}
+  if(!a.includes('.')&&!b.includes('.')){e.textContent='At least one number needs a decimal point.';return}
+  if(!(+a>0)||!(+b>0)){e.textContent='Both numbers must be greater than 0.';return}
+  e.textContent='';setup(a,b);scrollTo({top:0,behavior:'smooth'});
+};
+fresh();
+</script>
+</body>
+</html>
