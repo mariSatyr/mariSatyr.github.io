@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Graphing Lines, Step by Step</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAF3FF;--card:#fff;--ink:#1B2B5A;--mute:#5B6B93;--grid:#C3D8F4;--pen:#FFC93C;--line:#E5484D;--ok:#1F8F5F;--okbg:#DDF5E8;--bad:#B4332F;--badbg:#FDE6E4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121A33;--card:#1C2745;--ink:#EEF3FF;--mute:#A5B3D9;--grid:#34456F;--okbg:#17402F;--badbg:#4A2224;--ok:#6FD9A5;--bad:#FF9A94}}
+:root[data-theme="dark"]{--bg:#121A33;--card:#1C2745;--ink:#EEF3FF;--mute:#A5B3D9;--grid:#34456F;--okbg:#17402F;--badbg:#4A2224;--ok:#6FD9A5;--bad:#FF9A94}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 17px/1.5 Nunito,system-ui,sans-serif}
+h1,h2{font-family:Fredoka,system-ui,sans-serif;margin:0}
+header{padding:18px 16px 6px;max-width:980px;margin:auto}
+h1{font-size:28px;font-weight:600}
+header p{margin:2px 0 12px;color:var(--mute)}
+#tabs{display:flex;gap:6px;flex-wrap:wrap}
+#tabs button{width:40px;height:40px;border-radius:50%;border:2px solid var(--ink);background:var(--card);color:var(--ink);font:600 16px Fredoka,sans-serif;cursor:pointer}
+#tabs button.on{background:var(--pen);color:#1B2B5A}
+#tabs button.done{background:var(--ok);border-color:var(--ok);color:#fff}
+#tabs button.on.done{outline:3px solid var(--pen)}
+main{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:18px;max-width:980px;margin:auto;padding:12px 16px 32px}
+@media(max-width:760px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:18px;padding:14px;border:2px solid var(--ink)}
+svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.eq{font:600 30px Fredoka,sans-serif;margin-bottom:6px}
+.step{padding:10px 0;border-top:2px dashed var(--grid)}
+.step:first-of-type{border-top:0}
+.past{color:var(--mute);font-size:15px}
+.past b{color:var(--ok)}
+.q{font-weight:700;margin:0 0 8px}
+button.b{font:600 17px Fredoka,sans-serif;border:2px solid var(--ink);background:var(--pen);color:#1B2B5A;border-radius:12px;padding:8px 16px;cursor:pointer;margin:4px 6px 4px 0}
+button.b.ghost{background:transparent;color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+input{font:600 20px Fredoka,sans-serif;width:90px;padding:6px 10px;border:2px solid var(--ink);border-radius:10px;background:var(--bg);color:var(--ink)}
+.msg{margin:8px 0;padding:8px 12px;border-radius:12px}
+.msg.ok{background:var(--okbg);color:var(--ok)}.msg.bad{background:var(--badbg);color:var(--bad)}
+.hint{margin:8px 0;padding:8px 12px;border-left:5px solid var(--pen);background:var(--bg);border-radius:6px}
+</style></head><body>
+<header><h1>Graphing Lines, Step by Step</h1><p>Pick a problem, then follow the steps. Take your time!</p><div id="tabs" role="tablist"></div></header>
+<main><div class="card"><svg id="g" viewBox="0 0 440 440" role="img" aria-label="Coordinate grid. Tap to place points."></svg></div>
+<div class="card" id="guide" aria-live="polite"></div></main>
+<script>
+const f=n=>String(n).replace('-','−'),par=n=>n<0?'('+f(n)+')':f(n);
+const raw=[["7x + y = 5",7,1,5,5],["3x + 5y = −5",3,5,-5,5],["y = 4",0,1,4],["6x + 5y = 20",6,5,20,5],["x = −3",1,0,-3],["2x + y = 4",2,1,4,2],["x + y = 3",1,1,3,3],["10x − 3y = 15",10,-3,15,3],["x − y = 3",1,-1,3,3],["y = 0",0,1,0],["x + y = −3",1,1,-3,-3],["x + y = −1",1,1,-1,-1]];
+const P=raw.map(([eq,a,b,c,k])=>({eq,a,b,c,k,t:a==0?'h':b==0?'v':'s'}));
+const S=P.map(()=>({si:0,pts:[],log:[],w:0,hint:false,msg:'',drawn:false}));
+let cur=0;
+const yAt=(p,x)=>(p.c-p.a*x)/p.b;
+function steps(p){
+ if(p.t=='s'){const xs=[0,p.k];return[{t:'in',x:xs[0]},{t:'in',x:xs[1]},{t:'pt',pt:[xs[0],yAt(p,xs[0])]},{t:'pt',pt:[xs[1],yAt(p,xs[1])]},{t:'draw'}]}
+ return[{t:'ch'},{t:'pt',any:1},{t:'pt',any:2},{t:'draw'}]}
+const ok=(p,x,y)=>p.a*x+p.b*y===p.c;
+function hintFor(p,s){
+ if(s.t=='in'){const y=yAt(p,s.x);return `Replace x with ${par(s.x)}: ${f(p.a)}·${par(s.x)} + ${f(p.b)}·y = ${f(p.c)}. That makes ${f(p.a*s.x)} + ${f(p.b)}·y = ${f(p.c)}. Move the ${f(p.a*s.x)} over: ${f(p.b)}·y = ${f(p.c-p.a*s.x)}. Then divide by ${f(p.b)} to get y = ${f(y)}.`}
+ if(s.t=='ch')return p.t=='h'?`"y = ${f(p.c)}" says y is always ${f(p.c)}. Every point is at the same height, so the line is flat.`:`"x = ${f(p.c)}" says x is always ${f(p.c)}. Every point is the same distance left or right, so the line goes straight up and down.`;
+ if(s.t=='pt'&&s.pt){const[x,y]=s.pt;return `Start at the center (0, 0). Move ${x==0?'0 steps sideways':Math.abs(x)+(x>0?' to the right':' to the left')}, then ${y==0?'0 steps up or down':Math.abs(y)+(y>0?' up':' down')}. Tap there.`}
+ if(s.t=='pt'){const e=p.t=='h'?`(0, ${f(p.c)}) or (2, ${f(p.c)})`:`(${f(p.c)}, 0) or (${f(p.c)}, 2)`;return `Any point works if it fits the equation. Try ${e}.`}
+ return 'Use the Draw button. The line goes through your dots and reaches the edges of the grid.'}
+function ends(p){const c=[];const A=p.a,B=p.b,C=p.c;
+ if(B==0)return[[C/A,-6],[C/A,6]];if(A==0)return[[-6,C/B],[6,C/B]];
+ for(const x of[-6,6]){const y=(C-A*x)/B;if(Math.abs(y)<=6)c.push([x,y])}
+ for(const y of[-6,6]){const x=(C-B*y)/A;if(Math.abs(x)<=6)c.push([x,y])}
+ c.sort((m,n)=>m[0]-n[0]||m[1]-n[1]);return[c[0],c[c.length-1]]}
+const O=220,U=34,X=x=>O+x*U,Y=y=>O-y*U;
+function drawGrid(){const p=P[cur],s=S[cur];let h='<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8z" fill="#E5484D"/></marker></defs>';
+ for(let n=-6;n<=6;n++){h+=`<line x1="${X(n)}" y1="${Y(-6)}" x2="${X(n)}" y2="${Y(6)}" stroke="var(--grid)"/><line x1="${X(-6)}" y1="${Y(n)}" x2="${X(6)}" y2="${Y(n)}" stroke="var(--grid)"/>`;
+  if(n){h+=`<text x="${X(n)}" y="${O+15}" font-size="11" text-anchor="middle" fill="var(--mute)">${f(n)}</text><text x="${O-6}" y="${Y(n)+4}" font-size="11" text-anchor="end" fill="var(--mute)">${f(n)}</text>`}}
+ h+=`<line x1="${X(-6.6)}" y1="${O}" x2="${X(6.6)}" y2="${O}" stroke="var(--ink)" stroke-width="2"/><line x1="${O}" y1="${Y(-6.6)}" x2="${O}" y2="${Y(6.6)}" stroke="var(--ink)" stroke-width="2"/><text x="${X(6.6)-2}" y="${O-8}" fill="var(--ink)" font-size="14">x</text><text x="${O+8}" y="${Y(6.6)+10}" fill="var(--ink)" font-size="14">y</text>`;
+ if(s.drawn){const[a,b]=ends(p);h+=`<line x1="${X(a[0])}" y1="${Y(a[1])}" x2="${X(b[0])}" y2="${Y(b[1])}" stroke="#E5484D" stroke-width="4" stroke-linecap="round" marker-start="url(#ar)" marker-end="url(#ar)"/>`}
+ s.pts.forEach(([x,y])=>{h+=`<circle cx="${X(x)}" cy="${Y(y)}" r="8" fill="#FFC93C" stroke="#1B2B5A" stroke-width="3"/><text x="${X(x)+11}" y="${Y(y)-10}" font-size="13" font-weight="700" fill="var(--ink)">(${f(x)}, ${f(y)})</text>`});
+ g.innerHTML=h}
+function render(){const p=P[cur],s=S[cur],st=steps(p);
+ tabs.innerHTML=P.map((_,i)=>`<button class="${i==cur?'on ':''}${S[i].drawn?'done':''}" onclick="go(${i})" aria-label="Problem ${i+1}${S[i].drawn?' done':''}">${i+1}</button>`).join('');
+ let h=`<h2 class="eq">${p.eq}</h2><div class="past">Problem ${cur+1} of ${P.length}. Graph this line.</div>`;
+ for(let i=0;i<=s.si&&i<st.length;i++){const d=st[i];
+  if(i<s.si){h+=`<div class="step past"><b>✓</b> ${s.log[i]}</div>`;continue}
+  h+='<div class="step">';
+  if(d.t=='in')h+=`<p class="q">Step ${i+1}: When x = ${f(d.x)}, what is y?</p><p>Put ${par(d.x)} in for x in ${p.eq} and solve.</p>y = <input id="ans" autocomplete="off" aria-label="y value" onkeydown="if(event.key=='Enter')chk()"> <button class="b" onclick="chk()">Check</button>`;
+  if(d.t=='ch')h+=`<p class="q">Step 1: Is this line horizontal (flat) or vertical (straight up and down)?</p><button class="b" onclick="chk('h')">Horizontal</button><button class="b" onclick="chk('v')">Vertical</button>`;
+  if(d.t=='pt'){const q=d.pt?`Plot the point (${f(d.pt[0])}, ${f(d.pt[1])}). Tap the grid.`:`Tap any point that is on the line ${p.eq}.`;h+=`<p class="q">Step ${i+1}: ${q}</p>`}
+  if(d.t=='draw')h+=`<p class="q">Step ${i+1}: Connect your dots.</p><button class="b" onclick="draw()">Draw the line</button>`;
+  if(s.msg)h+=`<div class="msg ${s.good?'ok':'bad'}">${s.msg}</div>`;
+  if(s.hint)h+=`<div class="hint">${hintFor(p,d)}</div>`;
+  if(d.t!='draw')h+=`<button class="b ghost" onclick="hint()">${s.hint?'Hide hint':'Show hint'}</button>`;
+  if(s.w>=2&&d.t!='draw')h+=`<button class="b ghost" onclick="reveal()">Show me the answer</button>`;
+  h+='</div>'}
+ if(s.drawn){h+=`<div class="msg ok"><b>You did it!</b> Your red line should pass through both dots and reach arrows at the edges. ${cur<P.length-1?'':'That was the last one. Great work!'}</div>`;if(cur<P.length-1)h+=`<button class="b" onclick="go(${cur+1})">Next problem</button>`}
+ guide.innerHTML=h;drawGrid();const i=document.getElementById('ans');if(i&&!s.keepfocus)i.focus({preventScroll:true})}
+function adv(txt){const s=S[cur];s.log[s.si]=txt;s.si++;s.w=0;s.hint=false;s.msg='';render()}
+function chk(v){const p=P[cur],s=S[cur],d=steps(p)[s.si];
+ if(d.t=='in'){const raw=document.getElementById('ans').value.replace('−','-').trim(),y=yAt(p,d.x);
+  if(raw!==''&&Number(raw)===y){s.pts.length;adv(`When x = ${f(d.x)}, y = ${f(y)}. So (${f(d.x)}, ${f(y)}) is on the line.`)}
+  else{s.w++;s.good=false;s.msg=raw===''?'Type a number first.':'Not quite. Check your arithmetic, or open the hint.';render()}}
+ if(d.t=='ch'){if(v==p.t)adv(p.t=='h'?'Horizontal. Every point has the same y.':'Vertical. Every point has the same x.');else{s.w++;s.good=false;s.msg='Not quite. Open the hint.';render()}}}
+function hint(){S[cur].hint=!S[cur].hint;render()}
+function reveal(){const p=P[cur],s=S[cur],d=steps(p)[s.si];
+ if(d.t=='in'){const y=yAt(p,d.x);adv(`When x = ${f(d.x)}, y = ${f(y)}. (Answer shown.)`)}
+ else if(d.t=='ch')adv(p.t=='h'?'Horizontal. (Answer shown.)':'Vertical. (Answer shown.)');
+ else if(d.pt){s.pts.push(d.pt);adv(`Plotted (${f(d.pt[0])}, ${f(d.pt[1])}).`)}
+ else{const q=p.t=='h'?[s.pts.length*2,p.c]:[p.c,s.pts.length*2];s.pts.push(q);adv(`Plotted (${f(q[0])}, ${f(q[1])}).`)}}
+function draw(){S[cur].drawn=true;render()}
+g.addEventListener('click',e=>{const p=P[cur],s=S[cur],d=steps(p)[s.si];if(!d||d.t!='pt')return;
+ const r=g.getBoundingClientRect(),k=440/r.width,x=Math.round(((e.clientX-r.left)*k-O)/U),y=Math.round((O-(e.clientY-r.top)*k)/U);
+ if(Math.abs(x)>6||Math.abs(y)>6)return;
+ const dup=s.pts.some(q=>q[0]==x&&q[1]==y);
+ const right=d.pt?(x==d.pt[0]&&y==d.pt[1]):(ok(p,x,y)&&!dup);
+ if(right){s.pts.push([x,y]);adv(`Plotted (${f(x)}, ${f(y)}).`)}
+ else{s.w++;s.good=false;s.msg=d.pt?`That tap was (${f(x)}, ${f(y)}). We need (${f(d.pt[0])}, ${f(d.pt[1])}).`:dup?'You already have that dot. Pick a different point.':`(${f(x)}, ${f(y)}) is not on ${p.eq}. Try again or open the hint.`;render()}});
+function go(i){cur=i;S[i].msg='';render();scrollTo({top:0,behavior:'smooth'})}
+render();
+</script></body></html>
