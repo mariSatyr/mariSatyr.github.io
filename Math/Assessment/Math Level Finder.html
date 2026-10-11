@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Level Finder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Newsreader:wght@400;500&display=swap">
+<style>
+:root{--bg:#f2f5f9;--grid:#dde4ee;--ink:#142038;--mute:#5a6780;--card:#fff;--line:#c9d3e2;--accent:#2b5fd9;--hi:#ffe27a;--ok:#1f8a5b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--grid:#1a2438;--ink:#e8edf7;--mute:#9aa7c0;--card:#17213a;--line:#2c3a58;--accent:#7ea2ff;--hi:#6b5a10;--ok:#4cc38a}}
+:root[data-theme="dark"]{--bg:#0f1624;--grid:#1a2438;--ink:#e8edf7;--mute:#9aa7c0;--card:#17213a;--line:#2c3a58;--accent:#7ea2ff;--hi:#6b5a10;--ok:#4cc38a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Bricolage Grotesque",system-ui,sans-serif;
+background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;min-height:100vh}
+main{max-width:640px;margin:0 auto;padding:24px 18px 48px}
+h1{font-size:clamp(2rem,7vw,3rem);line-height:1.05;margin:0 0 12px;letter-spacing:-.02em}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1.5px solid var(--ink);border-radius:6px;padding:22px;box-shadow:5px 5px 0 var(--ink)}
+.mute{color:var(--mute)}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:6px;padding:12px 22px;font-weight:700}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+ul.how{padding-left:20px;margin:0 0 20px}ul.how li{margin-bottom:6px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-weight:700}
+.timer{font-variant-numeric:tabular-nums;font-size:1.3rem}
+.timer.low{color:#d33}
+.bar{height:6px;background:var(--line);border-radius:3px;margin-bottom:18px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.q{font:500 1.5rem/1.35 Newsreader,Georgia,serif;margin:0 0 18px;overflow-wrap:anywhere}
+.opts{display:grid;gap:10px;margin-bottom:18px}
+.opt{text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:6px;padding:12px 14px;font:500 1.15rem Newsreader,Georgia,serif;display:flex;gap:12px}
+.opt b{font:700 .95rem "Bricolage Grotesque",sans-serif;color:var(--mute);min-width:18px}
+.opt:hover{border-color:var(--ink)}
+.opt[aria-pressed=true]{background:var(--hi);border-color:var(--ink)}
+.ladder{display:flex;flex-direction:column-reverse;gap:6px;margin:18px 0}
+.rung{display:grid;grid-template-columns:150px 1fr 48px;gap:10px;align-items:center;font-size:.9rem;padding:4px 6px;border-radius:4px}
+.rung.you{background:var(--hi);outline:1.5px solid var(--ink)}
+.rung .t{height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.rung .t i{display:block;height:100%;background:var(--ok)}
+.rung .t.none{background:repeating-linear-gradient(45deg,var(--line),var(--line) 4px,transparent 4px,transparent 8px)}
+.big{font-size:clamp(1.8rem,6vw,2.4rem);font-weight:700;line-height:1.1;margin:4px 0 10px}
+.tag{display:inline-block;background:var(--hi);border:1.5px solid var(--ink);border-radius:20px;padding:2px 12px;font-weight:700;font-size:.9rem}
+@media(max-width:480px){.rung{grid-template-columns:110px 1fr 40px;font-size:.8rem}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const LEVELS=[
+"Arithmetic (Grades 3–4)","Fractions & Decimals (Grades 5–6)","Pre-Algebra","Algebra 1","Geometry","Algebra 2","Precalculus","Calculus"];
+const ADVICE=[
+"Start with core arithmetic: multiplication, division and place value.",
+"Work on fractions, decimals, percents and ratios.",
+"You're ready for Pre-Algebra: integers, one-step and two-step equations.",
+"You're ready for Algebra 1: linear equations, systems and polynomials.",
+"You're ready for Geometry: angles, triangles, area and the Pythagorean theorem.",
+"You're ready for Algebra 2: complex numbers, logs, exponentials and functions.",
+"You're ready for Precalculus: trigonometry, asymptotes and sequences.",
+"You're ready for Calculus: limits, derivatives and integrals."];
+// [level, question, options, correct index]
+const BANK=[
+[1,"48 + 37 = ?",["75","85","84","95"],1],
+[1,"7 × 8 = ?",["54","56","63","48"],1],
+[1,"144 ÷ 12 = ?",["11","12","14","13"],1],
+[1,"Round 3,462 to the nearest hundred.",["3,500","3,400","3,460","3,000"],0],
+[2,"2/3 + 1/4 = ?",["3/7","11/12","3/12","5/6"],1],
+[2,"0.6 × 0.5 = ?",["3","0.3","0.03","0.11"],1],
+[2,"What is 25% of 80?",["20","25","40","15"],0],
+[2,"The ratio of apples to pears is 3 : 5. If there are 12 apples, how many pears?",["15","18","20","24"],2],
+[3,"−7 + 3 − (−5) = ?",["−9","1","−1","5"],1],
+[3,"Solve: 3x − 5 = 16",["5","7","11/3","21"],1],
+[3,"What is the area of a circle with radius 3?",["6π","9π","3π","18π"],1],
+[3,"Evaluate 2(3²) − 4.",["14","32","8","20"],0],
+[4,"What is the slope of the line through (1, 2) and (3, 8)?",["2","3","4","6"],1],
+[4,"Solve: x² − 5x + 6 = 0",["x = 2 or 3","x = −2 or −3","x = 1 or 6","x = −1 or 6"],0],
+[4,"Simplify: (2x³)(4x²)",["8x⁵","6x⁵","8x⁶","6x⁶"],0],
+[4,"Solve: x + y = 7 and x − y = 3",["x=4, y=3","x=5, y=2","x=6, y=1","x=3, y=4"],1],
+[5,"Two angles of a triangle are 50° and 60°. What is the third?",["60°","70°","80°","130°"],1],
+[5,"A right triangle has legs 6 and 8. How long is the hypotenuse?",["10","14","12","9"],0],
+[5,"What is the sum of the interior angles of a hexagon?",["540°","720°","900°","360°"],1],
+[5,"Triangles are similar. Sides 3 and 4 match 9 and x. Find x.",["10","12","15","16"],1],
+[6,"Solve: log₂(x) = 5",["10","25","32","64"],2],
+[6,"(3 + 2i)(1 − i) = ?",["5 − i","1 + 5i","5 + i","3 − 2i"],0],
+[6,"What is the domain of f(x) = √(x − 3)?",["x > 3","x ≥ 3","x ≤ 3","all real numbers"],1],
+[6,"Solve: 2^(x+1) = 16",["3","4","7","2"],0],
+[7,"sin(π/6) = ?",["√3/2","1/2","1","√2/2"],1],
+[7,"If sin θ = 3/5 and θ is in Quadrant I, what is tan θ?",["3/4","4/3","4/5","5/3"],0],
+[7,"Horizontal asymptote of f(x) = (2x² + 1)/(x² − 4)?",["y = 0","y = 1","y = 2","x = 2"],2],
+[7,"Sum of the arithmetic series 2 + 5 + 8 + … + 29?",["145","155","150","160"],1],
+[8,"d/dx of x⁴ − 3x = ?",["4x³","4x³ − 3","x³ − 3","4x − 3"],1],
+[8,"∫ from 0 to 3 of 2x dx = ?",["6","9","18","3"],1],
+[8,"lim as x → 0 of sin(x)/x = ?",["0","1","∞","undefined"],1],
+[8,"d/dx of e^(2x) = ?",["e^(2x)","2e^(2x)","2x·e^(2x−1)","e^x"],1]
+].map((q,i)=>({id:i,lv:q[0],q:q[1],o:q[2],a:q[3]}));
+
+const TOTAL=20*60,MAXQ=24;
+const app=document.getElementById("app");
+let S;
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){
+  S={theta:4,left:TOTAL,seen:[],log:[],cur:null,pick:null,t:null};
+  next();S.t=setInterval(tick,1000);render();
+}
+function next(){
+  const pool=BANK.filter(q=>!S.seen.includes(q.id));
+  if(!pool.length||S.log.length>=MAXQ){return finish()}
+  const d=q=>Math.abs(q.lv-S.theta)+Math.random()*.4;
+  const q=pool.sort((a,b)=>d(a)-d(b))[0];
+  const idx=shuffle(q.o.map((t,i)=>i));
+  S.cur={...q,order:idx};S.pick=null;S.seen.push(q.id);
+}
+function answer(){
+  const q=S.cur,ok=S.cur.order[S.pick]===q.a;
+  const p=1/(1+Math.exp(-1.3*(S.theta-q.lv)));
+  S.theta=Math.min(8.5,Math.max(.5,S.theta+0.9*((ok?1:0)-p)));
+  S.log.push({lv:q.lv,ok});
+  next();render();
+}
+function tick(){
+  S.left--;
+  if(S.left<=0){S.left=0;return finish()}
+  const el=document.getElementById("tm");
+  if(el){el.textContent=fmt(S.left);el.classList.toggle("low",S.left<=60)}
+}
+const fmt=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
+function finish(){clearInterval(S.t);S.cur=null;S.done=true;render()}
+
+function render(){
+  if(!S){return home()}
+  if(S.done){return results()}
+  const q=S.cur,L="ABCD";
+  const prog=Math.max(S.log.length/MAXQ,(TOTAL-S.left)/TOTAL)*100;
+  app.innerHTML=`<div class="top"><span>Question ${S.log.length+1}</span><span class="timer" id="tm" role="timer">${fmt(S.left)}</span></div>
+  <div class="bar"><i style="width:${prog}%"></i></div>
+  <div class="card"><p class="q">${q.q}</p>
+  <div class="opts">${q.order.map((oi,i)=>`<button class="opt" data-i="${i}" aria-pressed="${S.pick===i}"><b>${L[i]}</b><span>${q.o[oi]}</span></button>`).join("")}</div>
+  <button class="btn" id="go" ${S.pick===null?"disabled":""}>Next question</button>
+  <p class="mute" style="margin:14px 0 0;font-size:.9rem">No calculator. If you're stuck, make your best guess.</p></div>`;
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{S.pick=+b.dataset.i;render()});
+  document.getElementById("go").onclick=answer;
+}
+function home(){
+  app.innerHTML=`<h1>Find your math level</h1>
+  <p class="mute" style="font-size:1.1rem">A 20-minute multiple-choice check that adapts to you.</p>
+  <div class="card"><ul class="how">
+  <li>Questions get harder when you answer correctly and easier when you don't.</li>
+  <li>You'll see up to ${MAXQ} questions. You don't need to finish them all.</li>
+  <li>The timer runs for 20 minutes. Work without a calculator.</li>
+  <li>Hard questions are normal. They mean the test is finding your edge.</li></ul>
+  <button class="btn" id="st">Start the 20-minute check</button></div>`;
+  document.getElementById("st").onclick=start;
+}
+function results(){
+  const lvl=Math.min(8,Math.max(1,Math.round(S.theta)));
+  const by=LEVELS.map((_,i)=>{const r=S.log.filter(x=>x.lv===i+1);return{n:r.length,c:r.filter(x=>x.ok).length}});
+  const n=S.log.length,c=S.log.filter(x=>x.ok).length;
+  const conf=n>=16?"High":n>=9?"Medium":"Low";
+  const used=TOTAL-S.left;
+  app.innerHTML=`<h1>Your math level</h1>
+  <div class="card"><span class="tag">Placement estimate</span>
+  <div class="big">${LEVELS[lvl-1]}</div>
+  <p>${ADVICE[lvl-1]}</p>
+  <p class="mute" style="font-size:.9rem">${c} of ${n} correct in ${fmt(used)}. Confidence: ${conf}${n<9?" (answer more questions for a sharper result)":""}.</p>
+  <div class="ladder" aria-label="Accuracy by level">${LEVELS.map((nm,i)=>`<div class="rung${i+1===lvl?" you":""}"><span>${nm.split(" (")[0]}</span>
+  <div class="t${by[i].n?"":" none"}"><i style="width:${by[i].n?by[i].c/by[i].n*100:0}%"></i></div>
+  <span class="mute">${by[i].n?by[i].c+"/"+by[i].n:"–"}</span></div>`).join("")}</div>
+  <p class="mute" style="font-size:.85rem">Striped rows weren't reached. This is a quick estimate, not a final grade. A teacher can confirm it.</p>
+  <button class="btn alt" id="again">Take it again</button></div>`;
+  document.getElementById("again").onclick=()=>{S=null;home()};
+}
+home();
+</script>
+</body>
+</html>
