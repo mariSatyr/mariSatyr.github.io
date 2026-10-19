@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hubble's Law & Cosmic Expansion Explorer</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cosmic: {
+              900: '#070a14',
+              800: '#0d1326',
+              700: '#161f3d',
+              600: '#212e59',
+              accent: '#38bdf8',
+              purple: '#a855f7',
+              pink: '#ec4899',
+              gold: '#fbbf24'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #070a14;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #161f3d;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #38bdf8;
+    }
+
+    /* Cosmic Background Gradient & Glows */
+    body {
+      background-color: #070a14;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 65%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 90%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+      background-attachment: fixed;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(13, 19, 38, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Glow utilities */
+    .glow-text-cyan {
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+    .glow-text-purple {
+      text-shadow: 0 0 12px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Custom range input */
+    input[type=range] {
+      accent-color: #38bdf8;
+    }
+  </style>
+</head>
+<text class="text-gray-200 antialiased selection:bg-cosmic-accent selection:text-cosmic-900 min-h-screen flex flex-col">
+
+  <!-- HEADER / NAVBAR -->
+  <header class="sticky top-0 z-50 glass-card border-b border-white/10 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cosmic-accent via-cosmic-purple to-cosmic-pink p-0.5 shadow-lg shadow-cosmic-accent/20">
+          <div class="w-full h-full bg-cosmic-900 rounded-[10px] flex items-center justify-center">
+            <i class="fa-solid font-bold text-cosmic-accent fa-atom text-xl animate-spin-slow"></i>
+          </div>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
+            Hubble Explorer <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-cosmic-accent/20 text-cosmic-accent border border-cosmic-accent/30">Astronomy Lab</span>
+          </h1>
+          <p class="text-xs text-gray-400">Interactive Cosmology & Expansion Rate Calculator</p>
+        </div>
+      </div>
+
+      <!-- Quick Nav Controls -->
+      <nav class="flex items-center space-x-1 sm:space-x-2 text-xs font-medium">
+        <a href="#gallery-section" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition"><i class="fa-solid fa-[#000] fa-images mr-1.5 text-cosmic-accent"></i>Galaxies</a>
+        <a href="#lab-section" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition"><i class="fa-solid fa-chart-line mr-1.5 text-cosmic-purple"></i>Plotter & Lab</a>
+        <a href="#guide-section" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition"><i class="fa-solid fa-book-open mr-1.5 text-cosmic-pink"></i>Theory Guide</a>
+        <a href="#quiz-section" class="px-3 py-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition"><i class="fa-solid fa-graduation-cap mr-1.5 text-cosmic-gold"></i>Quiz</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- HERO / INTRO BANNER -->
+    <section class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-cosmic-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-64 h-64 bg-cosmic-purple/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 max-w-3xl space-y-4">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cosmic-purple/20 border border-cosmic-purple/30 text-cosmic-purple text-xs font-semibold">
+          <i class="fa-solid fa-sparkles"></i>
+          <span>Vesto Slipher & Edwin Hubble's Discovery (1929)</span>
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          Measuring the <span class="bg-gradient-to-r from-cosmic-accent via-cosmic-purple to-cosmic-pink bg-clip-text text-transparent">Expansion of the Universe</span>
+        </h2>
+        <p class="text-gray-300 text-sm sm:text-base leading-relaxed">
+          Hubble’s Law states that distant galaxies move away from Earth at speeds proportional to their distance. Select target galaxies from the observational database below, add them to your dataset, plot the velocity versus distance line, and calculate the <strong class="text-cosmic-accent">Hubble Constant ($H_0$)</strong> and the <strong class="text-cosmic-purple">Age of the Universe</strong>.
+        </p>
+
+        <div class="flex flex-wrap gap-4 pt-2">
+          <button onclick="addAllObjects()" class="px-4 py-2.5 rounded-xl bg-cosmic-accent hover:bg-sky-400 text-cosmic-900 font-bold text-xs sm:text-sm transition flex items-center space-x-2 shadow-lg shadow-cosmic-accent/20">
+            <i class="fa-solid fa-database"></i>
+            <span>Load All 12 Observational Data Points</span>
+          </button>
+          <button onclick="resetDataset()" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm border border-white/10 transition flex items-center space-x-2">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Clear Dataset</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: STAR / GALAXY REFERENCE GALLERY -->
+    <section id="gallery-section" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+        <div>
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-earth-americas text-cosmic-accent"></i> 1. Galaxy Observational Catalog
+          </h3>
+          <p class="text-xs text-gray-400">Click any galaxy card to toggle it in your experimental scatter dataset.</p>
+        </div>
+        <div class="flex items-center space-x-2 text-xs">
+          <span class="text-gray-400">Active Objects Selected:</span>
+          <span id="catalog-count-badge" class="px-2.5 py-0.5 rounded-full bg-cosmic-accent/20 text-cosmic-accent font-bold border border-cosmic-accent/30">0 / 12</span>
+        </div>
+      </div>
+
+      <!-- GALLERY GRID -->
+      <div id="galaxy-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <!-- Cards populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: INTERACTIVE PLOTTER & CALCULATOR LAB -->
+    <section id="lab-section" class="space-y-6">
+      <div class="border-b border-white/10 pb-3">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-scatter text-cosmic-purple"></i> 2. Hubble's Law Plotter & Cosmological Calculator
+        </h3>
+        <p class="text-xs text-gray-400">Plot Recessional Velocity ($v$, km/s) against Distance ($d$, Mpc). Linear fit slope yields $H_0$.</p>
+      </div>
+
+      <!-- DASHBOARD STATS OVERLAY -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Stat Card 1 -->
+        <div class="glass-card p-4 rounded-xl border-l-4 border-l-cosmic-accent flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Hubble Constant ($H_0$)</span>
+          <div class="mt-2 flex items-baseline space-x-2">
+            <span id="h0-value" class="text-3xl font-extrabold text-white glow-text-cyan">--</span>
+            <span class="text-xs text-gray-400">km/s/Mpc</span>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-1">Calculated via Linear Least Squares fit through origin ($v = H_0 \cdot d$).</p>
+        </div>
+
+        <!-- Stat Card 2 -->
+        <div class="glass-card p-4 rounded-xl border-l-4 border-l-cosmic-purple flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Estimated Age of Universe</span>
+          <div class="mt-2 flex items-baseline space-x-2">
+            <span id="age-value" class="text-3xl font-extrabold text-white glow-text-purple">--</span>
+            <span class="text-xs text-gray-400">Billion Years</span>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-1">Derived using Cosmic Time $t_H = \frac{1}{H_0} \times (977.8\, \text{Gyr}\cdot\text{km/s/Mpc})$.</p>
+        </div>
+
+        <!-- Stat Card 3 -->
+        <div class="glass-card p-4 rounded-xl border-l-4 border-l-cosmic-pink flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Goodness of Fit ($R^2$)</span>
+          <div class="mt-2 flex items-baseline space-x-2">
+            <span id="r2-value" class="text-3xl font-extrabold text-white">--</span>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-1">Quantifies correlation between galaxy distance and recession velocity.</p>
+        </div>
+
+        <!-- Stat Card 4 -->
+        <div class="glass-card p-4 rounded-xl border-l-4 border-l-cosmic-gold flex flex-col justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Sample Count</span>
+          <div class="mt-2 flex items-baseline space-x-2">
+            <span id="sample-count-value" class="text-3xl font-extrabold text-white">0</span>
+            <span class="text-xs text-gray-400">Galaxies</span>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-1">Modern accepted value of $H_0 \approx 67.4 - 73.0\ \text{km/s/Mpc}$.</p>
+        </div>
+      </div>
+
+      <!-- MAIN CHART AND SIDE PANEL WRAPPER -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- CHART CANVAS CONTAINER (2 cols on lg) -->
+        <div class="lg:col-span-2 glass-card p-4 sm:p-6 rounded-2xl flex flex-col space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/5">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-[#00f3ff] shadow-[0_0_8px_#00f3ff]"></span>
+              <h4 class="font-bold text-sm sm:text-base text-white">Velocity vs Distance Scatter Plot</h4>
+            </div>
+
+            <div class="flex items-center space-x-2 text-xs">
+              <label class="flex items-center space-x-1.5 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                <input type="checkbox" id="toggle-trendline" checked onchange="updateChart()" class="rounded border-gray-700 text-cosmic-accent focus:ring-0">
+                <span class="text-gray-300">Show Best-Fit Line</span>
+              </label>
+
+              <button onclick="downloadChart()" class="bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 transition flex items-center space-x-1">
+                <i class="fa-solid fa-download text-xs"></i>
+                <span class="hidden sm:inline">Export Graph</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chart Box -->
+          <div class="relative w-full h-[360px] sm:h-[420px] bg-cosmic-900/90 rounded-xl p-3 border border-white/10 shadow-inner">
+            <canvas id="hubbleChart"></canvas>
+          </div>
+
+          <div class="text-xs text-gray-400 flex items-center justify-between pt-1">
+            <span><i class="fa-solid fa-info-circle mr-1 text-cosmic-accent"></i> Points at negative velocities (e.g. Andromeda) indicate gravitationally bound blueshifted targets.</span>
+          </div>
+        </div>
+
+        <!-- EDITABLE DATA TABLE & MANUAL INPUT PANEL (1 col on lg) -->
+        <div class="glass-card p-4 sm:p-5 rounded-2xl flex flex-col space-y-4 h-full">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-table text-cosmic-accent"></i> Dataset Table
+            </h4>
+            <button onclick="openCustomAddModal()" class="px-2.5 py-1 bg-cosmic-purple/20 hover:bg-cosmic-purple/30 text-cosmic-purple text-xs font-semibold rounded-lg border border-cosmic-purple/30 transition">
+              <i class="fa-solid fa-plus mr-1"></i> Add Custom
+            </button>
+          </div>
+
+          <!-- Scrollable Table -->
+          <div class="flex-grow overflow-y-auto max-h-[340px] pr-1 space-y-2">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 uppercase bg-cosmic-800/80 sticky top-0 backdrop-blur-md rounded-lg">
+                <tr>
+                  <th class="py-2 px-2">Object</th>
+                  <th class="py-2 px-1">d (Mpc)</th>
+                  <th class="py-2 px-1">v (km/s)</th>
+                  <th class="py-2 px-1 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="data-table-body" class="divide-y divide-white/5 font-mono">
+                <!-- Rows filled by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Quick Test / Custom Point Entry Box -->
+          <div class="pt-3 border-t border-white/10 space-y-2">
+            <span class="text-xs font-semibold text-gray-300 block">Quick Predictor Tool:</span>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label class="text-[10px] text-gray-400 block mb-1">Enter Distance (Mpc)</label>
+                <input type="number" id="predict-distance" placeholder="e.g. 50" class="w-full bg-cosmic-800 border border-white/10 rounded-lg px-2.5 py-1.5 text-white focus:border-cosmic-accent focus:outline-none">
+              </div>
+              <div>
+                <label class="text-[10px] text-gray-400 block mb-1">Predicted Velocity</label>
+                <input type="text" id="predicted-velocity" readonly placeholder="-- km/s" class="w-full bg-cosmic-900 border border-white/5 rounded-lg px-2.5 py-1.5 text-cosmic-accent font-mono font-bold">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: EDUCATIONAL & CONCEPTUAL GUIDE -->
+    <section id="guide-section" class="space-y-6">
+      <div class="border-b border-white/10 pb-3">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-cosmic-pink"></i> 3. Theory, Equations & Redshift Simulator
+        </h3>
+        <p class="text-xs text-gray-400">Master the fundamental physics and mathematics driving cosmic expansion.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Theoretical Overview & Math -->
+        <div class="glass-card p-6 rounded-2xl space-y-4">
+          <h4 class="font-bold text-base text-white flex items-center gap-2">
+            <i class="fa-solid fa-square-root-variable text-cosmic-accent"></i> Mathematical Formulation
+          </h4>
+
+          <div class="bg-cosmic-800/80 p-4 rounded-xl border border-white/5 space-y-3">
+            <p class="text-xs text-gray-300">
+              <strong>Hubble's Law Equation:</strong>
+            </p>
+            <div id="math-hubble" class="text-center text-lg sm:text-xl py-2 text-cosmic-accent">
+              $$v = H_0 \cdot d$$
+            </div>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Where <strong class="text-white">$v$</strong> is the recessional radial velocity of the galaxy in km/s, <strong class="text-white">$d$</strong> is the proper distance in Megaparsecs ($\text{Mpc}$), and <strong class="text-white">$H_0$</strong> is Hubble's Constant.
+            </p>
+          </div>
+
+          <div class="bg-cosmic-800/80 p-4 rounded-xl border border-white/5 space-y-3">
+            <p class="text-xs text-gray-300">
+              <strong>Calculating the Age of the Universe ($t_H$):</strong>
+            </p>
+            <div id="math-age" class="text-center text-base sm:text-lg py-2 text-cosmic-purple">
+              $$t_H = \frac{1}{H_0} \approx \frac{1}{70\ \text{km/s/Mpc}} \approx 13.9\ \text{Billion Years}$$
+            </div>
+            <p class="text-xs text-gray-400 leading-relaxed">
+              Assuming a linear expansion rate since the Big Bang, $1/H_0$ (the Hubble Time) provides an approximate upper bound on cosmic age. Converting units:
+              $1\ \text{Mpc} \approx 3.086 \times 10^{19}\ \text{km}$.
+            </p>
+          </div>
+        </div>
+
+        <!-- REDSHIFT DOPPLER DEMO SIMULATOR -->
+        <div class="glass-card p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+          <div>
+            <h4 class="font-bold text-base text-white flex items-center gap-2 mb-2">
+              <i class="fa-solid fa-wave-square text-cosmic-pink"></i> Redshift ($\mathbf{z}$) & Spectral Lines
+            </h4>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Galaxies do not move *through* space; rather, cosmic space itself stretches. This stretches passing photon wavelengths ($\lambda$), shifting absorption lines toward the red end of the spectrum.
+            </p>
+
+            <!-- Spectrum Simulator Graphic -->
+            <div class="mt-4 p-4 bg-cosmic-900 rounded-xl border border-white/10 space-y-4">
+              <div class="flex justify-between text-xs text-gray-400 font-mono">
+                <span>Rest Absorption ($\lambda_0 = 656.3\ \text{nm}$)</span>
+                <span id="shift-nm-text" class="text-cosmic-accent">Shifted: 656.3 nm</span>
+              </div>
+
+              <!-- Visual Rainbow Spectrum Box -->
+              <div class="relative w-full h-12 rounded-lg overflow-hidden flex items-center border border-white/20" style="background: linear-gradient(to right, #41006f, #0019ff, #00bfff, #00ff2b, #ffff00, #ff7f00, #ff0000);">
+                <!-- Rest Line Indicator -->
+                <div class="absolute top-0 bottom-0 w-1 bg-white shadow-md z-10 opacity-60" style="left: 60%;" title="Rest Wavelength (H-alpha)"></div>
+                <!-- Shifted Line Indicator -->
+                <div id="spectrum-line" class="absolute top-0 bottom-0 w-1.5 bg-yellow-300 shadow-lg z-20 transition-all duration-150" style="left: 60%;"></div>
+              </div>
+
+              <!-- Interactive Distance Slider -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-xs">
+                  <label class="text-gray-300">Simulated Distance: <span id="sim-dist-text" class="text-cosmic-accent font-bold">0 Mpc</span></label>
+                  <span id="sim-vel-text" class="text-gray-400 font-mono">v = 0 km/s</span>
+                </div>
+                <input type="range" id="sim-distance-slider" min="0" max="500" value="0" step="5" oninput="updateSpectralSimulation()" class="w-full h-2 bg-cosmic-700 rounded-lg appearance-none cursor-pointer">
+              </div>
+            </div>
+          </div>
+
+          <div class="text-xs text-gray-400 italic">
+            <i class="fa-solid fa-lightbulb text-cosmic-gold mr-1"></i> As you drag the slider to greater distances, notice how the spectral line shifts toward longer (redder) wavelengths.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: STUDENT QUIZ & ASSESSMENT -->
+    <section id="quiz-section" class="space-y-6">
+      <div class="border-b border-white/10 pb-3">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-clipboard-question text-cosmic-gold"></i> 4. Student Comprehension Check
+        </h3>
+        <p class="text-xs text-gray-400">Test your understanding of Hubble's law, redshift, and cosmic expansion.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
+        <div id="quiz-container" class="space-y-6">
+          <!-- Quiz questions injected dynamically -->
+        </div>
+
+        <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+          <button onclick="checkQuizAnswers()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cosmic-accent to-cosmic-purple hover:opacity-90 text-white font-bold text-sm transition shadow-lg shadow-cosmic-accent/20">
+            <i class="fa-solid fa-check-double mr-2"></i> Submit Answers
+          </button>
+          <div id="quiz-score-badge" class="hidden text-sm font-bold px-4 py-2 rounded-xl bg-white/10 text-white">
+            Score: <span id="quiz-score">0 / 3</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-12 glass-card border-t border-white/10 py-6 text-center text-xs text-gray-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-telescope text-cosmic-accent"></i>
+        <span>Designed for Introductory Astronomy & Astrophysics Education</span>
+      </div>
+      <p>Data Source: NASA/IPAC Extragalactic Database (NED) & HST Key Project</p>
+    </div>
+  </footer>
+
+  <!-- CUSTOM ADD MODAL -->
+  <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card max-w-md w-full p-6 rounded-2xl border border-white/20 space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-plus-circle text-cosmic-accent mr-2"></i>Add Custom Galaxy Point</h3>
+        <button onclick="closeCustomAddModal()" class="text-gray-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="text-gray-300 block mb-1">Galaxy / Target Name</label>
+          <input type="text" id="modal-name" placeholder="e.g. Galaxy X" class="w-full bg-cosmic-800 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cosmic-accent">
+        </div>
+        <div>
+          <label class="text-gray-300 block mb-1">Distance $d$ (Mpc)</label>
+          <input type="number" id="modal-dist" step="0.1" placeholder="e.g. 120" class="w-full bg-cosmic-800 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cosmic-accent">
+        </div>
+        <div>
+          <label class="text-gray-300 block mb-1">Radial Velocity $v$ (km/s)</label>
+          <input type="number" id="modal-vel" step="10" placeholder="e.g. 8400" class="w-full bg-cosmic-800 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cosmic-accent">
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end space-x-2">
+        <button onclick="closeCustomAddModal()" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs">Cancel</button>
+        <button onclick="saveCustomPoint()" class="px-4 py-2 rounded-lg bg-cosmic-accent hover:bg-sky-400 text-cosmic-900 font-bold text-xs">Add Data Point</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // -------------------------------------------------------------
+    // 1. DATASET: 12 REAL ASTRONOMICAL OBJECTS
+    // -------------------------------------------------------------
+    const GALAXY_CATALOG = [
+      {
+        id: "m31",
+        name: "Andromeda Galaxy (M31)",
+        distMpc: 0.78,
+        velocity: -301,
+        type: "Spiral (SA(s)b)",
+        agePop: "~10 Gyr (Old halo, active disk)",
+        image: "https://images.unsplash.com/photo-1543722530-d2c3201371e7?auto=format&fit=crop&w=600&q=80",
+        desc: "Closest major spiral galaxy to Earth. Moving toward Milky Way due to local gravitational attraction (negative velocity)."
+      },
+      {
+        id: "m33",
+        name: "Triangulum Galaxy (M33)",
+        distMpc: 0.85,
+        velocity: -179,
+        type: "Spiral (SA(s)cd)",
+        agePop: "~12 Gyr stellar halo",
+        image: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+        desc: "Third-largest member of the Local Group of galaxies."
+      },
+      {
+        id: "m81",
+        name: "Bode's Galaxy (M81)",
+        distMpc: 3.62,
+        velocity: -34,
+        type: "Grand Design Spiral",
+        agePop: "~13 Gyr population",
+        image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=600&q=80",
+        desc: "Located in Ursa Major. Nearby spiral galaxy with a massive central supermassive black hole."
+      },
+      {
+        id: "m82",
+        name: "Cigar Galaxy (M82)",
+        distMpc: 3.53,
+        velocity: 203,
+        type: "Starburst Galaxy",
+        agePop: "Young intense starbursts (~10-100 Myr)",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        desc: "Prototypical starburst galaxy undergoing rapid star formation driven by interaction with M81."
+      },
+      {
+        id: "m101",
+        name: "Pinwheel Galaxy (M101)",
+        distMpc: 6.4,
+        velocity: 241,
+        type: "Spiral (SAB(rs)cd)",
+        agePop: "Mixed population, active H II regions",
+        image: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=600&q=80",
+        desc: "Famous face-on spiral galaxy in Ursa Major with rich H II star-forming regions."
+      },
+      {
+        id: "m51",
+        name: "Whirlpool Galaxy (M51)",
+        distMpc: 7.1,
+        velocity: 463,
+        type: "Grand Design Spiral",
+        agePop: "Mixed populations, tidal companion",
+        image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+        desc: "Classic interacting spiral galaxy pair famous for well-defined spiral arms."
+      },
+      {
+        id: "m104",
+        name: "Sombrero Galaxy (M104)",
+        distMpc: 9.55,
+        velocity: 1024,
+        type: "Unbarred Spiral/Elliptical",
+        agePop: "Old metal-rich bulge stars",
+        image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=600&q=80",
+        desc: "Features a prominent dust lane and a unusually large central bulge."
+      },
+      {
+        id: "m87",
+        name: "Virgo A / M87",
+        distMpc: 16.4,
+        velocity: 1307,
+        type: "Supergiant Elliptical",
+        agePop: "Old Population II stars (~12-13 Gyr)",
+        image: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?auto=format&fit=crop&w=600&q=80",
+        desc: "Massive elliptical galaxy in Virgo Cluster anchor; famous for the EHT first imaged black hole shadow."
+      },
+      {
+        id: "ngc1300",
+        name: "NGC 1300",
+        distMpc: 18.9,
+        velocity: 1577,
+        type: "Barred Spiral (SB(rs)bc)",
+        agePop: "Intermediate age disc and bar",
+        image: "https://images.unsplash.com/photo-1447433589675-4aaa569f3e05?auto=format&fit=crop&w=600&q=80",
+        desc: "Archetypal barred spiral galaxy located in the Eridanus cluster."
+      },
+      {
+        id: "ngc4535",
+        name: "NGC 4535",
+        distMpc: 15.8,
+        velocity: 1964,
+        type: "Barred Spiral",
+        agePop: "Young blue stars in arms, old core",
+        image: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+        desc: "Known as the 'Lost Galaxy', used extensively in the HST Cepheid key project."
+      },
+      {
+        id: "ngc1365",
+        name: "Great Barred Spiral (NGC 1365)",
+        distMpc: 17.2,
+        velocity: 1636,
+        type: "Barred Spiral (SBb)",
+        agePop: "Active star-forming bar regions",
+        image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+        desc: "Major member of the Fornax cluster of galaxies."
+      },
+      {
+        id: "cartwheel",
+        name: "Cartwheel Galaxy",
+        distMpc: 150.0,
+        velocity: 9050,
+        type: "Lenticular Ring Galaxy",
+        agePop: "Ring of young burst stars (<100 Myr)",
+        image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+        desc: "Distant ring galaxy created by a high-speed galactic collision."
+      }
+    ];
+
+    // -------------------------------------------------------------
+    // 2. STATE MANAGEMENT
+    // -------------------------------------------------------------
+    let activeDataPoints = []; // Stores objects currently in graph
+    let hubbleChart = null;    // Chart.js Instance
+
+    // -------------------------------------------------------------
+    // 3. INITIALIZATION ON LOAD
+    // -------------------------------------------------------------
+    window.onload = function() {
+      renderGalaxyGallery();
+      initChart();
+      
+      // Default: Load 8 objects into dataset on startup for a nice initial curve
+      const defaultIds = ["m82", "m101", "m51", "m104", "m87", "ngc1300", "ngc4535", "cartwheel"];
+      defaultIds.forEach(id => {
+        const item = GALAXY_CATALOG.find(g => g.id === id);
+        if(item) activeDataPoints.push({...item});
+      });
+
+      updateUI();
+      renderQuiz();
+      updateSpectralSimulation();
+
+      // Render KaTeX Math Equations
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+
+      // Quick predictor listener
+      document.getElementById('predict-distance').addEventListener('input', function(e) {
+        const d = parseFloat(e.target.value);
+        if (!isNaN(d) && activeDataPoints.length >= 2) {
+          const h0 = calculateHubbleConstant();
+          const v = Math.round(h0 * d);
+          document.getElementById('predicted-velocity').value = `${v} km/s`;
+        } else {
+          document.getElementById('predicted-velocity').value = '-- km/s';
+        }
+      });
+    };
+
+    // -------------------------------------------------------------
+    // 4. GALLERY RENDERER & SELECTION LOGIC
+    // -------------------------------------------------------------
+    function renderGalaxyGallery() {
+      const grid = document.getElementById('galaxy-grid');
+      grid.innerHTML = '';
+
+      GALAXY_CATALOG.forEach(obj => {
+        const isSelected = activeDataPoints.some(p => p.id === obj.id);
+        
+        const card = document.createElement('div');
+        card.className = `glass-card glass-card-hover rounded-2xl overflow-hidden cursor-pointer flex flex-col justify-between border ${isSelected ? 'border-cosmic-accent bg-cosmic-accent/10' : 'border-white/10'}`;
+        card.onclick = () => toggleGalaxySelection(obj.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="relative h-36 w-full overflow-hidden bg-cosmic-900">
+              <img src="${obj.image}" alt="${obj.name}" class="w-full h-full object-cover transition duration-500 hover:scale-105" onerror="this.src='https://placehold.co/600x400/0d1326/38bdf8?text=${encodeURIComponent(obj.name)}'">
+              <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${isSelected ? 'bg-cosmic-accent text-cosmic-900' : 'bg-black/60 text-white backdrop-blur-sm'}">
+                ${isSelected ? '<i class="fa-solid fa-check mr-1"></i> Active' : '+ Add'}
+              </div>
+              <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-cosmic-900 to-transparent p-2">
+                <span class="text-[10px] uppercase font-mono text-cosmic-accent tracking-wider">${obj.type}</span>
+              </div>
+            </div>
+
+            <div class="p-3.5 space-y-2">
+              <h4 class="font-bold text-sm text-white line-clamp-1">${obj.name}</h4>
+              <p class="text-[11px] text-gray-400 line-clamp-2">${obj.desc}</p>
+              
+              <div class="grid grid-cols-2 gap-2 pt-1 font-mono text-xs">
+                <div class="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                  <span class="text-[9px] text-gray-400 block uppercase">Dist (d)</span>
+                  <span class="text-cosmic-accent font-bold">${obj.distMpc} Mpc</span>
+                </div>
+                <div class="bg-white/5 p-1.5 rounded-lg border border-white/5">
+                  <span class="text-[9px] text-gray-400 block uppercase">Velocity (v)</span>
+                  <span class="${obj.velocity < 0 ? 'text-cosmic-pink' : 'text-cosmic-purple'} font-bold">${obj.velocity} km/s</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-3.5 pb-3 pt-1 text-[10px] text-gray-400 flex items-center justify-between border-t border-white/5 mt-2">
+            <span><i class="fa-solid fa-star-of-life text-[8px] text-cosmic-gold mr-1"></i> Stellar Pop:</span>
+            <span class="text-gray-300 font-medium truncate max-w-[130px]">${obj.agePop}</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      document.getElementById('catalog-count-badge').textContent = `${activeDataPoints.length} / ${GALAXY_CATALOG.length}`;
+    }
+
+    function toggleGalaxySelection(id) {
+      const index = activeDataPoints.findIndex(p => p.id === id);
+      if (index >= 0) {
+        activeDataPoints.splice(index, 1);
+      } else {
+        const item = GALAXY_CATALOG.find(g => g.id === id);
+        if (item) activeDataPoints.push({...item});
+      }
+      updateUI();
+    }
+
+    function addAllObjects() {
+      activeDataPoints = GALAXY_CATALOG.map(g => ({...g}));
+      updateUI();
+    }
+
+    function resetDataset() {
+      activeDataPoints = [];
+      updateUI();
+    }
+
+    // -------------------------------------------------------------
+    // 5. CHART & MATH CALCULATIONS
+    // -------------------------------------------------------------
+    function initChart() {
+      const ctx = document.getElementById('hubbleChart').getContext('2d');
+
+      hubbleChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Observed Galaxies',
+              data: [],
+              backgroundColor: '#00f3ff', // Bright Cyan for high contrast on dark background
+              borderColor: '#ffffff',     // White outer ring
+              borderWidth: 2,
+              pointRadius: 8,
+              pointHoverRadius: 11,
+              pointHoverBackgroundColor: '#ec4899',
+              pointHoverBorderColor: '#ffffff',
+              pointHoverBorderWidth: 2,
+              shadowOffsetX: 0,
+              shadowOffsetY: 0,
+              shadowBlur: 10,
+              shadowColor: '#00f3ff'
+            },
+            {
+              label: 'Hubble Fit Line (v = H0 * d)',
+              data: [],
+              type: 'line',
+              borderColor: '#ffcc00',    // Glowing Golden Amber
+              borderWidth: 3,
+              borderDash: [6, 4],
+              fill: false,
+              pointRadius: 0,
+              tension: 0
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#ffffff',
+                font: { family: 'Inter', size: 12, weight: 'bold' }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(13, 19, 38, 0.95)',
+              titleColor: '#00f3ff',
+              bodyColor: '#ffffff',
+              borderColor: 'rgba(56, 189, 248, 0.3)',
+              borderWidth: 1,
+              padding: 10,
+              callbacks: {
+                label: function(context) {
+                  if (context.datasetIndex === 0) {
+                    const pt = context.raw;
+                    return `${pt.label || 'Galaxy'}: d = ${pt.x} Mpc, v = ${pt.y} km/s`;
+                  }
+                  return `Hubble Fit: v = ${context.raw.y} km/s`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              position: 'bottom',
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Distance d (Megaparsecs, Mpc)',
+                color: '#00f3ff',
+                font: { family: 'Inter', size: 13, weight: 'bold' }
+              },
+              grid: { 
+                color: 'rgba(255, 255, 255, 0.12)',
+                borderColor: 'rgba(255, 255, 255, 0.3)'
+              },
+              ticks: { 
+                color: '#ffffff',
+                font: { family: 'Fira Code', size: 11, weight: '600' }
+              }
+            },
+            y: {
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: 'Recessional Radial Velocity v (km/s)',
+                color: '#ffcc00',
+                font: { family: 'Inter', size: 13, weight: 'bold' }
+              },
+              grid: { 
+                color: 'rgba(255, 255, 255, 0.12)',
+                borderColor: 'rgba(255, 255, 255, 0.3)'
+              },
+              ticks: { 
+                color: '#ffffff',
+                font: { family: 'Fira Code', size: 11, weight: '600' }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Calculates linear regression slope forced through origin (v = H0 * d)
+    function calculateHubbleConstant() {
+      if (activeDataPoints.length === 0) return 0;
+      
+      let num = 0;
+      let den = 0;
+
+      activeDataPoints.forEach(p => {
+        num += (p.distMpc * p.velocity);
+        den += (p.distMpc * p.distMpc);
+      });
+
+      return den !== 0 ? num / den : 0;
+    }
+
+    // Calculates coefficient of determination R^2
+    function calculateR2(h0) {
+      if (activeDataPoints.length < 2) return 0;
+
+      const meanV = activeDataPoints.reduce((sum, p) => sum + p.velocity, 0) / activeDataPoints.length;
+      let ssTot = 0;
+      let ssRes = 0;
+
+      activeDataPoints.forEach(p => {
+        const predV = h0 * p.distMpc;
+        ssRes += Math.pow(p.velocity - predV, 2);
+        ssTot += Math.pow(p.velocity - meanV, 2);
+      });
+
+      if (ssTot === 0) return 1;
+      const r2 = 1 - (ssRes / ssTot);
+      return Math.max(0, Math.min(1, r2));
+    }
+
+    function updateChart() {
+      if (!hubbleChart) return;
+
+      const scatterPoints = activeDataPoints.map(p => ({
+        x: p.distMpc,
+        y: p.velocity,
+        label: p.name
+      }));
+
+      hubbleChart.data.datasets[0].data = scatterPoints;
+
+      const showLine = document.getElementById('toggle-trendline').checked;
+      const h0 = calculateHubbleConstant();
+
+      if (showLine && activeDataPoints.length > 0) {
+        const maxD = Math.max(...activeDataPoints.map(p => p.distMpc), 10) * 1.15;
+        const minD = Math.min(0, Math.min(...activeDataPoints.map(p => p.distMpc)));
+        
+        hubbleChart.data.datasets[1].data = [
+          { x: minD, y: Math.round(h0 * minD) },
+          { x: Math.round(maxD), y: Math.round(h0 * maxD) }
+        ];
+      } else {
+        hubbleChart.data.datasets[1].data = [];
+      }
+
+      // Dynamic Auto-scaling axis padding so no points touch chart boundaries
+      if (activeDataPoints.length > 0) {
+        const distances = activeDataPoints.map(p => p.distMpc);
+        const velocities = activeDataPoints.map(p => p.velocity);
+
+        const maxDist = Math.max(...distances);
+        const minVel = Math.min(...velocities);
+        const maxVel = Math.max(...velocities);
+
+        hubbleChart.options.scales.x.max = Math.ceil(maxDist * 1.12);
+        hubbleChart.options.scales.y.min = minVel < 0 ? Math.floor(minVel * 1.25) : Math.floor(minVel * 0.85);
+        hubbleChart.options.scales.y.max = Math.ceil(maxVel * 1.15);
+      } else {
+        delete hubbleChart.options.scales.x.max;
+        delete hubbleChart.options.scales.y.min;
+        delete hubbleChart.options.scales.y.max;
+      }
+
+      hubbleChart.update();
+    }
+
+    // -------------------------------------------------------------
+    // 6. UI SYNCHRONIZATION
+    // -------------------------------------------------------------
+    function updateUI() {
+      renderGalaxyGallery();
+      updateTable();
+      updateChart();
+
+      // Recalculate Stats
+      const h0 = calculateHubbleConstant();
+      const r2 = calculateR2(h0);
+
+      const h0Elem = document.getElementById('h0-value');
+      const ageElem = document.getElementById('age-value');
+      const r2Elem = document.getElementById('r2-value');
+      const countElem = document.getElementById('sample-count-value');
+
+      countElem.textContent = activeDataPoints.length;
+
+      if (activeDataPoints.length > 0 && h0 > 0) {
+        h0Elem.textContent = h0.toFixed(1);
+        
+        // Age in Billion Years = (1/H0 in km/s/Mpc) * 977.8
+        const ageGyr = (1 / h0) * 977.8;
+        ageElem.textContent = ageGyr.toFixed(2);
+        r2Elem.textContent = r2.toFixed(3);
+      } else {
+        h0Elem.textContent = '--';
+        ageElem.textContent = '--';
+        r2Elem.textContent = '--';
+      }
+    }
+
+    function updateTable() {
+      const tbody = document.getElementById('data-table-body');
+      tbody.innerHTML = '';
+
+      if (activeDataPoints.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-500 italic">No points selected. Click galaxy cards above or add custom data.</td></tr>`;
+        return;
+      }
+
+      activeDataPoints.forEach((p, index) => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+        tr.innerHTML = `
+          <td class="py-2 px-2 text-white font-sans font-medium line-clamp-1 max-w-[110px]">${p.name}</td>
+          <td class="py-2 px-1 text-cosmic-accent">${p.distMpc}</td>
+          <td class="py-2 px-1 ${p.velocity < 0 ? 'text-cosmic-pink' : 'text-cosmic-purple'}">${p.velocity}</td>
+          <td class="py-2 px-1 text-center">
+            <button onclick="removePoint(${index})" class="text-gray-500 hover:text-red-400 p-1 transition" title="Remove point">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function removePoint(index) {
+      activeDataPoints.splice(index, 1);
+      updateUI();
+    }
+
+    function downloadChart() {
+      if (!hubbleChart) return;
+      const imageURI = hubbleChart.toBase64Image();
+      const link = document.createElement('a');
+      link.download = 'hubble-law-plot.png';
+      link.href = imageURI;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // -------------------------------------------------------------
+    // 7. CUSTOM POINT MODAL LOGIC
+    // -------------------------------------------------------------
+    function openCustomAddModal() {
+      document.getElementById('custom-modal').classList.remove('hidden');
+    }
+
+    function closeCustomAddModal() {
+      document.getElementById('custom-modal').classList.add('hidden');
+    }
+
+    function saveCustomPoint() {
+      const name = document.getElementById('modal-name').value || 'Custom Galaxy';
+      const dist = parseFloat(document.getElementById('modal-dist').value);
+      const vel = parseFloat(document.getElementById('modal-vel').value);
+
+      if (isNaN(dist) || isNaN(vel)) {
+        alert('Please enter valid numeric values for distance and radial velocity.');
+        return;
+      }
+
+      activeDataPoints.push({
+        id: 'custom-' + Date.now(),
+        name: name,
+        distMpc: dist,
+        velocity: vel,
+        type: 'User Custom',
+        agePop: 'User Input Data',
+        image: 'https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=600&q=80',
+        desc: 'Custom data point added by user.'
+      });
+
+      closeCustomAddModal();
+      document.getElementById('modal-name').value = '';
+      document.getElementById('modal-dist').value = '';
+      document.getElementById('modal-vel').value = '';
+      updateUI();
+    }
+
+    // -------------------------------------------------------------
+    // 8. SPECTRAL REDSHIFT SIMULATOR LOGIC
+    // -------------------------------------------------------------
+    function updateSpectralSimulation() {
+      const slider = document.getElementById('sim-distance-slider');
+      const dist = parseFloat(slider.value);
+      
+      const assumedH0 = 70; // Standard nominal value
+      const vel = dist * assumedH0; // v = H0 * d
+      
+      // Doppler Redshift formula: lambda_observed = lambda_0 * (1 + v/c)
+      const c = 299792; // km/s
+      const lambda0 = 656.3; // H-alpha line in nm
+      const lambdaObs = lambda0 * (1 + (vel / c));
+
+      document.getElementById('sim-dist-text').textContent = `${dist} Mpc`;
+      document.getElementById('sim-vel-text').textContent = `v = ${Math.round(vel)} km/s`;
+      document.getElementById('shift-nm-text').textContent = `Shifted: ${lambdaObs.toFixed(2)} nm`;
+
+      // Visual line shift percentage across rainbow container (rest at 60% = 656.3nm)
+      // Range spans ~400nm to ~700nm
+      const leftPercent = 60 + ((lambdaObs - lambda0) / 100) * 35;
+      const spectrumLine = document.getElementById('spectrum-line');
+      spectrumLine.style.left = `${Math.min(95, leftPercent)}%`;
+    }
+
+    // -------------------------------------------------------------
+    // 9. STUDENT QUIZ MODULE
+    // -------------------------------------------------------------
+    const QUIZ_QUESTIONS = [
+      {
+        question: "1. What does the slope ($H_0$) of the Recessional Velocity vs. Distance plot represent?",
+        options: [
+          "The average speed of stars inside a single galaxy",
+          "The expansion rate of the Universe",
+          "The speed of light in interstellar space",
+          "The age of the solar system"
+        ],
+        correct: 1
+      },
+      {
+        question: "2. If a distant galaxy is observed at a distance of 100 Mpc, roughly what recessional velocity is predicted assuming $H_0 = 70\\ \\text{km/s/Mpc}$?",
+        options: [
+          "70 km/s",
+          "700 km/s",
+          "7,000 km/s",
+          "70,000 km/s"
+        ],
+        correct: 2
+      },
+      {
+        question: "3. Why does Andromeda (M31) exhibit a negative radial velocity (blueshift)?",
+        options: [
+          "Hubble's Law is incorrect",
+          "Local gravitational attraction overcomes the cosmic expansion at very close scales",
+          "It is moving faster than the speed of light away from us",
+          "Dark energy is pushing Andromeda towards us"
+        ],
+        correct: 1
+      }
+    ];
+
+    function renderQuiz() {
+      const container = document.getElementById('quiz-container');
+      container.innerHTML = '';
+
+      QUIZ_QUESTIONS.forEach((q, qIndex) => {
+        const qBox = document.createElement('div');
+        qBox.className = 'bg-cosmic-800/60 p-4 rounded-xl border border-white/5 space-y-3';
+        
+        let optionsHTML = '';
+        q.options.forEach((opt, oIndex) => {
+          optionsHTML += `
+            <label class="flex items-center space-x-3 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer border border-white/5 transition text-xs text-gray-200">
+              <input type="radio" name="quiz-q-${qIndex}" value="${oIndex}" class="text-cosmic-accent focus:ring-0">
+              <span>${opt}</span>
+            </label>
+          `;
+        });
+
+        qBox.innerHTML = `
+          <h5 class="font-bold text-sm text-white">${q.question}</h5>
+          <div class="space-y-2">
+            ${optionsHTML}
+          </div>
+          <div id="quiz-feedback-${qIndex}" class="hidden text-xs font-semibold p-2 rounded-lg mt-2"></div>
+        `;
+
+        container.appendChild(qBox);
+      });
+    }
+
+    function checkQuizAnswers() {
+      let score = 0;
+
+      QUIZ_QUESTIONS.forEach((q, qIndex) => {
+        const selected = document.querySelector(`input[name="quiz-q-${qIndex}"]:checked`);
+        const feedback = document.getElementById(`quiz-feedback-${qIndex}`);
+        feedback.classList.remove('hidden', 'bg-green-500/20', 'text-green-300', 'bg-red-500/20', 'text-red-300');
+
+        if (selected && parseInt(selected.value) === q.correct) {
+          score++;
+          feedback.classList.add('bg-green-500/20', 'text-green-300');
+          feedback.textContent = "✓ Correct!";
+        } else {
+          feedback.classList.add('bg-red-500/20', 'text-red-300');
+          feedback.textContent = `✗ Incorrect. Correct answer: ${q.options[q.correct]}`;
+        }
+      });
+
+      const scoreBadge = document.getElementById('quiz-score-badge');
+      scoreBadge.classList.remove('hidden');
+      document.getElementById('quiz-score').textContent = `${score} / ${QUIZ_QUESTIONS.length}`;
+    }
+  </script>
+</body>
+</html>
