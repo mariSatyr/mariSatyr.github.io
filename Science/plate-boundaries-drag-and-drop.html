@@ -82,7 +82,7 @@
       <header>
         <div class="kicker">Earth Science · Plate Tectonics</div>
         <h1>Sort the Landforms: Plate Boundaries</h1>
-        <p class="lede">Drag each photo into the correct plate-boundary bin. The images below come from files in this repo and are linked directly so they display correctly.</p>
+        <p class="lede">Drag each photo into the correct plate-boundary bin. These images are loaded from the site’s root <code>/Science/</code> folder so they display correctly on GitHub Pages.</p>
       </header>
 
       <div class="controls">
@@ -121,24 +121,24 @@
       <div id="notesGrid"></div>
 
       <footer>
-        <p>Images are served from the repo at <code>Science/*.jpg</code> and are now referenced directly so the page displays correctly.</p>
+        <p>Images are served from the repo at <code>/Science/*.jpg</code> and are now referenced directly so the page displays correctly.</p>
       </footer>
     </div>
 
     <script>
       const cards = [
-        { id: 'almannagj-gorge', name: 'Almannagj Gorge', zone: 'divergent', image: 'Science/Almannagj-Gorge.jpg', fact: 'A rift valley carved as plates pull apart.' },
-        { id: 'thingvellir', name: 'Thingvellir rift valley', zone: 'divergent', image: 'Science/Thingvellir-Rift-Valley.jpg', fact: 'A classic divergent boundary with a widening crack.' },
-        { id: 'great-rift', name: 'Great Rift Valley', zone: 'divergent', image: 'Science/Great-Rift-Valley.jpg', fact: 'A long active rift created by extension.' },
-        { id: 'dead-sea', name: 'Dead Sea valley', zone: 'divergent', image: 'Science/Dead-Sea-Valley.jpg', fact: 'A lowland depression formed by continental rifting.' },
-        { id: 'andes', name: 'Andes Mountains', zone: 'convergent', image: 'Science/Andes-Mountains.jpg', fact: 'A mountain range made where plates converge.' },
-        { id: 'everest', name: 'Himalayas / Everest', zone: 'convergent', image: 'Science/Himalayas-Mount-Everest.jpg', fact: 'The world’s highest mountain chain from continental collision.' },
-        { id: 'mount-fuji', name: 'Mount Fuji', zone: 'convergent', image: 'Science/Mount-Fuji.jpg', fact: 'A volcanic cone tied to subduction.' },
-        { id: 'mount-longonot', name: 'Mount Longonot', zone: 'convergent', image: 'Science/Mount-Longonot.jpg', fact: 'Volcanic land formed near a convergent margin.' },
-        { id: 'san-andreas', name: 'San Andreas Fault', zone: 'transform', image: 'Science/San-Andreas-Fault.jpg', fact: 'A transform fault with sideways motion.' },
-        { id: 'alpine-fault', name: 'Alpine Fault Valley', zone: 'transform', image: 'Science/Alpine-Fault-Valley.jpg', fact: 'A strike-slip fault producing offset landforms.' },
-        { id: 'southern-alps', name: 'Southern Alps', zone: 'transform', image: 'Science/Southern-Alps.jpg', fact: 'A mountain belt shaped by a major transform boundary.' },
-        { id: 'doubtful-sound', name: 'Doubtful Sound / Patea', zone: 'transform', image: 'Science/Doubtful-Sound-Patea.jpg', fact: 'A landscape cut by faulting and lateral motion.' }
+        { id: 'almannagj-gorge', name: 'Almannagj Gorge', zone: 'divergent', image: '/Science/Almannagj-Gorge.jpg', fact: 'A rift valley carved as plates pull apart.' },
+        { id: 'thingvellir', name: 'Thingvellir rift valley', zone: 'divergent', image: '/Science/Thingvellir-Rift-Valley.jpg', fact: 'A classic divergent boundary with a widening crack.' },
+        { id: 'great-rift', name: 'Great Rift Valley', zone: 'divergent', image: '/Science/Great-Rift-Valley.jpg', fact: 'A long active rift created by extension.' },
+        { id: 'dead-sea', name: 'Dead Sea valley', zone: 'divergent', image: '/Science/Dead-Sea-Valley.jpg', fact: 'A lowland depression formed by continental rifting.' },
+        { id: 'andes', name: 'Andes Mountains', zone: 'convergent', image: '/Science/Andes-Mountains.jpg', fact: 'A mountain range made where plates converge.' },
+        { id: 'everest', name: 'Himalayas / Everest', zone: 'convergent', image: '/Science/Himalayas-Mount-Everest.jpg', fact: 'The world’s highest mountain chain from continental collision.' },
+        { id: 'mount-fuji', name: 'Mount Fuji', zone: 'convergent', image: '/Science/Mount-Fuji.jpg', fact: 'A volcanic cone tied to subduction.' },
+        { id: 'mount-longonot', name: 'Mount Longonot', zone: 'convergent', image: '/Science/Mount-Longonot.jpg', fact: 'Volcanic land formed near a convergent margin.' },
+        { id: 'san-andreas', name: 'San Andreas Fault', zone: 'transform', image: '/Science/San-Andreas-Fault.jpg', fact: 'A transform fault with sideways motion.' },
+        { id: 'alpine-fault', name: 'Alpine Fault Valley', zone: 'transform', image: '/Science/Alpine-Fault-Valley.jpg', fact: 'A strike-slip fault producing offset landforms.' },
+        { id: 'southern-alps', name: 'Southern Alps', zone: 'transform', image: '/Science/Southern-Alps.jpg', fact: 'A mountain belt shaped by a major transform boundary.' },
+        { id: 'doubtful-sound', name: 'Doubtful Sound / Patea', zone: 'transform', image: '/Science/Doubtful-Sound-Patea.jpg', fact: 'A landscape cut by faulting and lateral motion.' }
       ];
 
       const tray = document.getElementById('tray');
