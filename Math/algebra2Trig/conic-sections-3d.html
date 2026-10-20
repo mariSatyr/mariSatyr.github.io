@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slicing a Cone: Conic Sections in 3D</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f7f8fb;--card:#fff;--text:#1d2433;--muted:#5b6578;--line:#d9deea;--accent:#3b5bdb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff}}
+:root[data-theme="dark"]{--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2rem 0}
+p.sub{color:var(--muted);margin:0 0 12px}
+.layout{display:grid;grid-template-columns:3fr 2fr;gap:14px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+#stage{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;cursor:grab;touch-action:none}
+#stage canvas{width:100%!important;height:100%!important;display:block}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+button{font-size:1rem;padding:10px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-weight:600}
+button.on{border-color:var(--accent);background:var(--accent);color:#fff}
+#name{font-size:1.6rem;font-weight:800;color:var(--accent);margin:4px 0}
+#desc{margin:0 0 8px}
+.hint{color:var(--muted);font-size:.9rem}
+input[type=range]{width:100%}
+canvas#flat{width:100%;max-width:240px;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;display:block}
+h3{font-size:1rem;margin:10px 0 6px}
+.legend span{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<main>
+<h1>Slicing a Cone: Conic Sections in 3D</h1>
+<p class="sub">Pick a slice, or tilt the cutting plane yourself. Drag the cone to look around.</p>
+<div class="layout">
+  <div class="card"><div id="stage"></div>
+    <p class="hint legend" style="margin:8px 0 0"><span style="background:#4c6ef5"></span>cone &nbsp; <span style="background:#ff922b"></span>cutting plane &nbsp; <span style="background:#e03131"></span>the slice</p>
+  </div>
+  <div>
+    <div class="card">
+      <div class="btns" id="btns"></div>
+      <label for="tilt"><b>Tilt of the plane:</b> <span id="deg">0</span>&deg;</label>
+      <input type="range" id="tilt" min="0" max="80" step="0.5" value="0">
+      <div id="name">Circle</div>
+      <p id="desc"></p>
+      <p class="hint" style="margin:0">Eccentricity e = <b id="ecc">0</b> <span id="eccnote"></span></p>
+    </div>
+    <div class="card"><h3 style="margin-top:0">The slice, seen flat</h3><canvas id="flat" width="240" height="240"></canvas></div>
+  </div>
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const H=5,Y0=1.4;
+const INFO={
+ circle:["Circle","The plane is level, perpendicular to the cone’s axis. Every point on the slice is the same distance from the center."],
+ ellipse:["Ellipse","The plane is tilted, but not as steeply as the side of the cone. It cuts all the way around one cone and makes a stretched circle."],
+ parabola:["Parabola","The plane is tilted exactly as steeply as the side of the cone, so it is parallel to it. The curve opens up and never closes."],
+ hyperbola:["Hyperbola","The plane is steeper than the side of the cone, so it cuts both cones and makes two separate branches."]};
+const PRE={circle:0,ellipse:25,parabola:45,hyperbola:65};
+const cls=d=>d<0.6?"circle":Math.abs(d-45)<0.6?"parabola":d<45?"ellipse":"hyperbola";
+
+// buttons
+Object.keys(PRE).forEach(k=>{const b=document.createElement("button");b.textContent=INFO[k][0];b.id="b_"+k;
+  b.onclick=()=>{target=PRE[k]};$("btns").appendChild(b)});
+$("tilt").oninput=e=>{target=cur=+e.target.value};
+
+// three.js scene
+const stage=$("stage");
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(40,1,0.1,100);cam.position.set(0,0,17);
+const world=new THREE.Group();scene.add(world);
+world.rotation.set(0.35,-0.6,0,"YXZ");
+scene.add(new THREE.AmbientLight(0xffffff,0.9));
+const dl=new THREE.DirectionalLight(0xffffff,0.5);dl.position.set(4,8,6);scene.add(dl);
+
+const coneMat=new THREE.MeshLambertMaterial({color:0x4c6ef5,transparent:true,opacity:0.28,side:THREE.DoubleSide,depthWrite:false});
+const wireMat=new THREE.MeshBasicMaterial({color:0x4c6ef5,wireframe:true,transparent:true,opacity:0.18});
+const up=new THREE.CylinderGeometry(H,0,H,48,8,true);up.translate(0,H/2,0);
+const lo=new THREE.CylinderGeometry(0,H,H,48,8,true);lo.translate(0,-H/2,0);
+[up,lo].forEach(g=>{world.add(new THREE.Mesh(g,coneMat));world.add(new THREE.Mesh(g,wireMat))});
+// axis
+world.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-H,0),new THREE.Vector3(0,H,0)]),new THREE.LineBasicMaterial({color:0x888888,transparent:true,opacity:0.5})));
+
+const planeGrp=new THREE.Group();
+const plane=new THREE.Mesh(new THREE.PlaneGeometry(9,9),new THREE.MeshBasicMaterial({color:0xff922b,transparent:true,opacity:0.32,side:THREE.DoubleSide,depthWrite:false}));
+plane.rotation.x=-Math.PI/2;planeGrp.add(plane);
+planeGrp.add(new THREE.LineSegments(new THREE.EdgesGeometry(plane.geometry),new THREE.LineBasicMaterial({color:0xff922b})).rotateX(-Math.PI/2));
+planeGrp.position.y=Y0;world.add(planeGrp);
+
+const curveGrp=new THREE.Group();world.add(curveGrp);
+const curveMat=new THREE.MeshBasicMaterial({color:0xe03131});
+
+function segments(t){ // arrays of THREE.Vector3 along the slice
+  const out=[],N=260;
+  function run(start,fn){let seg=[];
+    for(let i=0;i<=N;i++){const phi=start+2*Math.PI*i/N,p=fn(phi);
+      if(p){seg.push(p)}else if(seg.length){out.push(seg);seg=[]}}
+    if(seg.length)out.push(seg)}
+  run(Math.PI,phi=>{const d=1-t*Math.cos(phi);if(d<=1e-6)return null;const r=Y0/d;if(r>H)return null;return new THREE.Vector3(r*Math.cos(phi),r,r*Math.sin(phi))});
+  if(t>1)run(0,phi=>{const d=1+t*Math.cos(phi);if(d>=-1e-6)return null;const r=-Y0/d;if(r>H)return null;return new THREE.Vector3(r*Math.cos(phi),-r,r*Math.sin(phi))});
+  return out}
+
+let cur=0,target=0,drawn=-1,segs=[];
+function rebuild(){
+  const rad=cur*Math.PI/180,t=Math.tan(rad);
+  planeGrp.rotation.z=rad;
+  while(curveGrp.children.length){const m=curveGrp.children.pop();m.geometry.dispose()}
+  segs=segments(t);
+  segs.forEach(s=>{if(s.length<2)return;
+    const c=new THREE.CatmullRomCurve3(s);
+    curveGrp.add(new THREE.Mesh(new THREE.TubeGeometry(c,s.length*2,0.06,8,false),curveMat))});
+  const k=cls(cur);
+  $("deg").textContent=cur.toFixed(1).replace(/\.0$/,"");
+  $("tilt").value=cur;
+  $("name").textContent=INFO[k][0];$("desc").textContent=INFO[k][1];
+  const e=Math.SQRT2*Math.sin(rad);
+  $("ecc").textContent=k==="circle"?"0":k==="parabola"?"1":e.toFixed(2);
+  $("eccnote").textContent=k==="ellipse"?"(less than 1)":k==="hyperbola"?"(greater than 1)":"";
+  Object.keys(PRE).forEach(n=>$("b_"+n).classList.toggle("on",n===k));
+  drawFlat(rad)}
+
+function drawFlat(rad){
+  const c=$("flat"),g=c.getContext("2d"),W=c.width,sc=W/2/Math.min(H,7)*1.0;
+  const cs=getComputedStyle(document.documentElement);
+  g.clearRect(0,0,W,W);g.strokeStyle=cs.getPropertyValue("--line");g.lineWidth=1;
+  g.beginPath();g.moveTo(0,W/2);g.lineTo(W,W/2);g.moveTo(W/2,0);g.lineTo(W/2,W);g.stroke();
+  g.strokeStyle="#e03131";g.lineWidth=3;g.lineJoin="round";
+  const cx=Math.cos(rad)||1;
+  // centre the view on the middle of the slice
+  let minx=1e9,maxx=-1e9;segs.forEach(s=>s.forEach(p=>{const u=p.x/cx;minx=Math.min(minx,u);maxx=Math.max(maxx,u)}));
+  const mid=(minx+maxx)/2,ext=Math.max(maxx-minx,2*Math.max(...segs.flat().map(p=>Math.abs(p.z)),1)),k=(W*0.8)/Math.max(ext,1);
+  segs.forEach(s=>{g.beginPath();s.forEach((p,i)=>{const x=W/2+(p.x/cx-mid)*k,y=W/2-p.z*k;i?g.lineTo(x,y):g.moveTo(x,y)});g.stroke()})}
+
+// drag to rotate
+let drag=false,lx=0,ly=0;
+stage.addEventListener("pointerdown",e=>{drag=true;lx=e.clientX;ly=e.clientY;stage.setPointerCapture(e.pointerId);stage.style.cursor="grabbing"});
+stage.addEventListener("pointerup",()=>{drag=false;stage.style.cursor="grab"});
+stage.addEventListener("pointermove",e=>{if(!drag)return;
+  world.rotation.y+=(e.clientX-lx)*0.01;world.rotation.x=Math.max(-1.4,Math.min(1.4,world.rotation.x+(e.clientY-ly)*0.01));lx=e.clientX;ly=e.clientY});
+
+function resize(){const w=stage.clientWidth;renderer.setSize(w,w,false);cam.aspect=1;cam.updateProjectionMatrix()}
+addEventListener("resize",resize);resize();
+
+function loop(){
+  if(Math.abs(target-cur)>0.05){cur+=(target-cur)*0.12}else cur=target;
+  if(cur!==drawn){drawn=cur;rebuild()}
+  renderer.render(scene,cam);requestAnimationFrame(loop)}
+loop();
+</script>
+</body>
+</html>
