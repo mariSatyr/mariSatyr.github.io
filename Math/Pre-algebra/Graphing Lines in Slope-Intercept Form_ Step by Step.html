@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Graphing Lines in Slope-Intercept Form: Step by Step</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f7f8fb;--card:#fff;--text:#1d2433;--muted:#5b6578;--line:#d9deea;--accent:#3b5bdb;--pt:#e8590c;--grid:#e3e7f0;--axis:#4a5468;--ok:#2b8a3e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff;--pt:#ff922b;--grid:#2a3146;--axis:#a7b0c6;--ok:#69db7c}}
+:root[data-theme="dark"]{--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff;--pt:#ff922b;--grid:#2a3146;--axis:#a7b0c6;--ok:#69db7c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2rem 0}
+p.sub{color:var(--muted);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+label{font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+input{flex:1;min-width:160px;font-size:1.2rem;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+button{font-size:1rem;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+button.p{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button:disabled{opacity:.4;cursor:default}
+.chips button{padding:6px 12px;font-size:.95rem}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.layout{grid-template-columns:1fr}}
+.dots{display:flex;gap:6px;margin-bottom:10px}
+.dots span{height:6px;flex:1;border-radius:3px;background:var(--line)}
+.dots span.on{background:var(--accent)}
+.step h2{font-size:1.1rem;margin:0 0 6px}
+.big{font-size:1.25rem;font-weight:700;color:var(--accent)}
+.hint{color:var(--muted);font-size:.92rem}
+.err{color:#e03131;font-weight:600}
+svg{width:100%;height:auto;display:block;touch-action:none}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;margin:0 3px}
+.frac i{font-style:normal;padding:0 3px}.frac i:first-child{border-bottom:2px solid currentColor}
+.ok{color:var(--ok);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>Graphing Lines in Slope-Intercept Form</h1>
+<p class="sub">Type any equation from your worksheet and walk through it one step at a time.</p>
+
+<div class="card">
+<label for="eq">Your equation</label>
+<div class="row">
+<input id="eq" value="y = 2x + 1" autocomplete="off" spellcheck="false" aria-label="Equation">
+<button class="p" id="go">Show me the steps</button>
+</div>
+<div class="row chips" id="chips"></div>
+<p class="hint" style="margin:8px 0 0">Use / for fractions, like <b>y = -3/4x + 2</b>. Lines like <b>y = 4</b> or <b>x = -2</b> work too.</p>
+<div id="msg" class="err"></div>
+</div>
+
+<div class="layout" id="work" hidden>
+<div class="card step">
+<div class="dots" id="dots"></div>
+<div id="stepbox"></div>
+<div class="row"><button id="back">&larr; Back</button><button class="p" id="next">Next step &rarr;</button></div>
+</div>
+<div class="card"><svg id="g" viewBox="0 0 420 420" role="img" aria-label="Coordinate grid"></svg></div>
+</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+let S=null,step=0;
+
+["y = 2x + 1","y = -x + 3","y = 1/2x - 2","y = -3/4x + 2","y = 3x","y = -2","x = 3"].forEach(t=>{
+  const b=document.createElement("button");b.textContent=t;b.onclick=()=>{$("eq").value=t;solve()};$("chips").appendChild(b)});
+
+function num(str){ // "3", "-3/4", "0.5" -> {n,d}
+  if(str===""||str==="+")return{n:1,d:1};if(str==="-")return{n:-1,d:1};
+  str=str.replace(/[()]/g,"");
+  if(str.includes("/")){const[a,b]=str.split("/");return red(+a,+b)}
+  if(str.includes(".")){const k=str.split(".")[1].length,d=Math.pow(10,k);return red(Math.round(+str*d),d)}
+  return{n:+str,d:1}}
+function red(n,d){if(d<0){n=-n;d=-d}const g=gcd(n,d)||1;return{n:n/g,d:d/g}}
+const add=(a,b)=>red(a.n*b.d+b.n*a.d,a.d*b.d);
+const val=f=>f.n/f.d;
+function tex(f){return f.d===1?String(f.n):`<span class="frac"><i>${f.n}</i><i>${f.d}</i></span>`}
+function txt(f){return f.d===1?String(f.n):f.n+"/"+f.d}
+
+function parse(raw){
+  let s=raw.toLowerCase().replace(/\s+/g,"").replace(/[−–]/g,"-");
+  if(/^x=/.test(s)){const c=num(s.slice(2));if(isNaN(val(c)))return null;return{vert:true,c}}
+  s=s.replace(/^y=/,"");
+  let m={n:0,d:1},b={n:0,d:1};
+  const re=/([+-]?(?:\(?\d*\.?\d+(?:\/\d+)?\)?)?)\*?x(?:\/(\d+))?/;
+  const mt=s.match(re);let rest=s;
+  if(mt){let c=num(mt[1]);if(mt[2])c=red(c.n,c.d*(+mt[2]));m=c;rest=s.replace(mt[0],"")}
+  if(rest){if(!/^[+-]?(\d*\.?\d+)(\/\d+)?$/.test(rest.replace(/^\+/,"")))return null;b=num(rest.replace(/^\+/,""))}
+  if([m,b].some(f=>isNaN(val(f))||!isFinite(val(f))))return null;
+  return{m,b}}
+
+function solve(){
+  const p=parse($("eq").value);
+  if(!p){$("msg").textContent="I couldn’t read that. Try something like y = 2x + 1.";$("work").hidden=true;return}
+  $("msg").textContent="";S=p;step=0;$("work").hidden=false;render()}
+
+function steps(){
+  if(S.vert){const c=S.c;return[
+   {t:"Spot the special form",h:`The equation is <span class="big">x = ${txt(c)}</span>. There is no <i>y</i> in it, so this is a <b>vertical line</b>.`},
+   {t:"Find where it crosses the x-axis",h:`Every point on this line has <b>x = ${txt(c)}</b>, no matter what <i>y</i> is. Mark the point (${txt(c)}, 0) on the x-axis.`},
+   {t:"Add more points",h:`Mark a few more points with the same x: (${txt(c)}, 3) and (${txt(c)}, −3).`},
+   {t:"Draw the line",h:`Connect the points with a straight <b>up-and-down</b> line and put arrows on both ends.`}]}
+  const{m,b}=S;
+  if(m.n===0)return[
+   {t:"Spot the special form",h:`The equation is <span class="big">y = ${txt(b)}</span>. There is no <i>x</i> term, so the slope is <b>0</b>. This is a <b>horizontal line</b>.`},
+   {t:"Plot the y-intercept",h:`The number by itself is the y-intercept. Mark the point (0, ${txt(b)}) on the y-axis.`},
+   {t:"Add more points",h:`Slope 0 means you go <b>right</b> with no rise. Mark (3, ${txt(b)}) and (−3, ${txt(b)}).`},
+   {t:"Draw the line",h:`Connect the points with a straight <b>flat</b> line and put arrows on both ends.`}];
+  const up=m.n>0,rise=Math.abs(m.n),run=m.d;
+  const dir=up?"up":"down";
+  return[
+   {t:"Match it to y = mx + b",h:`Slope-intercept form is <span class="big">y = <i>m</i>x + <i>b</i></span>.<br>In your equation: <b>m (slope) = ${tex(m)}</b> and <b>b (y-intercept) = ${tex(b)}</b>.<p class="hint">Tip: <i>m</i> is the number attached to x. <i>b</i> is the number added or subtracted at the end (0 if there isn’t one).</p>`},
+   {t:"Plot the y-intercept",h:`The line crosses the y-axis at <b>b = ${txt(b)}</b>. Mark the point <span class="big">(0, ${txt(b)})</span>.`},
+   {t:"Use the slope to find a second point",h:`Slope = rise ÷ run = ${tex(m)}.<br>Start at (0, ${txt(b)}). Go <b>${dir} ${rise}</b>, then <b>right ${run}</b>.<br>You land on <span class="big">(${run}, ${txt(add(b,{n:m.n,d:1}))})</span>.${!up?`<p class="hint">A negative slope means the line goes down as you move right.</p>`:""}`},
+   {t:"Find one more point",h:`Repeat the same move from your new point: ${dir} ${rise}, right ${run}. This gives you a third point to make sure your line is straight.`},
+   {t:"Draw the line",h:`Connect the points with a straight line and add arrows on both ends.<p class="ok">Check: put x = ${run} into the equation. You should get y = ${txt(add(b,{n:m.n,d:1}))}, which matches your second point.</p>`}]}
+
+function render(){
+  const st=steps();step=Math.min(step,st.length-1);
+  $("dots").innerHTML=st.map((_,i)=>`<span class="${i<=step?"on":""}"></span>`).join("");
+  $("stepbox").innerHTML=`<h2>Step ${step+1} of ${st.length}: ${st[step].t}</h2><div>${st[step].h}</div><br>`;
+  $("back").disabled=step===0;$("next").disabled=step===st.length-1;
+  draw(st.length)}
+
+function draw(total){
+  const R=10,W=420,pad=20,u=(W-2*pad)/(2*R),X=x=>pad+(x+R)*u,Y=y=>pad+(R-y)*u;
+  let h="";
+  for(let i=-R;i<=R;i++){h+=`<line x1="${X(i)}" y1="${Y(-R)}" x2="${X(i)}" y2="${Y(R)}" stroke="var(--grid)"/><line x1="${X(-R)}" y1="${Y(i)}" x2="${X(R)}" y2="${Y(i)}" stroke="var(--grid)"/>`}
+  h+=`<line x1="${X(0)}" y1="${Y(-R)}" x2="${X(0)}" y2="${Y(R)}" stroke="var(--axis)" stroke-width="2"/><line x1="${X(-R)}" y1="${Y(0)}" x2="${X(R)}" y2="${Y(0)}" stroke="var(--axis)" stroke-width="2"/>`;
+  for(let i=-R+2;i<=R-1;i+=2){if(i){h+=`<text x="${X(i)}" y="${Y(0)+13}" font-size="10" text-anchor="middle" fill="var(--muted)">${i}</text><text x="${X(0)-5}" y="${Y(i)+3}" font-size="10" text-anchor="end" fill="var(--muted)">${i}</text>`}}
+  let pts=[],full=step===total-1,line=null;
+  if(S.vert){const c=val(S.c);
+    const all=[[c,0],[c,3],[c,-3]];pts=all.slice(0,step>=2?3:step>=1?1:0);
+    if(full)line=[[c,-R],[c,R]]}
+  else{const m=val(S.m),b=val(S.b),flat=S.m.n===0;
+    const f=x=>b+m*x;
+    if(flat){const all=[[0,b],[3,b],[-3,b]];pts=all.slice(0,step>=2?3:step>=1?1:0)}
+    else{const all=[[0,b],[S.m.d,b+S.m.n],[2*S.m.d,b+2*S.m.n]];
+      pts=all.slice(0,step>=3?3:step>=2?2:step>=1?1:0);
+      if(step>=4)pts=pts.concat([[-S.m.d,b-S.m.n]])}
+    if(full)line=[[-R,f(-R)],[R,f(R)]]}
+  if(line)h+=`<line x1="${X(line[0][0])}" y1="${Y(line[0][1])}" x2="${X(line[1][0])}" y2="${Y(line[1][1])}" stroke="var(--accent)" stroke-width="3"/>`;
+  pts.forEach(([x,y],i)=>{if(Math.abs(x)<=R&&Math.abs(y)<=R)h+=`<circle cx="${X(x)}" cy="${Y(y)}" r="6" fill="var(--pt)"/><text x="${X(x)+8}" y="${Y(y)-8}" font-size="11" font-weight="700" fill="var(--text)">(${+x.toFixed(2)}, ${+y.toFixed(2)})</text>`});
+  $("g").innerHTML=h}
+
+$("go").onclick=solve;$("eq").onkeydown=e=>{if(e.key==="Enter")solve()};
+$("next").onclick=()=>{step++;render()};$("back").onclick=()=>{step--;render()};
+solve();
+</script>
+</body>
+</html>
