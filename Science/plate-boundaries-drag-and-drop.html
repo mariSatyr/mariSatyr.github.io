@@ -555,5 +555,35 @@
       shuffle(CARDS).forEach(function(c){ tray.appendChild(buildCard(c)); });
       updateCounts();
     </script>
+    <script>
+(() => {
+  const base = "https://mariSatyr.github.io/Science/";
+  const exact = {
+    "Almannagj-Gorge.jpg": "Almannagj-Gorge.jpg",
+    "Alpine-Fault-Valley.jpg": "Alpine-Fault-Valley.jpg",
+    "Andes-Mountains.jpg": "Andes-Mountains.jpg",
+    "Dead-Sea-Valley.jpg": "Dead-Sea-Valley.jpg",
+    "Doubtful-Sound-Patea.jpg": "Doubtful-Sound-Patea.jpg",
+    "Great-Rift-Valley.jpg": "Great-Rift-Valley.jpg",
+    "Himalayas-Mount-Everest.jpg": "Himalayas-Mount-Everest.jpg",
+    "Mount-Fuji.jpg": "Mount-Fuji.jpg",
+    "Mount-Longonot.jpg": "Mount-Longonot.jpg",
+    "San-Andreas-Fault.jpg": "San-Andreas-Fault.jpg",
+    "Southern-Alps.jpg": "Southern-Alps.jpg",
+    "Thingvellir-Rift-Valley.jpg": "Thingvellir-Rift-Valley.jpg"
+  };
+
+  document.querySelectorAll(".card img").forEach(img => {
+    const src = img.getAttribute("src");
+    if (!src) return;
+    const file = src.split("/").pop();
+    if (exact[file]) {
+      img.src = base + exact[file];
+    } else if (file.endsWith(".jpg") || file.endsWith(".JPG")) {
+      img.src = base + file;
+    }
+  });
+})();
+</script>
   </body>
 </html>
