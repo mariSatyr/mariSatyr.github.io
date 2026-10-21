@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Match &amp; Pong: Fractions and Percents</title>
+<style>
+:root{--bg:#f6f7fb;--tx:#1d2433;--mut:#5b657a;--ac:#4f46e5;--card:#fff;--bd:#dfe3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--tx:#eef0f7;--mut:#9aa4bb;--ac:#818cf8;--card:#1c2130;--bd:#2c3347}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:420px;margin:0 auto;padding:12px 16px 24px}
+.bar{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin:6px 0 10px}
+button{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.wrap{position:relative;width:100%;max-width:360px;margin:0 auto}
+canvas{width:100%;height:auto;display:block;border-radius:12px;background:#0f172a;touch-action:none}
+.ov{position:absolute;inset:0;background:rgba(15,23,42,.96);color:#fff;border-radius:12px;padding:12px;display:none;flex-direction:column;justify-content:center;gap:8px;overflow:auto}
+.ov.show{display:flex}.ov button{background:#1e293b;color:#fff;border-color:#334155}
+.ov button.pri{background:#4f46e5;border-color:#4f46e5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid button{font-size:1.15rem;font-weight:700}
+.grid button.sel{outline:3px solid #facc15}.grid button.ok{background:#15803d;border-color:#15803d}
+.grid button.no{background:#b91c1c;border-color:#b91c1c}
+.small{color:var(--mut);font-size:.9rem;text-align:center}
+.ov .s{color:#cbd5e1;font-size:.9rem}
+</style></head><body><main>
+<h1 style="font-size:1.3rem;margin:.2em 0">🏓 Match &amp; Pong</h1>
+<div class="bar"><span>❤️ Lives: <span id="lives">3</span></span><span>Score: <span id="score">0</span></span><button id="earn">+ Earn lives</button></div>
+<div class="wrap"><canvas id="c" width="360" height="480"></canvas><div class="ov show" id="ov"></div></div>
+<p class="small">Drag, use the mouse, or ← → to move your paddle. Missing the ball costs a life. Match fractions to percents to earn more lives!</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let lives=3,score=0;
+function hud(){$('lives').textContent=lives;$('score').textContent=score}
+function gain(){if(lives<10)lives++;hud()}
+/* ---------- Pong (same game) ---------- */
+const cv=$('c'),x=cv.getContext('2d'),W=360,H=480,PW=76;
+let paused=true,playing=false,over=false,px=W/2,ax=W/2,b,keys={};
+function resetBall(){const s=3.6+Math.min(score,20)*.08;b={x:W/2,y:H/2,vx:s*(Math.random()-.5),vy:s}}
+function ov(h){const o=$('ov');o.innerHTML=h;o.classList.add('show')}
+function hide(){$('ov').classList.remove('show')}
+function menu(){paused=true;playing=false;
+ ov(`<h2>🏓 Match &amp; Pong</h2><p>You have ❤️ ${lives} lives. Match fractions to percents to earn more!</p><button class="pri" id="go">Play</button><button id="pr">Earn lives first</button>`);
+ $('go').onclick=()=>lives<1?match():start();$('pr').onclick=()=>match()}
+function start(){score=0;over=false;playing=true;resetBall();hud();hide();paused=false}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();px=(e.clientX-r.left)*W/r.width});
+addEventListener('keydown',e=>keys[e.key]=1);addEventListener('keyup',e=>keys[e.key]=0);
+function frame(){
+ if(!paused){
+  if(keys.ArrowLeft)px-=6;if(keys.ArrowRight)px+=6;px=Math.max(PW/2,Math.min(W-PW/2,px));
+  ax+=Math.max(-2.6,Math.min(2.6,b.x-ax));ax=Math.max(PW/2,Math.min(W-PW/2,ax));
+  b.x+=b.vx;b.y+=b.vy;
+  if(b.x<6||b.x>W-6){b.vx*=-1;b.x=Math.max(6,Math.min(W-6,b.x))}
+  if(b.vy>0&&b.y>=H-26&&b.y<=H-16&&Math.abs(b.x-px)<PW/2+6){const o=(b.x-px)/(PW/2),s=Math.min(Math.hypot(b.vx,b.vy)+.15,8);b.vx=o*s*.8;b.vy=-Math.sqrt(s*s-b.vx*b.vx);score++;hud()}
+  if(b.vy<0&&b.y<=26&&Math.abs(b.x-ax)<PW/2+6)b.vy=Math.abs(b.vy);
+  if(b.y<0){b.y=2;b.vy=Math.abs(b.vy)}
+  if(b.y>H+8){lives--;hud();if(lives<=0){over=true;paused=true;match('Out of lives! Match to earn more.')}else resetBall()}}
+ x.clearRect(0,0,W,H);x.fillStyle='#38bdf8';x.fillRect(ax-PW/2,14,PW,10);x.fillStyle='#a78bfa';x.fillRect(px-PW/2,H-24,PW,10);
+ x.setLineDash([8,8]);x.strokeStyle='#334155';x.beginPath();x.moveTo(0,H/2);x.lineTo(W,H/2);x.stroke();x.setLineDash([]);
+ x.fillStyle='#fff';x.beginPath();x.arc(b.x,b.y,6,0,7);x.fill();requestAnimationFrame(frame)}
+/* ---------- Matching round: +1 life per correct match ---------- */
+const pool=[[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[1,10],[3,10],[7,10],[9,10],[1,8],[3,8],[5,8],[7,8],[1,20],[3,20],[1,25],[7,20],[9,20]];
+const pct=([a,b])=>+(a/b*100).toFixed(1);
+const shuf=a=>a.sort(()=>Math.random()-.5);
+function match(msg){paused=true;
+ const pairs=shuf(pool.slice()).slice(0,4);
+ const left=shuf(pairs.map((p,i)=>({i,t:`${p[0]}/${p[1]}`}))),right=shuf(pairs.map((p,i)=>({i,t:pct(p)+'%'})));
+ let sel=null,done=0,earned=0;
+ ov(`<b>${msg||'Match each fraction to its percent'}</b><div class="s">Tap a fraction, then its percent. Each match = +1 life ❤️</div><div class="grid" id="g"></div><div id="fb" class="s"></div>`);
+ const g=$('g');
+ const mk=(o,side)=>{const bt=document.createElement('button');bt.textContent=o.t;bt.dataset.s=side;bt.dataset.i=o.i;g.appendChild(bt);return bt};
+ const L=left.map(o=>mk(o,'L')),Rr=right.map(o=>mk(o,'R'));
+ // interleave into two columns: left items in col 1, right in col 2
+ g.innerHTML='';for(let k=0;k<4;k++){g.appendChild(L[k]);g.appendChild(Rr[k])}
+ [...L,...Rr].forEach(bt=>bt.onclick=()=>{
+  if(bt.classList.contains('ok'))return;
+  if(!sel||sel.dataset.s==bt.dataset.s){if(sel)sel.classList.remove('sel');sel=bt;bt.classList.add('sel');return}
+  const a=sel,c=bt;a.classList.remove('sel');sel=null;
+  if(a.dataset.i==c.dataset.i){[a,c].forEach(e=>e.classList.add('ok'));gain();earned++;done++;
+   const p=pairs[a.dataset.i];$('fb').textContent=`✅ ${p[0]}/${p[1]}: ${p[0]} ÷ ${p[1]} = ${+(p[0]/p[1]).toFixed(3)} → ×100 = ${pct(p)}%. +1 life ❤️`;
+   if(done==4)setTimeout(fin,900)}
+  else{[a,c].forEach(e=>e.classList.add('no'));$('fb').textContent='❌ Not a match. Hint: divide the top by the bottom, then multiply by 100.';setTimeout(()=>[a,c].forEach(e=>e.classList.remove('no')),700)}});
+ function fin(){ov(`<h2>🎉 You earned ${earned} ❤️</h2><p>You now have ${lives} lives.</p><button class="pri" id="d">${playing?'Back to the game':'Play now'}</button><button id="m">Another round</button>`);
+  $('d').onclick=()=>{if(playing){if(over){over=false;resetBall()}hide();paused=false}else start()};$('m').onclick=()=>match()}}
+$('earn').onclick=()=>{if(!$('ov').classList.contains('show'))match()};
+resetBall();hud();menu();frame();
+</script></body></html>

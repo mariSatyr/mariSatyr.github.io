@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Math Tetris: Fractions, Decimals &amp; Percents</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2433;--mut:#5b657a;--ac:#4f46e5;--ok:#15803d;--bad:#b91c1c;--bd:#dfe3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--card:#1c2130;--tx:#eef0f7;--mut:#9aa4bb;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3347}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:440px;margin:0 auto;padding:10px 16px 24px}
+h1{font-size:1.3rem;margin:.2em 0}
+.hud{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin:6px 0}
+button{font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.wrap{position:relative;width:200px;margin:0 auto}
+canvas{display:block;width:200px;height:400px;border-radius:10px;background:#0f172a}
+.pad{display:flex;gap:6px;justify-content:center;margin:8px 0}.pad button{flex:1;max-width:70px;font-size:1.2rem;padding:10px 0;touch-action:manipulation}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-top:8px}
+.q{font-size:1.15rem;font-weight:700;margin-bottom:8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}.opts button{font-size:1.15rem;font-weight:700}
+.opts button.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.opts button.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.fb{margin-top:8px;font-size:.95rem}.good{color:var(--ok);font-weight:700}.bad{color:var(--bad)}
+.small{color:var(--mut);font-size:.88rem;text-align:center}
+</style></head><body><main>
+<h1>🧱 Math Tetris</h1>
+<div class="hud"><span>🧱 Blocks: <span id="bank">2</span></span><span>🔥 Streak: <span id="st">0</span></span><span>Score: <span id="sc">0</span></span><button id="new">New game</button></div>
+<div class="wrap"><canvas id="c" width="200" height="400"></canvas></div>
+<div class="pad"><button id="bl">◀</button><button id="br">▶</button><button id="bt">⟳</button><button id="bd">▼</button><button id="bh">⤓</button></div>
+<p class="small">Keys: ← → move, ↑ rotate, ↓ soft drop, space hard drop. No blocks left? Answer questions to earn more.</p>
+<div class="card" id="qc"><div class="q" id="q"></div><div class="opts" id="o"></div><div class="fb" id="fb"></div></div>
+<p class="small">3 correct in a row = a bonus block!</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+/* ---------- Questions ---------- */
+const T=[[1,2,.5,50],[1,4,.25,25],[3,4,.75,75],[1,5,.2,20],[2,5,.4,40],[3,5,.6,60],[4,5,.8,80],[1,10,.1,10],[3,10,.3,30],[7,10,.7,70],[9,10,.9,90],[1,8,.125,12.5],[3,8,.375,37.5],[5,8,.625,62.5],[7,8,.875,87.5],[1,20,.05,5],[3,20,.15,15],[1,25,.04,4]]
+ .map(([n,d,v,p])=>({f:n+'/'+d,d:String(v),p:p+'%',v}));
+const K={f:'fraction',d:'decimal',p:'percent'},R=a=>a[Math.floor(Math.random()*a.length)],shuf=a=>a.sort(()=>Math.random()-.5);
+let bank=2,streak=0,score=0,answered=false,Q;
+function hud(){$('bank').textContent=bank;$('st').textContent=streak;$('sc').textContent=score}
+function newQ(){answered=false;$('fb').innerHTML='';
+ if(Math.random()<.4){const [a,b]=shuf(T.slice()).slice(0,2),big=Math.random()<.5,ks=['f','d','p'],sa=a[R(ks)],sb=b[R(ks)];
+  const win=(big?a.v>b.v:a.v<b.v)?sa:sb;
+  Q={t:`Which is ${big?'BIGGER':'SMALLER'}?`,o:[sa,sb],ok:win,w:`${a.f} = ${a.d} = ${a.p} and ${b.f} = ${b.d} = ${b.p}. So ${win} is ${big?'bigger':'smaller'}.`}}
+ else{const ks=shuf(['f','d','p']),fr=ks[0],to=ks[1],a=R(T),others=shuf(T.filter(t=>t!==a)).slice(0,3);
+  Q={t:`Match: which ${K[to]} equals ${a[fr]}?`,o:shuf([a[to],...others.map(t=>t[to])]),ok:a[to],w:`${a.f} = ${a.d} = ${a.p}. (Divide top by bottom for the decimal, then ×100 for the percent.)`}}
+ $('q').textContent=Q.t;const o=$('o');o.innerHTML='';
+ Q.o.forEach(t=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>pick(b,t);o.appendChild(b)})}
+function pick(b,t){if(answered)return;
+ if(t==Q.ok){answered=true;b.classList.add('ok');streak++;let g=1;if(streak%3==0)g=2;bank+=g;hud();
+  $('fb').innerHTML=`<span class="good">✅ Correct! +${g} block${g>1?'s':''} 🧱${g>1?' (streak bonus!)':''}</span><div class="small">${Q.w}</div>`;
+  setTimeout(()=>{if(answered)newQ()},1500)}
+ else{b.classList.add('no');b.disabled=true;streak=0;hud();answered=true;
+  [...$('o').children].forEach(e=>{if(e.textContent==Q.ok)e.classList.add('ok');e.disabled=true});
+  $('fb').innerHTML=`<span class="bad">❌ Not quite.</span> ${Q.w}<br><button class="pri" id="nx" style="margin-top:6px">Next question</button>`;$('nx').onclick=newQ}}
+/* ---------- Tetris ---------- */
+const cv=$('c'),x=cv.getContext('2d'),C=20,CW=10,CH=20;
+const SH={I:[[1,1,1,1]],O:[[1,1],[1,1]],T:[[0,1,0],[1,1,1]],S:[[0,1,1],[1,1,0]],Z:[[1,1,0],[0,1,1]],J:[[1,0,0],[1,1,1]],L:[[0,0,1],[1,1,1]]};
+const CL={I:'#22d3ee',O:'#facc15',T:'#a78bfa',S:'#4ade80',Z:'#f87171',J:'#60a5fa',L:'#fb923c'};
+let grid,cur,over,last=0,acc=0;
+const rot=m=>m[0].map((_,i)=>m.map(r=>r[i]).reverse());
+function hit(m,px,py){return m.some((r,j)=>r.some((v,i)=>v&&(px+i<0||px+i>=CW||py+j>=CH||(py+j>=0&&grid[py+j][px+i]))))}
+function reset(){grid=Array.from({length:CH},()=>Array(CW).fill(0));cur=null;over=false;bank=2;streak=0;score=0;hud();newQ()}
+function spawn(){if(cur||over||bank<1)return;bank--;hud();const k=R(Object.keys(SH)),m=SH[k].map(r=>r.slice());cur={m,k,x:Math.floor((CW-m[0].length)/2),y:0};
+ if(hit(m,cur.x,cur.y)){over=true;cur=null}}
+function lock(){cur.m.forEach((r,j)=>r.forEach((v,i)=>{if(v&&cur.y+j>=0)grid[cur.y+j][cur.x+i]=CL[cur.k]}));
+ let n=0;for(let j=CH-1;j>=0;j--)if(grid[j].every(v=>v)){grid.splice(j,1);grid.unshift(Array(CW).fill(0));n++;j++}
+ score+=[0,100,300,500,800][n];hud();cur=null}
+function mv(dx,dy){if(!cur||over)return false;if(!hit(cur.m,cur.x+dx,cur.y+dy)){cur.x+=dx;cur.y+=dy;return true}return false}
+function down(){if(!cur)return;if(!mv(0,1))lock()}
+function turn(){if(!cur)return;const r=rot(cur.m);for(const d of[0,-1,1,-2,2])if(!hit(r,cur.x+d,cur.y)){cur.m=r;cur.x+=d;return}}
+function drop(){if(!cur)return;while(mv(0,1));lock()}
+function draw(){x.clearRect(0,0,200,400);
+ grid.forEach((r,j)=>r.forEach((v,i)=>{if(v){x.fillStyle=v;x.fillRect(i*C+1,j*C+1,C-2,C-2)}else{x.fillStyle='#16203a';x.fillRect(i*C+1,j*C+1,C-2,C-2)}}));
+ if(cur){x.fillStyle=CL[cur.k];cur.m.forEach((r,j)=>r.forEach((v,i)=>{if(v)x.fillRect((cur.x+i)*C+1,(cur.y+j)*C+1,C-2,C-2)}))}
+ x.fillStyle='#fff';x.textAlign='center';x.font='bold 14px system-ui';
+ if(over){x.fillStyle='rgba(0,0,0,.7)';x.fillRect(0,150,200,90);x.fillStyle='#fff';x.fillText('Game over! 🧱',100,190);x.fillText('Tap New game',100,215)}
+ else if(!cur&&bank<1){x.fillStyle='rgba(0,0,0,.6)';x.fillRect(0,170,200,60);x.fillStyle='#fff';x.fillText('Answer questions',100,195);x.fillText('to earn blocks! 🧱',100,215)}}
+function loop(t){const dt=t-last;last=t;acc+=dt;const sp=Math.max(180,650-Math.floor(score/300)*60);
+ spawn();if(acc>sp){acc=0;down()}draw();requestAnimationFrame(loop)}
+const bind=(id,f)=>{const e=$(id);e.addEventListener('pointerdown',ev=>{ev.preventDefault();f()})};
+bind('bl',()=>mv(-1,0));bind('br',()=>mv(1,0));bind('bt',turn);bind('bd',down);bind('bh',drop);
+addEventListener('keydown',e=>{const m={ArrowLeft:()=>mv(-1,0),ArrowRight:()=>mv(1,0),ArrowUp:turn,ArrowDown:down,' ':drop}[e.key];if(m){e.preventDefault();m()}});
+$('new').onclick=reset;
+reset();requestAnimationFrame(loop);
+</script></body></html>
