@@ -3,9 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
     <title>Plate Boundaries Drag and Drop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
     <style>
-      :root {
+      :root{
         --bg:#f6f1e7; --surface:#fffdf8; --surface2:#efe7d6; --ink:#2b2118; --ink-soft:#5c4f3f;
         --line:#d8cbb2; --accent:#b4552d; --accent-ink:#8a3d1e;
         --div:#1f7a6d; --div-bg:#e2f0ec; --con:#b4552d; --con-bg:#f9e9dd; --tra:#3d5a96; --tra-bg:#e4e9f5;
@@ -13,81 +18,155 @@
         --shadow:0 2px 6px rgba(60,42,20,.14),0 10px 24px rgba(60,42,20,.08);
         --radius:14px;
       }
-      * { box-sizing:border-box; }
-      body {
-        margin:0; background:var(--bg); color:var(--ink);
-        font-family: Arial, sans-serif; line-height:1.5;
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#1d1812; --surface:#2a231a; --surface2:#332a1e; --ink:#f2e9da; --ink-soft:#c9bba2;
+          --line:#55452f; --accent:#e08a5a; --accent-ink:#f0b48d;
+          --div:#5ec2b2; --div-bg:#1e3531; --con:#eda26f; --con-bg:#3d2a1c; --tra:#93aee8; --tra-bg:#26314d;
+          --good:#8fd694; --good-bg:#24381f; --bad:#ff9d94; --bad-bg:#47211d;
+          --shadow:0 2px 6px rgba(0,0,0,.4),0 10px 24px rgba(0,0,0,.3);
+        }
       }
-      .wrap { max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
-      h1,h2,h3 { margin:0; font-family: Georgia, serif; }
-      .kicker { font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:.8rem; color:var(--accent-ink); }
-      h1 { font-size:clamp(2rem,5vw,3rem); margin:.25rem 0 .5rem; }
-      .lede { max-width:68ch; color:var(--ink-soft); margin:0 0 18px; }
-      .howto { background:var(--surface); border:1.5px solid var(--line); padding:12px 16px; border-radius:var(--radius); box-shadow:var(--shadow); }
-      .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:18px 0 10px; }
-      button {
-        border:2px solid var(--ink); background:var(--surface); color:var(--ink);
-        border-radius:999px; padding:9px 20px; font-weight:700; cursor:pointer;
+      *{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%}
+      body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:17px;line-height:1.5}
+      h1,h2,h3{font-family:"Zilla Slab",serif;line-height:1.15;margin:0}
+      .wrap{max-width:1180px;margin:0 auto;padding:20px 16px 48px}
+
+      /* ---------- header ---------- */
+      header.top{padding:10px 0 4px}
+      .kicker{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.78rem;color:var(--accent-ink)}
+      h1{font-size:clamp(1.9rem,5vw,3rem);font-weight:700;margin:.15em 0 .3em}
+      .lede{max-width:62ch;color:var(--ink-soft);margin:0 0 14px;font-size:1.05rem}
+      .howto{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius);padding:12px 16px;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--shadow)}
+      .howto svg{flex:0 0 auto;margin-top:3px}
+      .howto p{margin:0}
+      .howto strong{color:var(--accent-ink)}
+
+      /* ---------- controls ---------- */
+      .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 6px}
+      button{font:inherit;font-weight:700;border-radius:999px;border:2px solid var(--ink);cursor:pointer;padding:9px 20px;background:var(--surface);color:var(--ink)}
+      button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+      @media (prefers-color-scheme: dark){button.primary{color:#1d1208}}
+      button:hover{filter:brightness(1.06)}
+      button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+      button:disabled{opacity:.45;cursor:default;filter:none}
+      .progress-wrap{flex:1 1 220px;min-width:200px}
+      .progress-label{font-size:.9rem;font-weight:700;margin-bottom:4px}
+      .progress-bar{height:12px;border-radius:99px;background:var(--surface2);border:1.5px solid var(--line);overflow:hidden}
+      .progress-fill{height:100%;width:0%;background:var(--div);border-radius:99px;transition:width .5s ease}
+      #feedback{min-height:1.6em;font-weight:700;margin:8px 0 0}
+      #feedback.good{color:var(--good)} #feedback.bad{color:var(--bad)}
+
+      /* ---------- tray ---------- */
+      .tray-head{display:flex;align-items:baseline;gap:12px;margin:20px 0 10px}
+      .tray-head h2{font-size:1.35rem}
+      .tray-head span{color:var(--ink-soft);font-size:.95rem}
+      #tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:14px;min-height:120px;border:2px dashed var(--line);border-radius:var(--radius);padding:14px;background:color-mix(in srgb,var(--surface) 80%,transparent)}
+      #tray.empty{place-items:center}
+      #tray .all-done-msg{color:var(--ink-soft);font-weight:700;text-align:center;padding:18px}
+
+      /* ---------- cards ---------- */
+      .card{background:var(--surface);border:2px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+      .card:active{cursor:grabbing}
+      .card img{width:100%;aspect-ratio:4/2.9;object-fit:cover;display:block;pointer-events:none}
+      .card .meta{padding:9px 12px 11px}
+      .card .name{font-family:"Zilla Slab",serif;font-weight:700;font-size:1.06rem;line-height:1.2}
+      .card .sub{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+      .tag{font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--ink-soft);background:var(--surface2)}
+      .card .fact{display:none;font-size:.88rem;color:var(--ink-soft);margin:8px 0 0;border-top:1.5px dashed var(--line);padding-top:8px}
+      .card.selected{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent),var(--shadow)}
+      .card.dragging{opacity:.35}
+      .card.correct{border-color:var(--good);cursor:default}
+      .card.correct .fact{display:block}
+      .card.wrong{border-color:var(--bad);animation:shake .4s ease}
+      .badge{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;display:none;place-items:center;background:var(--good);color:#fff;box-shadow:var(--shadow)}
+      .card.correct .badge{display:grid}
+      @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+      .drag-ghost{position:fixed;z-index:60;pointer-events:none;width:230px;transform:translate(-50%,-50%) rotate(-2deg);box-shadow:0 18px 40px rgba(0,0,0,.35);opacity:.97}
+
+      /* ---------- zones ---------- */
+      .zones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px}
+      @media (max-width:900px){.zones{grid-template-columns:1fr}}
+      .zone{border-radius:18px;border:2.5px solid;padding:16px 14px 14px;min-height:230px;transition:box-shadow .15s ease,background .15s ease}
+      .zone[data-zone="divergent"]{border-color:var(--div);background:var(--div-bg)}
+      .zone[data-zone="convergent"]{border-color:var(--con);background:var(--con-bg)}
+      .zone[data-zone="transform"]{border-color:var(--tra);background:var(--tra-bg)}
+      .zone.dragover{box-shadow:0 0 0 4px color-mix(in srgb,currentColor 35%,transparent) inset}
+      .zone.armed{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 55%,transparent) inset}
+      .zone-head{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+      .zone-head .diagram{flex:0 0 auto;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:5px 7px;line-height:0}
+      .zone h2{font-size:1.45rem}
+      .zone .move{font-weight:700;font-size:.92rem}
+      .zone[data-zone="divergent"] .move{color:var(--div)} .zone[data-zone="convergent"] .move{color:var(--con)} .zone[data-zone="transform"] .move{color:var(--tra)}
+      .zone .desc{color:var(--ink-soft);font-size:.95rem;margin:2px 0 10px}
+      .zone .count{font-size:.85rem;font-weight:700;color:var(--ink-soft)}
+      .zone-cards{display:grid;gap:12px}
+      .zone .empty-note{border:2px dashed var(--line);border-radius:var(--radius);padding:16px;text-align:center;color:var(--ink-soft);font-size:.92rem;background:color-mix(in srgb,var(--surface) 60%,transparent)}
+
+      /* ---------- world map ---------- */
+      .map-section{margin-top:34px}
+      .map-section h2{font-size:1.4rem;margin-bottom:4px}
+      .map-intro{color:var(--ink-soft);margin:0 0 12px;max-width:70ch}
+      .map-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:stretch}
+      @media (max-width:900px){.map-layout{grid-template-columns:1fr}}
+      .map-frame{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:10px;box-shadow:var(--shadow)}
+      #worldMap{width:100%;height:480px;border-radius:10px;overflow:hidden}
+      @media (max-width:900px){#worldMap{height:380px}}
+      .map-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:500px;padding:2px}
+      @media (max-width:900px){.map-list{max-height:none}}
+      .map-row{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-left:6px solid var(--line);border-radius:10px;padding:9px 12px}
+      .map-row[data-b="divergent"]{border-left-color:var(--div)}
+      .map-row[data-b="convergent"]{border-left-color:var(--con)}
+      .map-row[data-b="transform"]{border-left-color:var(--tra)}
+      .map-row:hover{border-color:var(--accent)}
+      .map-row .num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:700;font-size:.85rem;display:grid;place-items:center;margin-top:1px}
+      .map-row .mr-name{font-family:"Zilla Slab",serif;font-weight:700;line-height:1.2;display:block}
+      .map-row .mr-sub{font-size:.84rem;color:var(--ink-soft);display:block}
+      .map-row .mr-found{font-size:.8rem;font-weight:700;color:var(--good);display:none}
+      .map-row.found .mr-found{display:block}
+      .map-row.map-selected{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 45%,transparent)}
+      .pin{width:30px;height:30px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35);display:grid;place-items:center;color:#fff;font-weight:700;font-size:.8rem}
+      .pin--on{background:var(--ink);width:36px;height:36px;font-size:1rem}
+      .map-fallback{display:none;background:var(--surface2);border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--ink-soft);font-weight:700}
+      .map-legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:10px;font-size:.9rem;color:var(--ink-soft)}
+      .map-legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+      .loc-chip{font-size:.74rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1.5px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--accent-ink);background:var(--surface2)}
+      .loc-chip:hover{border-color:var(--accent)}
+
+      /* ---------- win + notes ---------- */
+      #win{display:none;margin-top:26px;background:var(--good-bg);border:2.5px solid var(--good);border-radius:18px;padding:20px;text-align:center}
+      #win h2{font-size:1.7rem;margin-bottom:6px}
+      #win p{margin:0 auto 14px;max-width:56ch}
+      .notes{margin-top:30px}
+      .notes h2{font-size:1.4rem;margin-bottom:8px}
+      .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+      .note{background:var(--surface);border:1.5px solid var(--line);border-left:6px solid var(--line);border-radius:10px;padding:10px 14px;font-size:.94rem}
+      .note b{display:block;font-family:"Zilla Slab",serif}
+      .note[data-b="divergent"]{border-left-color:var(--div)} .note[data-b="convergent"]{border-left-color:var(--con)} .note[data-b="transform"]{border-left-color:var(--tra)}
+      .note .nb{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+      footer{margin-top:36px;border-top:1.5px solid var(--line);padding-top:14px;color:var(--ink-soft);font-size:.9rem}
+      footer a{color:var(--accent-ink)}
+      @media (prefers-reduced-motion: reduce){
+        *{animation:none!important;transition:none!important}
       }
-      button.primary { background:var(--accent); border-color:var(--accent); color:white; }
-      .progress-wrap { flex:1 1 220px; min-width:220px; }
-      .progress-label { font-size:.9rem; font-weight:700; margin-bottom:4px; }
-      .progress-bar { height:12px; background:var(--surface2); border:1.5px solid var(--line); border-radius:999px; overflow:hidden; }
-      .progress-fill { height:100%; width:0%; background:var(--div); transition:width .25s ease; }
-      #feedback { min-height:1.5em; margin:8px 0 0; font-weight:700; }
-      .good { color:var(--good); }
-      .bad { color:var(--bad); }
-      .tray-head { margin:20px 0 12px; }
-      #tray {
-        display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;
-        min-height:140px; background:var(--surface); border:2px dashed var(--line); border-radius:var(--radius);
-        padding:14px;
-      }
-      .card {
-        background:var(--surface); border:2px solid var(--line); border-radius:var(--radius); overflow:hidden;
-        box-shadow:var(--shadow); cursor:grab; user-select:none;
-      }
-      .card img { width:100%; height:160px; object-fit:cover; display:block; }
-      .card .meta { padding:10px 12px 12px; }
-      .card .name { font-weight:700; font-size:1.05rem; }
-      .card .sub { font-size:.78rem; color:var(--ink-soft); margin-top:6px; }
-      .card.correct { border-color:var(--good); }
-      .card.wrong { border-color:var(--bad); }
-      .zones { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px; }
-      .zone { border:2.5px solid; border-radius:18px; min-height:220px; padding:14px; }
-      .zone[data-zone="divergent"] { border-color:var(--div); background:var(--div-bg); }
-      .zone[data-zone="convergent"] { border-color:var(--con); background:var(--con-bg); }
-      .zone[data-zone="transform"] { border-color:var(--tra); background:var(--tra-bg); }
-      .zone-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-      .zone-head .diagram { width:52px; height:28px; border-radius:10px; background:var(--surface); border:1.5px solid var(--line); display:grid; place-items:center; font-weight:700; }
-      .zone h2 { font-size:1.45rem; }
-      .zone .move { font-weight:700; margin-top:2px; }
-      .zone[data-zone="divergent"] .move { color:var(--div); }
-      .zone[data-zone="convergent"] .move { color:var(--con); }
-      .zone[data-zone="transform"] .move { color:var(--tra); }
-      .zone-cards { display:grid; gap:12px; }
-      .zone .empty-note { border:2px dashed var(--line); background:rgba(255,255,255,.2); border-radius:12px; padding:12px; text-align:center; color:var(--ink-soft); }
-      #win { display:none; margin-top:24px; padding:20px; text-align:center; border-radius:18px; background:var(--good-bg); border:2.5px solid var(--good); }
-      #win h2 { font-size:1.8rem; margin-bottom:6px; }
-      #notesGrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:24px; }
-      .note { background:var(--surface); border:1.5px solid var(--line); border-left:6px solid var(--line); border-radius:12px; padding:12px 14px; }
-      .note[data-b="divergent"]{ border-left-color:var(--div);} .note[data-b="convergent"]{ border-left-color:var(--con);} .note[data-b="transform"]{ border-left-color:var(--tra);} 
-      .note .nb { font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; }
-      footer { margin-top:30px; border-top:1.5px solid var(--line); padding-top:14px; color:var(--ink-soft); }
-      @media (max-width: 760px){ .zones { grid-template-columns:1fr; } }
     </style>
   </head>
   <body>
     <div class="wrap">
-      <header>
+      <header class="top">
         <div class="kicker">Earth Science · Plate Tectonics</div>
         <h1>Sort the Landforms: Plate Boundaries</h1>
-        <p class="lede">Drag each photo into the correct plate-boundary bin. These images are loaded from the site’s root <code>/Science/</code> folder so they display correctly on GitHub Pages.</p>
+        <p class="lede">Every photo below shows a real place, sourced from Wikipedia, Wikimedia Commons and GNS Science — a mountain, valley, cliff or fjord shaped by moving tectonic plates. Drag each card into the right bin below. When you sort a card correctly, its fact box opens and it can be found on the map.</p>
+        <div class="howto">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18M12 3L9 6M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p><strong>How to play:</strong> drag a card with your mouse or finger — or tap a card to pick it up, then tap a bin. Fill all three bins, then press <strong>Check my answers</strong>. Right answers glow green and wrong ones shake red.</p>
+        </div>
       </header>
 
       <div class="controls">
         <button class="primary" id="checkBtn" type="button">Check my answers</button>
-        <button id="restartBtn" type="button">Shuffle &amp; restart</button>
+        <button id="shuffleBtn" type="button">Shuffle &amp; restart</button>
         <div class="progress-wrap">
           <div class="progress-label" id="progressLabel">0 of 12 sorted correctly</div>
           <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -95,183 +174,245 @@
       </div>
       <p id="feedback" role="status" aria-live="polite"></p>
 
-      <div class="tray-head"><h2>Photo cards</h2></div>
+      <div class="tray-head"><h2>Photo cards</h2><span>Start here — drag these down into the bins</span></div>
       <div id="tray" aria-label="Unsorted photo cards"></div>
 
       <div class="zones" id="zones">
         <section class="zone" data-zone="divergent" aria-label="Divergent boundary bin">
-          <div class="zone-head"><div class="diagram">↔</div><div><h2>Divergent</h2><div class="move">Plates move apart</div></div></div>
-          <div class="zone-cards"><div class="empty-note">Drop cards here</div></div>
+          <div class="zone-head">
+            <span class="diagram" aria-hidden="true"><svg width="58" height="30" viewBox="0 0 58 30"><rect x="2" y="8" width="20" height="14" rx="2" fill="#1f7a6d" opacity=".35"/><rect x="36" y="8" width="20" height="14" rx="2" fill="#1f7a6d" opacity=".35"/><path d="M17 15H41" stroke="#1f7a6d" stroke-width="2.3" stroke-linecap="round"/></svg></span>
+            <div><h2>Divergent</h2><div class="move">Plates move APART</div></div>
+          </div>
+          <p class="desc">The crust stretches and cracks open. Look for rift valleys, gorges and new volcanic land in the gap.</p>
+          <div class="zone-cards"></div>
+          <p class="count"></p>
         </section>
+
         <section class="zone" data-zone="convergent" aria-label="Convergent boundary bin">
-          <div class="zone-head"><div class="diagram">→←</div><div><h2>Convergent</h2><div class="move">Plates move together</div></div></div>
-          <div class="zone-cards"><div class="empty-note">Drop cards here</div></div>
+          <div class="zone-head">
+            <span class="diagram" aria-hidden="true"><svg width="58" height="30" viewBox="0 0 58 30"><rect x="2" y="8" width="20" height="14" rx="2" fill="#b4552d" opacity=".35"/><rect x="36" y="8" width="20" height="14" rx="2" fill="#b4552d" opacity=".35"/><path d="M22 15L36 15" stroke="#b4552d" stroke-width="2.3" stroke-linecap="round"/><path d="M18 10L24 15L18 20" stroke="#b4552d" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 10L34 15L40 20" stroke="#b4552d" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <div><h2>Convergent</h2><div class="move">Plates move TOGETHER</div></div>
+          </div>
+          <p class="desc">Plates crash and crumple, or one dives under the other. Look for towering mountains and volcanoes.</p>
+          <div class="zone-cards"></div>
+          <p class="count"></p>
         </section>
+
         <section class="zone" data-zone="transform" aria-label="Transform boundary bin">
-          <div class="zone-head"><div class="diagram">↕</div><div><h2>Transform</h2><div class="move">Plates slide sideways</div></div></div>
-          <div class="zone-cards"><div class="empty-note">Drop cards here</div></div>
+          <div class="zone-head">
+            <span class="diagram" aria-hidden="true"><svg width="58" height="30" viewBox="0 0 58 30"><rect x="19" y="1" width="20" height="13" rx="2" fill="#3d5a96" opacity=".35"/><rect x="19" y="16" width="20" height="13" rx="2" fill="#3d5a96" opacity=".35"/><path d="M23 10H35M23 20H35" stroke="#3d5a96" stroke-width="2.3" stroke-linecap="round"/><path d="M29 3V27" stroke="#3d5a96" stroke-width="2.3" stroke-linecap="round"/></svg></span>
+            <div><h2>Transform</h2><div class="move">Plates SLIDE SIDEWAYS</div></div>
+          </div>
+          <p class="desc">Plates grind past each other along a fault. Look for a straight line sliced through the land — offset valleys and scarps.</p>
+          <div class="zone-cards"></div>
+          <p class="count"></p>
         </section>
       </div>
+
+      <section class="map-section" id="mapSection" aria-label="World map of the features">
+        <h2>Where in the world?</h2>
+        <p class="map-intro">Every card is a real place. Find all twelve on the map — tap a numbered pin, or tap a place in the list, to see where it sits. When you sort a card correctly, its place is marked on the map automatically.</p>
+        <div class="map-layout">
+          <div class="map-frame">
+            <div id="worldMap" role="img" aria-label="World map with a numbered pin for each of the twelve landform photos"></div>
+            <p class="map-fallback" id="mapFallback">The interactive map can't load here — use the list of places beside it instead; each one names the country and region to find on a classroom map.</p>
+          </div>
+          <div class="map-list" id="mapList" aria-label="List of places on the map"></div>
+        </div>
+        <div class="map-legend" aria-hidden="true">
+          <span><span class="sw" style="background:var(--div)"></span>Divergent</span>
+          <span><span class="sw" style="background:var(--con)"></span>Convergent</span>
+          <span><span class="sw" style="background:var(--tra)"></span>Transform</span>
+        </div>
+      </section>
 
       <div id="win" role="status">
         <h2>You sorted all 12!</h2>
-        <p>Every photo is in the right bin. Click Shuffle &amp; restart to play again.</p>
+        <p>Every mountain, valley, cliff and fjord is in the right bin. Scroll down to read the field note for each place — then hit Shuffle &amp; restart to play again and beat your score.</p>
+        <button class="primary" id="againBtn" type="button">Play again</button>
       </div>
 
-      <div id="notesGrid"></div>
+      <section class="notes" aria-label="Field notes answer key">
+        <h2>Field notes — the answer key</h2>
+        <p style="color:var(--ink-soft);margin:0 0 12px">Facts unlock on each card when you sort it correctly. Here is the full set for checking and discussion.</p>
+        <div class="notes-grid" id="notesGrid"></div>
+      </section>
 
       <footer>
-        <p>Images are served from the repo at <code>/Science/*.jpg</code> and are now referenced directly so the page displays correctly.</p>
+        <p><strong>A note for teachers:</strong> New Zealand sits on a bendy boundary that slides <em>and</em> squeezes, so its Southern Alps and Alpine Fault are sorted as transform (sideways grinding) rather than simply convergent.</p>
+        <p>Photos were gathered from Wikipedia articles and Wikimedia Commons (plus GNS Science, New Zealand) and are shown at classroom size. Read more: <a href="https://en.wikipedia.org/wiki/%C3%9Ei%C5%ABir%2C_Iceland">Þingvellir</a>, <a href="https://en.wikipedia.org/wiki/Alpine_Fault">Alpine Fault</a>, <a href="https://en.wikipedia.org/wiki/San_Andreas_Fault">San Andreas Fault</a>.</p>
       </footer>
     </div>
 
     <script>
-      const cards = [
-        { id: 'almannagj-gorge', name: 'Almannagj Gorge', zone:, image: '/Science/Almannagj-Gorge.jpg', fact: 'A rift valley carved as plates pull apart.' },
-        { id: 'thingvellir', name: 'Thingvellir rift valley', zone: 'divergent', image: '/Science/Thingvellir-Rift-Valley.jpg', fact: 'A classic divergent boundary with a widening crack.' },
-        { id: 'great-rift', name: 'Great Rift Valley', zone: 'divergent', image: '/Science/Great-Rift-Valley.jpg', fact: 'A long active rift created by extension.' },
-        { id: 'dead-sea', name: 'Dead Sea valley', zone: 'divergent', image: '/Science/Dead-Sea-Valley.jpg', fact: 'A lowland depression formed by continental rifting.' },
-        { id: 'andes', name: 'Andes Mountains', zone: 'convergent', image: '/Science/Andes-Mountains.jpg', fact: 'A mountain range made where plates converge.' },
-        { id: 'everest', name: 'Himalayas / Everest', zone: 'convergent', image: '/Science/Himalayas-Mount-Everest.jpg', fact: 'The world’s highest mountain chain from continental collision.' },
-        { id: 'mount-fuji', name: 'Mount Fuji', zone: 'convergent', image: '/Science/Mount-Fuji.jpg', fact: 'A volcanic cone tied to subduction.' },
-        { id: 'mount-longonot', name: 'Mount Longonot', zone: 'convergent', image: '/Science/Mount-Longonot.jpg', fact: 'Volcanic land formed near a convergent margin.' },
-        { id: 'san-andreas', name: 'San Andreas Fault', zone: 'transform', image: '/Science/San-Andreas-Fault.jpg', fact: 'A transform fault with sideways motion.' },
-        { id: 'alpine-fault', name: 'Alpine Fault Valley', zone: 'transform', image: '/Science/Alpine-Fault-Valley.jpg', fact: 'A strike-slip fault producing offset landforms.' },
-        { id: 'southern-alps', name: 'Southern Alps', zone: 'transform', image: '/Science/Southern-Alps.jpg', fact: 'A mountain belt shaped by a major transform boundary.' },
-        { id: 'doubtful-sound', name: 'Doubtful Sound / Patea', zone: 'transform', image: '/Science/Doubtful-Sound-Patea.jpg', fact: 'A landscape cut by faulting and lateral motion.' }
-      ];
+      (() => {
+        'use strict';
 
-      const tray = document.getElementById('tray');
-      const progressFill = document.getElementById('progressFill');
-      const progressLabel = document.getElementById('progressLabel');
-      const feedback = document.getElementById('feedback');
-      const notesGrid = document.getElementById('notesGrid');
-      const win = document.getElementById('win');
-      const zoneMap = {
-        divergent: document.querySelector('.zone[data-zone="divergent"] .zone-cards'),
-        convergent: document.querySelector('.zone[data-zone="convergent"] .zone-cards'),
-        transform: document.querySelector('.zone[data-zone="transform"] .zone-cards')
-      };
+        const cards = [
+          { id: 'almannagj', name: 'Almannagj Gorge', zone: 'divergent', image: '/Science/Almannagj-Gorge.jpg', fact: 'Iceland sits right on the Mid-Atlantic Ridge; this rift valley marks the boundary where the plates are pulling apart.', country: 'Iceland', region: 'Southwest Iceland', lat: 64.31, lon: -21.12 },
+          { id: 'thingvellir', name: 'Thingvellir rift valley', zone: 'divergent', image: '/Science/Thingvellir-Rift-Valley.jpg', fact: 'Thingvellir is a textbook divergent boundary where the crust is being stretched and the valley is widening.', country: 'Iceland', region: 'Southwest Iceland', lat: 64.26, lon: -21.13 },
+          { id: 'rift', name: 'Great Rift Valley', zone: 'divergent', image: '/Science/Great-Rift-Valley.jpg', fact: 'The East African Rift is a huge continental rift: crust is thinning and fault blocks are dropping downward.', country: 'Kenya', region: 'East African Rift', lat: 0.5, lon: 36.3 },
+          { id: 'deadsea', name: 'Dead Sea valley', zone: 'divergent', image: '/Science/Dead-Sea-Valley.jpg', fact: 'The Dead Sea basin formed as the Arabian Plate pulled away from Africa, creating a deep rift valley.', country: 'Jordan / Israel', region: 'Levant', lat: 31.56, lon: 35.57 },
 
-      function renderNote(card) {
-        const el = document.createElement('article');
-        el.className = 'note';
-        el.dataset.b = card.zone;
-        el.innerHTML = '<div class="nb">' + card.zone + '</div><strong>' + card.name + '</strong><div>' + card.fact + '</div>';
-        notesGrid.appendChild(el);
-      }
+          { id: 'andes', name: 'Andes Mountains', zone: 'convergent', image: '/Science/Andes-Mountains.jpg', fact: 'The Andes rise where the Nazca Plate is subducting beneath South America, producing volcanoes and uplift.', country: 'Chile / Peru', region: 'South America', lat: -13.16, lon: -72.55 },
+          { id: 'everest', name: 'Himalayas / Everest', zone: 'convergent', image: '/Science/Himalayas-Mount-Everest.jpg', fact: 'The Himalayas were lifted by the collision of the Indian Plate with Eurasia.', country: 'Nepal / China', region: 'Himalaya', lat: 27.99, lon: 86.93 },
+          { id: 'fuji', name: 'Mount Fuji', zone: 'convergent', image: '/Science/Mount-Fuji.jpg', fact: 'Mount Fuji is a classic volcanic cone produced by subduction at a convergent plate boundary.', country: 'Japan', region: 'Honshu', lat: 35.36, lon: 138.73 },
+          { id: 'longonot', name: 'Mount Longonot', zone: 'convergent', image: '/Science/Mount-Longonot.jpg', fact: 'Longonot is part of the East African volcanic belt, associated with crustal thinning and magmatism near a plate margin.', country: 'Kenya', region: 'Great Rift Valley', lat: -0.91, lon: 36.45 },
 
-      function createCard(card) {
-        const el = document.createElement('div');
-        el.className = 'card';
-        el.dataset.id = card.id;
-        el.draggable = true;
-        el.innerHTML = `
-          <img src="${card.image}" alt="${card.name}" />
-          <div class="meta">
-            <div class="name">${card.name}</div>
-            <div class="sub">${card.zone}</div>
-          </div>
-        `;
+          { id: 'sanandreas', name: 'San Andreas Fault', zone: 'transform', image: '/Science/San-Andreas-Fault.jpg', fact: 'The San Andreas Fault is a transform boundary where plates slide past each other along a strike-slip fault.', country: 'United States', region: 'California', lat: 35.1, lon: -119.85 },
+          { id: 'alpine', name: 'Alpine Fault Valley', zone: 'transform', image: '/Science/Alpine-Fault-Valley.jpg', fact: 'New Zealand’s Alpine Fault is a major transform fault: the land is offset sideways as the plates grind past one another.', country: 'New Zealand', region: 'South Island', lat: -43.57, lon: 170.05 },
+          { id: 'southernalps', name: 'Southern Alps', zone: 'transform', image: '/Science/Southern-Alps.jpg', fact: 'The Southern Alps were uplifted alongside the Alpine Fault, where the boundary is both sliding and compressing.', country: 'New Zealand', region: 'South Island', lat: -43.52, lon: 170.17 },
+          { id: 'patea', name: 'Doubtful Sound / Patea', zone: 'transform', image: '/Science/Doubtful-Sound-Patea.jpg', fact: 'Fiords and faulted valleys in Fiordland were shaped by transform motion and erosion along the plate boundary.', country: 'New Zealand', region: 'Fiordland', lat: -45.45, lon: 167.27 }
+        ];
 
-        el.addEventListener('dragstart', (event) => {
-          event.dataTransfer.setData('text/plain', card.id);
-          el.classList.add('dragging');
-        });
-        el.addEventListener('dragend', () => el.classList.remove('dragging'));
-        el.addEventListener('click', () => {
-          const targetZone = prompt('Which bin? divergent, convergent, or transform', card.zone);
-          if (!targetZone) return;
-          const cleaned = targetZone.trim().toLowerCase();
-          if (zoneMap[cleaned]) {
-            zoneMap[cleaned].appendChild(el);
-            el.dataset.zone = cleaned;
-          }
-        });
-        return el;
-      }
+        const tray = document.getElementById('tray');
+        const progressFill = document.getElementById('progressFill');
+        const progressLabel = document.getElementById('progressLabel');
+        const feedback = document.getElementById('feedback');
+        const notesGrid = document.getElementById('notesGrid');
+        const win = document.getElementById('win');
+        const againBtn = document.getElementById('againBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const checkBtn = document.getElementById('checkBtn');
 
-      function resetGame() {
-        tray.innerHTML = '';
-        notesGrid.innerHTML = '';
-        win.style.display = 'none';
-        feedback.textContent = '';
-        feedback.className = '';
-        Object.entries(zoneMap).forEach(([zone, list]) => {
-          list.innerHTML = '<div class="empty-note">Drop cards here</div>';
-        });
+        const zoneRefs = {
+          divergent: document.querySelector('.zone[data-zone="divergent"] .zone-cards'),
+          convergent: document.querySelector('.zone[data-zone="convergent"] .zone-cards'),
+          transform: document.querySelector('.zone[data-zone="transform"] .zone-cards')
+        };
 
-        cards.forEach(card => {
-          const el = createCard(card);
-          tray.appendChild(el);
-          renderNote(card);
-        });
+        function renderNote(card) {
+          const note = document.createElement('article');
+          note.className = 'note';
+          note.dataset.b = card.zone;
+          note.innerHTML = '<div class="nb">'+card.zone+'</div><b>'+card.name+'</b><div>'+card.fact+'</div>';
+          notesGrid.appendChild(note);
+        }
 
-        Object.values(zoneMap).forEach(list => {
-          list.addEventListener('dragover', e => {
-            e.preventDefault();
+        function createCard(card) {
+          const el = document.createElement('div');
+          el.className = 'card';
+          el.dataset.id = card.id;
+          el.draggable = true;
+          el.innerHTML = `
+            <img src="${card.image}" alt="${card.name}" />
+            <div class="meta">
+              <div class="name">${card.name}</div>
+            </div>
+          `;
+
+          el.addEventListener('dragstart', (event) => {
+            event.dataTransfer.setData('text/plain', card.id);
+            event.dataTransfer.effectAllowed = 'move';
+            el.classList.add('dragging');
           });
-          list.addEventListener('drop', e => {
-            e.preventDefault();
-            const id = e.dataTransfer.getData('text/plain');
-            const source = tray.querySelector('[data-id="' + id + '"]');
-            const cardEl = source || document.querySelector('.card[data-id="' + id + '"]');
-            if (!cardEl) return;
-            list.innerHTML = '';
-            list.appendChild(cardEl);
-            cardEl.dataset.zone = list.parentElement.dataset.zone;
-          });
-        });
+          el.addEventListener('dragend', () => el.classList.remove('dragging'));
 
-        updateProgress();
-      }
-
-      function updateProgress() {
-        const allZones = Object.values(zoneMap);
-        let correct = 0;
-        let total = 0;
-        allZones.forEach(list => {
-          const zoneName = list.closest('.zone').dataset.zone;
-          const placedCards = Array.from(list.querySelectorAll('.card'));
-          placedCards.forEach(cardEl => {
-            total += 1;
-            const card = cards.find(c => c.id === cardEl.dataset.id);
-            if (card && card.zone === zoneName) correct += 1;
-          });
-        });
-        const progress = total ? (correct / total) * 100 : 0;
-        progressFill.style.width = Math.min(100, progress) + '%';
-        progressLabel.textContent = correct + ' of 12 sorted correctly';
-      }
-
-      document.getElementById('checkBtn').addEventListener('click', () => {
-        let score = 0;
-        Object.entries(zoneMap).forEach(([zoneName, list]) => {
-          const assigned = Array.from(list.querySelectorAll('.card'));
-          assigned.forEach(cardEl => {
-            const card = cards.find(c => c.id === cardEl.dataset.id);
-            if (!card) return;
-            if (card.zone === zoneName) {
-              cardEl.classList.add('correct');
-              cardEl.classList.remove('wrong');
-              score += 1;
-            } else {
-              cardEl.classList.add('wrong');
-              cardEl.classList.remove('correct');
+          el.addEventListener('click', () => {
+            const target = prompt('Move this landform to which bin? Use: divergent, convergent, or transform', card.zone);
+            if (!target) return;
+            const cleaned = target.trim().toLowerCase();
+            if (zoneRefs[cleaned]) {
+              zoneRefs[cleaned].appendChild(el);
             }
           });
+
+          return el;
+        }
+
+        function shuffleCards() {
+          const shuffled = [...cards].sort(() => Math.random() - 0.5);
+          tray.innerHTML = '';
+          notesGrid.innerHTML = '';
+          feedback.textContent = '';
+          feedback.className = '';
+          win.style.display = 'none';
+
+          Object.values(zoneRefs).forEach(zone => {
+            zone.innerHTML = '<div class="empty-note">Drop cards here</div>';
+          });
+
+          shuffled.forEach((card) => {
+            const el = createCard(card);
+            tray.appendChild(el);
+            renderNote(card);
+          });
+
+          updateProgress();
+        }
+
+        function updateProgress() {
+          let correct = 0;
+          let placed = 0;
+
+          Object.entries(zoneRefs).forEach(([zoneName, list]) => {
+            const cardsInZone = [...list.querySelectorAll('.card')];
+            cardsInZone.forEach((cardEl) => {
+              placed += 1;
+              const match = cards.find((card) => card.id === cardEl.dataset.id);
+              if (match && match.zone === zoneName) correct += 1;
+            });
+          });
+
+          const ratio = placed ? (correct / placed) * 100 : 0;
+          progressFill.style.width = Math.min(100, ratio) + '%';
+          progressLabel.textContent = correct + ' of 12 sorted correctly';
+        }
+
+        Object.values(zoneRefs).forEach((zone) => {
+          zone.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            zone.parentElement.classList.add('dragover');
+          });
+
+          zone.addEventListener('dragleave', () => {
+            zone.parentElement.classList.remove('dragover');
+          });
+
+          zone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            const id = event.dataTransfer.getData('text/plain');
+            const dragged = tray.querySelector('[data-id="' + id + '"]') || document.querySelector('.card[data-id="' + id + '"]');
+            if (!dragged) return;
+
+            zone.innerHTML = '';
+            zone.appendChild(dragged);
+            zone.parentElement.classList.remove('dragover');
+            updateProgress();
+          });
         });
 
-        feedback.textContent = score === 12 ? 'Perfect! All cards are in the correct bins.' : 'You scored ' + score + ' out of 12.';
-        feedback.className = score === 12 ? 'good' : 'bad';
-        progressFill.style.width = (score / 12) * 100 + '%';
-        progressLabel.textContent = score + ' of 12 sorted correctly';
-        win.style.display = score === 12 ? 'block' : 'none';
-      });
+        checkBtn.addEventListener('click', () => {
+          let score = 0;
 
-      document.getElementById('restartBtn').addEventListener('click', resetGame);
+          Object.entries(zoneRefs).forEach(([zoneName, zone]) => {
+            const items = [...zone.querySelectorAll('.card')];
+            items.forEach((cardEl) => {
+              const match = cards.find((card) => card.id === cardEl.dataset.id);
+              if (!match) return;
+              if (match.zone === zoneName) {
+                cardEl.classList.add('correct');
+                cardEl.classList.remove('wrong');
+                score += 1;
+              } else {
+                cardEl.classList.add('wrong');
+                cardEl.classList.remove('correct');
+              }
+            });
+          });
 
-      resetGame();
+          feedback.textContent = score === 12 ? 'Perfect! All 12 landforms are in the correct bins.' : 'You scored ' + score + ' out of 12.';
+          feedback.className = score === 12 ? 'good' : 'bad';
+          progressFill.style.width = (score / 12) * 100 + '%';
+          progressLabel.textContent = score + ' of 12 sorted correctly';
+          win.style.display = score === 12 ? 'block' : 'none';
+        });
+
+        shuffleBtn.addEventListener('click', shuffleCards);
+        againBtn.addEventListener('click', shuffleCards);
+
+        shuffleCards();
+      })();
     </script>
   </body>
 </html>
