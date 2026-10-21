@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Percent Power: Step by Step</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2433;--mut:#5b657a;--ac:#4f46e5;--ok:#15803d;--bad:#b91c1c;--bd:#dfe3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--card:#1c2130;--tx:#eef0f7;--mut:#9aa4bb;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3347}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:0 auto;padding:12px 16px 24px}
+h1{font-size:1.4rem;margin:.2em 0}h2{font-size:1.05rem;margin:0 0 .4em}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.tabs{display:flex;gap:8px;margin:8px 0}.tabs button{flex:1}
+button{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.part{border-top:1px solid var(--bd);margin-top:10px;padding-top:8px}
+.step{background:var(--bg);border-radius:10px;padding:10px;margin:8px 0}
+.step.done{opacity:.8}.step input{font:inherit;width:110px;padding:8px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.fb{margin-top:6px;font-size:.95rem}.good{color:var(--ok);font-weight:700}.bad{color:var(--bad)}
+.small{color:var(--mut);font-size:.9rem}
+.wrap{position:relative;width:100%;max-width:360px;margin:0 auto}
+canvas{width:100%;height:auto;display:block;border-radius:12px;background:#0f172a;touch-action:none}
+.ov{position:absolute;inset:0;background:rgba(15,23,42,.95);color:#fff;border-radius:12px;padding:14px;display:none;flex-direction:column;justify-content:center;gap:8px;overflow:auto}
+.ov.show{display:flex}.ov button{background:#1e293b;color:#fff;border-color:#334155}
+.ov button.ok{background:#15803d}.ov button.no{background:#b91c1c}.ov button.pri{background:#4f46e5}
+</style></head><body><main>
+<div class="bar"><span>📐 Percent Power</span><span>❤️ Lives: <span id="lives">3</span></span></div>
+<p class="small">Every correct step earns an extra life ❤️. Lives carry over to Pong!</p>
+<div class="tabs"><button id="t1" class="on">Step-by-Step Worksheet</button><button id="t2">Pong Game</button></div>
+
+<section id="solve"></section>
+
+<section id="game" style="display:none">
+<div class="bar" style="position:static"><span>Score: <span id="score">0</span></span><button id="earn">+ Earn lives</button></div>
+<div class="wrap"><canvas id="c" width="360" height="480"></canvas><div class="ov show" id="ov"></div></div>
+<p class="small" style="text-align:center">Drag, use the mouse, or ← → to move your paddle. Missing the ball costs a life.</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let lives=3,score=0;
+function gain(){if(lives<10)lives++;hud()}
+function hud(){$('lives').textContent=lives;$('score').textContent=score}
+/* ---------- Worksheet ---------- */
+const P=[
+{t:'5) The living room is 21.7 feet long. Elena measured to the nearest foot.',parts:[
+ {q:'a. What measurement did Elena get?',s:[{p:'Round 21.7 to the nearest foot.',h:'Look at the tenths digit (7). 5 or more rounds up.',a:22,tol:0,u:'feet'}]},
+ {q:'b. By how many feet does the measurement differ from the actual length?',s:[{p:'Subtract: 22 − 21.7',h:'Line up the decimals.',a:0.3,tol:.001,u:'feet'}]},
+ {q:'c. Express the error as a percent of the actual length.',s:[
+  {p:'Divide the error by the ACTUAL length: 0.3 ÷ 21.7 (3 decimals)',h:'Actual length is 21.7, not 22.',a:.014,tol:.0006},
+  {p:'Multiply by 100 to make it a percent (nearest tenth).',h:'Move the decimal point 2 places right.',a:1.4,tol:.06,u:'%'}]}]},
+{t:'6) The bill is $38.00. The family spends $44.27 in total, including a tip.',parts:[
+ {q:'a. How much was the tip in dollars?',s:[{p:'Total minus bill: 44.27 − 38.00',h:'Tip = what they paid beyond the bill.',a:6.27,tol:.001,u:'$'}]},
+ {q:'b. Tip as a percent of the bill?',s:[
+  {p:'Divide the tip by the BILL: 6.27 ÷ 38 (3 decimals)',h:'The bill before tip is the whole.',a:.165,tol:.001},
+  {p:'Multiply by 100 to get a percent (nearest tenth).',h:'0.165 → ?%',a:16.5,tol:.06,u:'%'}]}]},
+{t:'7) Silver cost $6.82 per ounce in 2004 and $15.97 in 2014.',parts:[
+ {q:'By what percent did the price increase?',s:[
+  {p:'Find the increase: 15.97 − 6.82',h:'New price minus old price.',a:9.15,tol:.001,u:'$'},
+  {p:'Divide the increase by the ORIGINAL price: 9.15 ÷ 6.82 (3 decimals)',h:'Original = 2004 price = 6.82.',a:1.342,tol:.003},
+  {p:'Multiply by 100 for a percent (nearest tenth).',h:'1.342 → ?%',a:134.2,tol:.25,u:'%'}]}]}];
+const S=$('solve');
+P.forEach(pr=>{const c=document.createElement('div');c.className='card';c.innerHTML=`<h2>${pr.t}</h2>`;
+ pr.parts.forEach(pt=>{const d=document.createElement('div');d.className='part';d.innerHTML=`<b>${pt.q}</b>`;c.appendChild(d);
+  const els=pt.s.map((st,i)=>{const e=document.createElement('div');e.className='step';e.style.display=i?'none':'';
+   e.innerHTML=`<div><b>Step ${i+1}:</b> ${st.p}</div><div style="margin-top:6px"><input inputmode="decimal" placeholder="answer"> ${st.u||''} <button class="pri">Check</button></div><div class="fb"></div>`;d.appendChild(e);return e});
+  pt.s.forEach((st,i)=>{const e=els[i],inp=e.querySelector('input'),fb=e.querySelector('.fb'),bt=e.querySelector('button');let got=false;
+   const go=()=>{const v=parseFloat(inp.value.replace(/[$,%\s]/g,''));
+    if(isNaN(v)){fb.innerHTML='<span class="bad">Type a number first.</span>';return}
+    if(Math.abs(v-st.a)<=st.tol+1e-9){if(!got){got=true;gain()}
+     fb.innerHTML=`<span class="good">✅ Correct! +1 life ❤️</span>`+(i==pt.s.length-1?` <span class="good">Part complete!</span>`:'');
+     inp.disabled=bt.disabled=true;e.classList.add('done');if(els[i+1])els[i+1].style.display=''}
+    else fb.innerHTML=`<span class="bad">Not quite.</span> Hint: ${st.h}`};
+   bt.onclick=go;inp.onkeydown=ev=>{if(ev.key=='Enter')go()}})});
+ S.appendChild(c)});
+$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+function tab(n){$('solve').style.display=n==1?'':'none';$('game').style.display=n==2?'':'none';$('t1').className=n==1?'on':'';$('t2').className=n==2?'on':'';if(n==1&&playing)paused=true;if(n==2&&playing&&!$('ov').classList.contains('show'))paused=false}
+/* ---------- Pong ---------- */
+const cv=$('c'),x=cv.getContext('2d'),W=360,H=480,PW=76;
+let paused=true,playing=false,over=false,px=W/2,ax=W/2,b,keys={};
+function resetBall(){const s=3.6+Math.min(score,20)*.08;b={x:W/2,y:H/2,vx:s*(Math.random()-.5),vy:s}}
+function ov(h){const o=$('ov');o.innerHTML=h;o.classList.add('show')}
+function hide(){$('ov').classList.remove('show')}
+function menu(){paused=true;playing=false;
+ ov(`<h2>🏓 Percent Pong</h2><p>You have ❤️ ${lives} lives. Earn more by solving percent problems step by step!</p><button class="pri" id="go">Play</button><button id="pr">Earn lives first</button>`);
+ $('go').onclick=()=>lives<1?practice():start();$('pr').onclick=practice}
+function start(){score=0;over=false;playing=true;resetBall();hud();hide();paused=false}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();px=(e.clientX-r.left)*W/r.width});
+addEventListener('keydown',e=>keys[e.key]=1);addEventListener('keyup',e=>keys[e.key]=0);
+function frame(){
+ if(!paused){
+  if(keys.ArrowLeft)px-=6;if(keys.ArrowRight)px+=6;px=Math.max(PW/2,Math.min(W-PW/2,px));
+  ax+=Math.max(-2.6,Math.min(2.6,b.x-ax));ax=Math.max(PW/2,Math.min(W-PW/2,ax));
+  b.x+=b.vx;b.y+=b.vy;
+  if(b.x<6||b.x>W-6){b.vx*=-1;b.x=Math.max(6,Math.min(W-6,b.x))}
+  if(b.vy>0&&b.y>=H-26&&b.y<=H-16&&Math.abs(b.x-px)<PW/2+6){const o=(b.x-px)/(PW/2),s=Math.min(Math.hypot(b.vx,b.vy)+.15,8);b.vx=o*s*.8;b.vy=-Math.sqrt(s*s-b.vx*b.vx);score++;hud()}
+  if(b.vy<0&&b.y<=26&&Math.abs(b.x-ax)<PW/2+6)b.vy=Math.abs(b.vy);
+  if(b.y<0){b.y=2;b.vy=Math.abs(b.vy)}
+  if(b.y>H+8){lives--;hud();if(lives<=0){over=true;paused=true;practice('Out of lives! Solve the steps to earn more.')}else resetBall()}}
+ x.clearRect(0,0,W,H);x.fillStyle='#38bdf8';x.fillRect(ax-PW/2,14,PW,10);x.fillStyle='#a78bfa';x.fillRect(px-PW/2,H-24,PW,10);
+ x.setLineDash([8,8]);x.strokeStyle='#334155';x.beginPath();x.moveTo(0,H/2);x.lineTo(W,H/2);x.stroke();x.setLineDash([]);
+ x.fillStyle='#fff';x.beginPath();x.arc(b.x,b.y,6,0,7);x.fill();requestAnimationFrame(frame)}
+/* ---------- Practice (3 steps, +1 life each) ---------- */
+const pcts=[10,20,25,30,40,50,60,75,80,120],olds=[20,40,50,80,100,120,200,250],R=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>a.sort(()=>Math.random()-.5);
+function practice(msg){paused=true;
+ const inc=Math.random()<.5,p=R(inc?pcts:pcts.filter(v=>v<100)),o=R(olds),n=+(o*(inc?1+p/100:1-p/100)).toFixed(2),c=+Math.abs(n-o).toFixed(2);
+ const sg=inc?'+':'−',ok=sg+p+'%',other=inc?'−':'+';
+ const dedupe=(a,f)=>{a=[...new Set(a)];let k=1;while(a.length<4)a.push(f(k++));return shuf(a)};
+ const steps=[
+  {q:`A price goes from <b>$${o}</b> to <b>$${n}</b>.<br>Step 1: What is the amount of change?`,ok:'$'+c,o:dedupe(['$'+c,'$'+(o+n),'$'+n,'$'+o],k=>'$'+(c+5*k)),w:`Subtract: |${n} − ${o}| = ${c}.`},
+  {q:`Step 2: The change is $${c}. Divide it by which number?`,ok:`The ORIGINAL ($${o})`,o:shuf([`The ORIGINAL ($${o})`,`The NEW ($${n})`,'100','The change itself']),w:`Percent change always compares to the starting amount, $${o}.`},
+  {q:`Step 3: ${c} ÷ ${o} = ${+(c/o).toFixed(3)}. Pick the percent change (include direction).`,ok,o:dedupe([ok,other+p+'%',sg+Math.round(c/n*100)+'%',sg+(p+10)+'%'],k=>sg+(p+5*k+3)+'%'),w:`${+(c/o).toFixed(3)} × 100 = ${p}%. ${n>o?'The price went UP, so it is an increase.':'The price went DOWN, so it is a decrease.'}`}];
+ let i=0,earned=0;
+ const show=()=>{const s=steps[i];ov(`<b>${msg||'Earn lives!'} (${i+1}/3)</b><div>${s.q}</div>`+s.o.map((t,j)=>`<button data-j="${j}">${t}</button>`).join('')+'<div id="fb"></div>');msg='';
+  document.querySelectorAll('#ov [data-j]').forEach(bt=>bt.onclick=()=>{const good=s.o[bt.dataset.j]==s.ok;
+   if(good){gain();earned++;document.querySelectorAll('#ov [data-j]').forEach(e=>e.disabled=true);bt.classList.add('ok');
+    $('fb').innerHTML=`<p>✅ Correct! +1 life ❤️</p><p class="small" style="color:#cbd5e1">${s.w}</p>`;
+    const nb=document.createElement('button');nb.className='pri';i++;
+    nb.textContent=i<3?'Next step':'Finish';nb.onclick=i<3?show:fin;$('fb').appendChild(nb)}
+   else{bt.disabled=true;bt.classList.add('no');$('fb').innerHTML=`<p>❌ Try again. ${s.w}</p>`}})};
+ const fin=()=>{ov(`<h2>🎉 You earned ${earned} ❤️</h2><p>You now have ${lives} lives.</p><button class="pri" id="d">${playing?'Back to the game':'Play now'}</button><button id="m">Another problem</button>`);
+  $('d').onclick=()=>{if(playing){if(over){over=false;resetBall()}hide();paused=false}else start()};$('m').onclick=()=>practice()};
+ show()}
+$('earn').onclick=()=>{if(!$('ov').classList.contains('show'))practice()};
+resetBall();hud();menu();frame();
+</script></body></html>
