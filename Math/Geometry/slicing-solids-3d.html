@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Slicing Solids: Cross-Sections in 3D</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f7f8fb;--card:#fff;--text:#1d2433;--muted:#5b6578;--line:#d9deea;--accent:#3b5bdb}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff}}
+:root[data-theme="dark"]{--bg:#12151c;--card:#1b2030;--text:#e8ebf3;--muted:#9aa4ba;--line:#2e3650;--accent:#7c96ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1020px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2rem 0}
+p.sub{color:var(--muted);margin:0 0 12px}
+.layout{display:grid;grid-template-columns:3fr 2fr;gap:14px}
+@media(max-width:780px){.layout{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+#stage{width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;cursor:grab;touch-action:none}
+#stage canvas{width:100%!important;height:100%!important;display:block}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+button{font-size:.95rem;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-weight:600}
+button.on{border-color:var(--accent);background:var(--accent);color:#fff}
+button.alt{border-style:dashed}
+h3{font-size:.95rem;margin:10px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+#name{font-size:1.5rem;font-weight:800;color:var(--accent);margin:2px 0}
+#desc{margin:0 0 6px}
+.hint{color:var(--muted);font-size:.9rem}
+.sl{display:grid;grid-template-columns:90px 1fr 52px;gap:8px;align-items:center;font-size:.95rem}
+.sl output{text-align:right;color:var(--muted)}
+input[type=range]{width:100%}
+canvas#flat{width:100%;max-width:230px;aspect-ratio:1/1;border:1px solid var(--line);border-radius:10px;display:block}
+.legend span{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<main>
+<h1>Slicing Solids: Cross-Sections in 3D</h1>
+<p class="sub">Pick a solid, pick a slice, and see the shape the cut makes. Try to predict it first! Drag the solid to look around.</p>
+<div class="layout">
+ <div class="card">
+  <div id="stage"></div>
+  <p class="hint legend" style="margin:8px 0 0"><span style="background:#4c6ef5"></span>solid &nbsp; <span style="background:#ff922b"></span>cutting plane &nbsp; <span style="background:#e03131"></span>the cross-section</p>
+  <label class="hint" style="display:block;margin-top:6px"><input type="checkbox" id="cut" checked> Cut away the front piece so the slice shows</label>
+ </div>
+ <div>
+  <div class="card">
+   <h3 style="margin-top:0">1. Choose a solid</h3><div class="row" id="solids"></div>
+   <h3>2. Choose a slice</h3><div class="row" id="presets"></div>
+   <h3>Or move the plane yourself</h3>
+   <div class="sl"><label for="tilt">Tilt</label><input type="range" id="tilt" min="0" max="90" step="0.5"><output id="o1"></output></div>
+   <div class="sl"><label for="turn">Turn</label><input type="range" id="turn" min="0" max="360" step="1"><output id="o2"></output></div>
+   <div class="sl"><label for="pos">Position</label><input type="range" id="pos" min="-2" max="2" step="0.02"><output id="o3"></output></div>
+  </div>
+  <div class="card">
+   <div id="name"></div><p id="desc"></p>
+   <canvas id="flat" width="230" height="230"></canvas>
+  </div>
+ </div>
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id), V=(x,y,z)=>new THREE.Vector3(x,y,z), PI=Math.PI;
+
+// ---------- solids (triangle lists with a group label) ----------
+function prism(n,R,h,off){const v=[],F=[];
+  for(const y of[-h/2,h/2])for(let i=0;i<n;i++){const a=off+2*PI*i/n;v.push(V(R*Math.cos(a),y,R*Math.sin(a)))}
+  for(let i=0;i<n;i++){const j=(i+1)%n;F.push([[i,j,n+j,n+i],"side"])}
+  const r=[...Array(n).keys()];F.push([r,"cap"]);F.push([r.map(i=>n+i),"cap"]);return{v,F}}
+function pyramid(n,R,h,off){const v=[],F=[];
+  for(let i=0;i<n;i++){const a=off+2*PI*i/n;v.push(V(R*Math.cos(a),-h/2,R*Math.sin(a)))}
+  v.push(V(0,h/2,0));for(let i=0;i<n;i++)F.push([[i,(i+1)%n,n],"side"]);
+  F.push([[...Array(n).keys()],"cap"]);return{v,F}}
+function toTris({v,F}){const t=[];F.forEach(([f,g])=>{for(let k=1;k<f.length-1;k++)t.push([v[f[0]],v[f[k]],v[f[k+1]],g])});return t}
+function sphereTris(){const g=new THREE.SphereGeometry(1.5,48,32),p=g.attributes.position,ix=g.index.array,t=[];
+  for(let i=0;i<ix.length;i+=3)t.push([0,1,2].map(k=>V(p.getX(ix[i+k]),p.getY(ix[i+k]),p.getZ(ix[i+k]))).concat("side"));return t}
+const R2=Math.SQRT2;
+const SOL=[
+ {name:"Cube",kind:"poly",tris:()=>toTris(prism(4,1.2*R2,2.4,PI/4)),P:[["Level cut",[0,1,0],.3],["Straight down, parallel to a face",[1,0,0],.3],["Diagonal slab",[1,0,1],0],["Slice off a corner",[1,1,1],2.6],["Corner to corner, through the middle",[1,1,1],0],["Tilted cut",[1,.5,.25],.6]]},
+ {name:"Square pyramid",kind:"poly",tris:()=>toTris(pyramid(4,1.3*R2,2.7,PI/4)),P:[["Level cut",[0,1,0],0],["Straight up through the apex",[0,0,1],0],["Up through the apex, diagonal",[1,0,1],0],["Off-center vertical cut",[0,0,1],.6],["Tilted cut",[.5,1,.2],0]]},
+ {name:"Pentagonal pyramid",kind:"poly",tris:()=>toTris(pyramid(5,1.5,2.8,PI/2)),P:[["Level cut",[0,1,0],-.2],["Straight up through the apex",[1,0,0],0],["Off-center vertical cut",[1,0,0],.5],["Tilted cut",[.4,1,.3],-.2]]},
+ {name:"Triangular pyramid",kind:"poly",tris:()=>toTris(pyramid(3,1.5,2.1,PI/2)),P:[["Level cut",[0,1,0],-.2],["Straight up through the apex",[1,0,0],0],["Off-center vertical cut",[0,0,1],.2],["Tilted cut",[.5,1,.1],-.2]]},
+ {name:"Triangular prism",kind:"poly",tris:()=>toTris(prism(3,1.5,2.4,PI/2)),P:[["Level cut",[0,1,0],.3],["Parallel to a side face",[0,0,1],.3],["Straight across",[1,0,0],.2],["Tilted cut",[.5,1,.3],0]]},
+ {name:"Hexagonal prism",kind:"poly",tris:()=>toTris(prism(6,1.4,2.4,0)),P:[["Level cut",[0,1,0],.3],["Straight across",[1,0,0],0],["Tilted cut",[.5,1,.3],0],["Steep tilted cut",[1,.6,0],.2]]},
+ {name:"Cylinder",kind:"cyl",tris:()=>toTris(prism(64,1.2,2.6,0)),P:[["Level cut",[0,1,0],.2],["Straight down the middle",[0,0,1],0],["Off-center vertical cut",[0,0,1],.8],["Slightly tilted cut",[.5,.866,0],0],["Steeply tilted cut",[.866,.5,0],0]]},
+ {name:"Cone",kind:"cone",R:1.3,h:2.8,tris:()=>toTris(pyramid(64,1.3,2.8,0)),P:[["Level cut",[0,1,0],-.2],["Slightly tilted cut",[.5,.866,0],0],["Parallel to the side",[.907,.4204,0],.3],["Vertical, off-center",[1,0,0],.3],["Straight through the apex",[0,0,1],0]]},
+ {name:"Sphere",kind:"sph",tris:sphereTris,P:[["Through the center",[0,1,0],0],["Near the top",[0,1,0],1.2],["Tilted cut",[.7,.7,0],.5]]}];
+
+// ---------- scene ----------
+const stage=$("stage"),renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.localClippingEnabled=true;stage.appendChild(renderer.domElement);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,1,.1,100);cam.position.set(0,0,11.5);
+const world=new THREE.Group();world.rotation.set(.45,-.7,0,"YXZ");scene.add(world);
+scene.add(new THREE.AmbientLight(0xffffff,.9));const dl=new THREE.DirectionalLight(0xffffff,.5);dl.position.set(4,8,6);scene.add(dl);
+const clip=new THREE.Plane(V(0,-1,0),0);
+const solidMat=new THREE.MeshLambertMaterial({color:0x4c6ef5,transparent:true,opacity:.34,side:THREE.DoubleSide,depthWrite:false});
+const edgeMat=new THREE.LineBasicMaterial({color:0x364fc7});
+const solidGrp=new THREE.Group(),secGrp=new THREE.Group(),planeG=new THREE.Group();world.add(solidGrp,secGrp,planeG);
+const pm=new THREE.Mesh(new THREE.PlaneGeometry(5.2,5.2),new THREE.MeshBasicMaterial({color:0xff922b,transparent:true,opacity:.2,side:THREE.DoubleSide,depthWrite:false}));
+planeG.add(pm,new THREE.LineSegments(new THREE.EdgesGeometry(pm.geometry),new THREE.LineBasicMaterial({color:0xff922b})));
+const secMat=new THREE.MeshBasicMaterial({color:0xe03131,transparent:true,opacity:.88,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+const secLine=new THREE.LineBasicMaterial({color:0x9c1c1c});
+
+let sol=null,N=V(0,1,0),D=0,tN=V(0,1,0),tD=0,sec=null;
+
+function loadSolid(i){
+  sol=SOL[i];sol.T=sol.tris();
+  while(solidGrp.children.length){const m=solidGrp.children.pop();m.geometry.dispose()}
+  const pos=[];sol.T.forEach(t=>{for(let k=0;k<3;k++)pos.push(t[k].x,t[k].y,t[k].z)});
+  const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.computeVertexNormals();
+  solidGrp.add(new THREE.Mesh(g,solidMat),new THREE.LineSegments(new THREE.EdgesGeometry(g,25),edgeMat));
+  [...$("solids").children].forEach((b,k)=>b.classList.toggle("on",k===i));
+  $("presets").innerHTML="";
+  sol.P.forEach((p,k)=>{const b=document.createElement("button");b.textContent=p[0];b.onclick=()=>setTarget(p[1],p[2]);$("presets").appendChild(b)});
+  const r=document.createElement("button");r.textContent="🎲 Surprise me";r.className="alt";
+  r.onclick=()=>{const f=Math.acos(Math.random()),p=Math.random()*2*PI;setTarget([Math.sin(f)*Math.cos(p),Math.cos(f),Math.sin(f)*Math.sin(p)],(Math.random()-.5)*2.4)};
+  $("presets").appendChild(r);
+  const p=sol.P[0];setTarget(p[1],p[2],true)}
+function setTarget(n,s,now){const v=V(...n),l=v.length();v.normalize();tN.copy(v);tD=s/l;if(now){N.copy(tN);D=tD;apply();sync()}}
+SOL.forEach((s,i)=>{const b=document.createElement("button");b.textContent=s.name;b.onclick=()=>loadSolid(i);$("solids").appendChild(b)});
+
+// ---------- slicing ----------
+function section(T,n,d){
+  const pts=[],groups=new Set();
+  const add=(p,g)=>{groups.add(g);if(!pts.some(q=>q.distanceToSquared(p)<1e-8))pts.push(p)};
+  for(const t of T){const ds=[0,1,2].map(k=>t[k].dot(n)-d);
+    for(let a=0;a<3;a++){const b=(a+1)%3;
+      if(Math.abs(ds[a])<1e-7)add(t[a].clone(),t[3]);
+      else if(ds[a]*ds[b]<0)add(t[a].clone().lerp(t[b],ds[a]/(ds[a]-ds[b])),t[3])}}
+  if(pts.length<3)return null;
+  const a=Math.abs(n.y)<.9?V(0,1,0):V(1,0,0),u=a.clone().cross(n).normalize(),w=n.clone().cross(u);
+  let P=pts.map(p=>({p,x:p.dot(u),y:p.dot(w)}));
+  const cx=P.reduce((s,q)=>s+q.x,0)/P.length,cy=P.reduce((s,q)=>s+q.y,0)/P.length;
+  P.sort((q,r)=>Math.atan2(q.y-cy,q.x-cx)-Math.atan2(r.y-cy,r.x-cx));
+  for(let again=true;again&&P.length>3;){again=false;
+    for(let i=0;i<P.length;i++){const A=P[(i+P.length-1)%P.length],B=P[i],C=P[(i+1)%P.length];
+      const x1=B.x-A.x,y1=B.y-A.y,x2=C.x-B.x,y2=C.y-B.y;
+      if(Math.abs(x1*y2-y1*x2)<1e-3*Math.hypot(x1,y1)*Math.hypot(x2,y2)){P.splice(i,1);again=true;break}}}
+  let ar=0;P.forEach((q,i)=>{const r=P[(i+1)%P.length];ar+=q.x*r.y-r.x*q.y});
+  if(Math.abs(ar)/2<2e-3)return null;
+  return{P,groups}}
+
+function poly(P){
+  const k=P.length,E=P.map((q,i)=>{const r=P[(i+1)%k];return[r.x-q.x,r.y-q.y]}),L=E.map(e=>Math.hypot(...e)),mx=Math.max(...L);
+  const eq=(a,b)=>Math.abs(a-b)<.03*mx,cr=(a,b)=>Math.abs(a[0]*b[1]-a[1]*b[0])<.02*Math.hypot(...a)*Math.hypot(...b),
+        dt=(a,b)=>Math.abs(a[0]*b[0]+a[1]*b[1])<.02*Math.hypot(...a)*Math.hypot(...b);
+  if(k===3){const s=[...L].sort((a,b)=>a-b);
+    if(eq(s[0],s[2]))return["Equilateral triangle","3 equal sides."];
+    if(Math.abs(s[0]**2+s[1]**2-s[2]**2)<.03*s[2]**2)return["Right triangle","3 sides, with one right angle."];
+    if(eq(s[0],s[1])||eq(s[1],s[2]))return["Isosceles triangle","3 sides, two of them equal."];
+    return["Scalene triangle","3 sides, all different lengths."]}
+  if(k===4){const par=cr(E[0],E[2])&&cr(E[1],E[3]),rt=dt(E[0],E[1]),sq=eq(L[0],L[1]);
+    if(par&&rt)return sq?["Square","4 equal sides and 4 right angles."]:["Rectangle","Opposite sides equal, 4 right angles."];
+    if(par)return sq?["Rhombus","4 equal sides, opposite sides parallel."]:["Parallelogram","Both pairs of opposite sides are parallel."];
+    if(cr(E[0],E[2])||cr(E[1],E[3]))return["Trapezoid","Exactly one pair of parallel sides."];
+    if((eq(L[0],L[1])&&eq(L[2],L[3]))||(eq(L[1],L[2])&&eq(L[3],L[0])))return["Kite","Two pairs of equal sides next to each other."];
+    return["Quadrilateral","4 sides with no special pattern."]}
+  const turns=E.map((e,i)=>{const f=E[(i+1)%k];return Math.atan2(e[0]*f[1]-e[1]*f[0],e[0]*f[0]+e[1]*f[1])});
+  const reg=L.every(l=>eq(l,L[0]))&&turns.every(t=>Math.abs(t-turns[0])<.05);
+  const nm={5:"pentagon",6:"hexagon",7:"heptagon",8:"octagon"}[k]||k+"-sided polygon";
+  return[(reg?"Regular ":"")+nm.charAt(0).toUpperCase()+nm.slice(1),k+" straight sides."+(reg?" All sides and angles are equal.":"")]}
+
+function describe(){
+  if(!sec)return["No slice","The plane misses the solid or only touches it. Move or tilt the plane."];
+  const k=sec.P.length,phi=Math.acos(Math.min(1,Math.abs(N.y)))*180/PI,cap=sec.groups.has("cap");
+  if(sol.kind==="sph")return["Circle","Every slice of a sphere is a circle: biggest through the center, smaller near the edge."];
+  if(k<=12)return poly(sec.P);
+  if(sol.kind==="cyl"){
+    if(phi<.6)return["Circle","A level slice of a cylinder is a circle, the same as the ends."];
+    return cap?["Part of an ellipse","The tilt is steep enough that the flat end cuts the ellipse short."]:["Ellipse","A tilted slice all the way around a cylinder is an ellipse."]}
+  const th=Math.atan2(sol.h,sol.R)*180/PI;
+  const t=phi<.6?"Circle":phi<th-.6?"Ellipse":Math.abs(phi-th)<.6?"Parabola":"Hyperbola";
+  const why={Circle:"A level slice of a cone is a circle.",Ellipse:"The plane is flatter than the side of the cone, so the slice closes up.",Parabola:"The plane is parallel to the side of the cone, so the curve never closes.",Hyperbola:"The plane is steeper than the side of the cone, so the slice opens into a hyperbola branch."}[t];
+  return cap&&t!=="Circle"?["Part of "+(t==="Ellipse"?"an ":"a ")+t.toLowerCase(),why+" The flat base cuts it off."]:[t,why]}
+
+function apply(){
+  planeG.quaternion.setFromUnitVectors(V(0,0,1),N);planeG.position.copy(N).multiplyScalar(D);
+  clip.normal.copy(N).negate();clip.constant=D;
+  while(secGrp.children.length){const m=secGrp.children.pop();m.geometry.dispose()}
+  sec=section(sol.T,N,D);
+  if(sec){const ps=sec.P.map(q=>q.p),c=ps.reduce((s,p)=>s.add(p),V(0,0,0)).multiplyScalar(1/ps.length),pos=[];
+    ps.forEach((p,i)=>{const q=ps[(i+1)%ps.length];pos.push(c.x,c.y,c.z,p.x,p.y,p.z,q.x,q.y,q.z)});
+    const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));
+    secGrp.add(new THREE.Mesh(g,secMat),new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(ps),secLine))}
+  const[nm,ds]=describe();$("name").textContent=nm;$("desc").textContent=ds;drawFlat()}
+
+function drawFlat(){
+  const c=$("flat"),g=c.getContext("2d"),W=c.width;g.clearRect(0,0,W,W);
+  if(!sec)return;
+  const P=sec.P,xs=P.map(q=>q.x),ys=P.map(q=>q.y),mx=(Math.min(...xs)+Math.max(...xs))/2,my=(Math.min(...ys)+Math.max(...ys))/2;
+  const k=W*.78/Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys),.1);
+  g.beginPath();P.forEach((q,i)=>{const x=W/2+(q.x-mx)*k,y=W/2-(q.y-my)*k;i?g.lineTo(x,y):g.moveTo(x,y)});g.closePath();
+  g.fillStyle="rgba(224,49,49,.35)";g.fill();g.strokeStyle="#e03131";g.lineWidth=3;g.lineJoin="round";g.stroke();
+  if(P.length<=12){g.fillStyle="#9c1c1c";P.forEach(q=>{g.beginPath();g.arc(W/2+(q.x-mx)*k,W/2-(q.y-my)*k,4,0,2*PI);g.fill()})}}
+
+function sync(){
+  const f=Math.acos(Math.min(1,Math.max(-1,N.y)))*180/PI;
+  $("tilt").value=f;if(f>.05)$("turn").value=(Math.atan2(N.z,N.x)*180/PI+360)%360;$("pos").value=D;
+  $("o1").textContent=Math.round(f)+"°";$("o2").textContent=Math.round(+$("turn").value)+"°";$("o3").textContent=D.toFixed(2)}
+function fromSliders(){
+  const f=+$("tilt").value*PI/180,p=+$("turn").value*PI/180;
+  N.set(Math.sin(f)*Math.cos(p),Math.cos(f),Math.sin(f)*Math.sin(p));D=+$("pos").value;tN.copy(N);tD=D;apply();sync()}
+["tilt","turn","pos"].forEach(id=>$(id).addEventListener("input",fromSliders));
+$("cut").onchange=e=>{const c=e.target.checked?[clip]:[];solidMat.clippingPlanes=c;edgeMat.clippingPlanes=c;solidMat.needsUpdate=edgeMat.needsUpdate=true};
+solidMat.clippingPlanes=edgeMat.clippingPlanes=[clip];
+
+let drag=false,lx=0,ly=0;
+stage.addEventListener("pointerdown",e=>{drag=true;lx=e.clientX;ly=e.clientY;stage.setPointerCapture(e.pointerId);stage.style.cursor="grabbing"});
+stage.addEventListener("pointerup",()=>{drag=false;stage.style.cursor="grab"});
+stage.addEventListener("pointermove",e=>{if(!drag)return;world.rotation.y+=(e.clientX-lx)*.01;world.rotation.x=Math.max(-1.4,Math.min(1.4,world.rotation.x+(e.clientY-ly)*.01));lx=e.clientX;ly=e.clientY});
+function resize(){const w=stage.clientWidth;renderer.setSize(w,w,false)}
+addEventListener("resize",resize);resize();
+
+function loop(){
+  if(N.distanceTo(tN)>1e-4||Math.abs(D-tD)>1e-4){
+    N.lerp(tN,.18);if(N.lengthSq()<1e-4)N.copy(tN);N.normalize();D+=(tD-D)*.18;
+    if(N.distanceTo(tN)<1e-3&&Math.abs(D-tD)<1e-3){N.copy(tN);D=tD}
+    apply();sync()}
+  renderer.render(scene,cam);requestAnimationFrame(loop)}
+loadSolid(0);loop();
+</script>
+</body>
+</html>
