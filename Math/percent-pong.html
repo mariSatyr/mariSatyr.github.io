@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Percent Power: Solve &amp; Play</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1d2433;--mut:#5b657a;--ac:#4f46e5;--ok:#15803d;--bad:#b91c1c;--bd:#dfe3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151f;--card:#1c2130;--tx:#eef0f7;--mut:#9aa4bb;--ac:#818cf8;--ok:#4ade80;--bad:#f87171;--bd:#2c3347}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.1rem;margin:0 0 .4em}
+.tabs{display:flex;gap:8px;margin:12px 0}
+.tabs button{flex:1}
+button{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+button.on,button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+details{margin-top:8px}summary{cursor:pointer;color:var(--ac);font-weight:600}
+.step{margin:6px 0}.ans{color:var(--ok);font-weight:700}
+.f{background:var(--bg);border-radius:8px;padding:8px 10px;font-family:ui-monospace,monospace;margin:6px 0;overflow-x:auto}
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+.wrap{position:relative;width:100%;max-width:360px;margin:0 auto}
+canvas{width:100%;height:auto;display:block;border-radius:12px;background:#0f172a;touch-action:none}
+.ov{position:absolute;inset:0;background:rgba(15,23,42,.94);color:#fff;border-radius:12px;padding:14px;display:none;flex-direction:column;justify-content:center;gap:8px;overflow:auto}
+.ov.show{display:flex}.ov button{background:#1e293b;color:#fff;border-color:#334155}
+.ov button.ok{background:#15803d}.ov button.no{background:#b91c1c}
+.row{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.small{color:var(--mut);font-size:.9rem}
+</style></head><body><main>
+<h1>📐 Percent Power</h1>
+<p class="small">Solve the worksheet step by step, then play Pong and earn lives with percent questions.</p>
+<div class="tabs"><button id="t1" class="on">Worked Solutions</button><button id="t2">Pong Game</button></div>
+
+<section id="solve">
+<div class="card"><h2>Key ideas</h2>
+<div class="f">error = |measured − actual|</div>
+<div class="f">percent = (part ÷ whole) × 100</div>
+<div class="f">percent change = (new − old) ÷ old × 100</div>
+<p class="small">Always divide by the <b>original (actual)</b> amount.</p></div>
+
+<div class="card"><h2>5) Living room: 21.7 feet</h2>
+<p><b>a.</b> Round 21.7 to the nearest foot. The tenths digit is 7 (5 or more), so round up.</p>
+<details><summary>Show answer a</summary><p class="ans">22 feet</p></details>
+<p><b>b.</b> Find the difference.</p>
+<details><summary>Show answer b</summary><div class="f">22 − 21.7 = 0.3</div><p class="ans">0.3 feet</p></details>
+<p><b>c.</b> Error ÷ actual length.</p>
+<details><summary>Show answer c</summary><div class="f">0.3 ÷ 21.7 ≈ 0.0138</div><p class="ans">≈ 1.4%</p></details></div>
+
+<div class="card"><h2>6) Restaurant bill: $38.00, total $44.27</h2>
+<p><b>a.</b> Total minus bill gives the tip.</p>
+<details><summary>Show answer a</summary><div class="f">44.27 − 38.00 = 6.27</div><p class="ans">$6.27</p></details>
+<p><b>b.</b> Tip ÷ bill (before tip).</p>
+<details><summary>Show answer b</summary><div class="f">6.27 ÷ 38 = 0.165</div><p class="ans">16.5%</p></details></div>
+
+<div class="card"><h2>7) Price of silver: $6.82 → $15.97</h2>
+<p>Find the increase, then divide by the old price.</p>
+<details><summary>Show answer</summary>
+<div class="step">Increase: 15.97 − 6.82 = 9.15</div>
+<div class="step">9.15 ÷ 6.82 ≈ 1.342</div>
+<p class="ans">≈ 134.2% increase</p>
+<p class="small">Check: 6.82 × 2.342 ≈ 15.97 ✔</p></details></div>
+</section>
+
+<section id="game" style="display:none">
+<div class="hud"><span>❤️ <span id="lives">3</span></span><span>Score: <span id="score">0</span></span><button id="earn">+ Earn a life</button></div>
+<div class="wrap"><canvas id="c" width="360" height="480"></canvas>
+<div class="ov show" id="ov"></div></div>
+<p class="small" style="text-align:center">Drag, move the mouse, or use ← → to control the bottom paddle. Miss the ball and you lose a life. Solve a question to gain one (max 5).</p>
+</section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+$('t1').onclick=()=>tab(1);$('t2').onclick=()=>tab(2);
+function tab(n){$('solve').style.display=n==1?'':'none';$('game').style.display=n==2?'':'none';$('t1').className=n==1?'on':'';$('t2').className=n==2?'on':'';if(n==1)paused=true}
+const cv=$('c'),x=cv.getContext('2d'),W=360,H=480,PW=76;
+let lives=3,score=0,paused=true,over=false,px=W/2,ax=W/2,b,keys={};
+function resetBall(d){const s=3.6+Math.min(score,20)*.08;const a=(Math.random()*1.0-.5);b={x:W/2,y:H/2,vx:s*a,vy:(d||1)*s}}
+function hud(){$('lives').textContent=lives;$('score').textContent=score}
+function ov(html){const o=$('ov');o.innerHTML=html;o.classList.add('show')}
+function hide(){$('ov').classList.remove('show')}
+function start(){lives=3;score=0;over=false;resetBall();hud();hide();paused=false}
+function menu(){paused=true;ov('<h2>🏓 Percent Pong</h2><p>Keep the ball in play. Answer percent increase/decrease questions to earn extra lives.</p><button class="pri" id="go">Play</button>');$('go').onclick=start}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();px=(e.clientX-r.left)*W/r.width});
+addEventListener('keydown',e=>keys[e.key]=1);addEventListener('keyup',e=>keys[e.key]=0);
+function step(){
+ if(!paused){
+  if(keys.ArrowLeft)px-=6;if(keys.ArrowRight)px+=6;px=Math.max(PW/2,Math.min(W-PW/2,px));
+  ax+=Math.max(-2.6,Math.min(2.6,b.x-ax));ax=Math.max(PW/2,Math.min(W-PW/2,ax));
+  b.x+=b.vx;b.y+=b.vy;
+  if(b.x<6||b.x>W-6){b.vx*=-1;b.x=Math.max(6,Math.min(W-6,b.x))}
+  if(b.vy>0&&b.y>=H-26&&b.y<=H-16&&Math.abs(b.x-px)<PW/2+6){const o=(b.x-px)/(PW/2);const s=Math.min(Math.hypot(b.vx,b.vy)+.15,8);b.vx=o*s*.8;b.vy=-Math.sqrt(s*s-b.vx*b.vx);score++;hud()}
+  if(b.vy<0&&b.y<=26&&Math.abs(b.x-ax)<PW/2+6){b.vy=Math.abs(b.vy)}
+  if(b.y<0){b.y=2;b.vy=Math.abs(b.vy)}
+  if(b.y>H+8){lives--;hud();if(lives<=0){over=true;paused=true;ask('Game over! Answer correctly to get a life and keep playing.')}else resetBall()}
+ }
+ x.clearRect(0,0,W,H);x.fillStyle='#38bdf8';x.fillRect(ax-PW/2,14,PW,10);x.fillStyle='#a78bfa';x.fillRect(px-PW/2,H-24,PW,10);
+ x.setLineDash([8,8]);x.strokeStyle='#334155';x.beginPath();x.moveTo(0,H/2);x.lineTo(W,H/2);x.stroke();x.setLineDash([]);
+ if(b){x.fillStyle='#fff';x.beginPath();x.arc(b.x,b.y,6,0,7);x.fill()}
+ requestAnimationFrame(step)}
+// questions
+const pcts=[10,20,25,30,40,50,60,75,80,120],olds=[20,40,50,80,100,120,200,250];
+const R=a=>a[Math.floor(Math.random()*a.length)];
+let q;
+function newQ(){let inc=Math.random()<.5,p=R(inc?pcts:pcts.filter(v=>v<100)),o=R(olds),n=o*(inc?1+p/100:1-p/100);n=Math.round(n*100)/100;
+ const ok=(inc?'+':'−')+p+'%';const wrongBase=Math.round(Math.abs(n-o)/n*100);
+ let opts=[ok,(inc?'−':'+')+p+'%',(inc?'+':'−')+wrongBase+'%',(inc?'+':'−')+(p+10)+'%'];
+ opts=[...new Set(opts)];while(opts.length<4)opts.push((inc?'+':'−')+(p+5*opts.length+3)+'%');
+ opts.sort(()=>Math.random()-.5);
+ const c=Math.abs(n-o);
+ q={o,n,inc,p,ok,opts,why:`Change = |${n} − ${o}| = ${+c.toFixed(2)}. Divide by the ORIGINAL (${o}): ${+c.toFixed(2)} ÷ ${o} = ${p/100} → ${p}% ${inc?'increase':'decrease'}.`}}
+function ask(msg){newQ();paused=true;
+ ov(`<b>${msg||'Earn a life!'}</b><div style="font-size:1.1rem">A price goes from <b>$${q.o}</b> to <b>$${q.n}</b>. What is the percent change?</div>`+q.opts.map((t,i)=>`<button data-i="${i}">${t}</button>`).join(''));
+ document.querySelectorAll('#ov [data-i]').forEach(bt=>bt.onclick=()=>answer(bt))}
+function answer(bt){const good=q.opts[bt.dataset.i]==q.ok;
+ document.querySelectorAll('#ov [data-i]').forEach(e=>{e.disabled=true;if(q.opts[e.dataset.i]==q.ok)e.classList.add('ok')});
+ if(!good)bt.classList.add('no');
+ if(good){if(over){lives=1;over=false;resetBall()}else lives=Math.min(5,lives+1);hud()}
+ const d=document.createElement('div');d.innerHTML=`<p>${good?'✅ Correct! +1 life ❤️':'❌ Not quite. The answer is '+q.ok+'.'}</p><p class="small" style="color:#cbd5e1">${q.why}</p>`;
+ const nb=document.createElement('button');nb.className='pri';
+ if(!good&&lives<=0){nb.textContent='Try another question';nb.onclick=()=>ask('Try again to earn a life.')}
+ else{nb.textContent='Continue';nb.onclick=()=>{hide();paused=false}}
+ d.appendChild(nb);$('ov').appendChild(d)}
+$('earn').onclick=()=>{if(b&&!$('ov').classList.contains('show'))ask()};
+resetBall();menu();step();
+</script></body></html>
