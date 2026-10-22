@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Surface Area Step-by-Step Solver</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#eef3f8;--paper:#fff;--ink:#14213d;--muted:#52607a;--line:#c9d5e6;--accent:#e4572e;--accent-ink:#fff;--soft:#fde9e2;--grid:#dbe5f1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1727;--paper:#18233a;--ink:#eaf0fb;--muted:#a3b1cc;--line:#2d3d5c;--accent:#ff7a52;--accent-ink:#1a0b05;--soft:#3a2420;--grid:#1a2742}}
+:root[data-theme="dark"]{--bg:#0f1727;--paper:#18233a;--ink:#eaf0fb;--muted:#a3b1cc;--line:#2d3d5c;--accent:#ff7a52;--accent-ink:#1a0b05;--soft:#3a2420;--grid:#1a2742}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif;
+background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px}
+main{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+h1{font:800 clamp(2rem,6vw,3rem)/1.05 "Bricolage Grotesque",system-ui,sans-serif;margin:0 0 6px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 22px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{flex:1 1 150px;font:inherit;font-weight:700;padding:12px 10px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:10px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.card{background:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:20px;margin-bottom:18px}
+.top{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.top svg{flex:0 0 150px;width:150px;height:150px}
+.fields{flex:1 1 260px;display:grid;gap:12px}
+label{display:grid;gap:4px;font-weight:700;font-size:.95rem}
+input,select{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.go{margin-top:14px;font:800 1.05rem "Bricolage Grotesque",system-ui,sans-serif;padding:13px 22px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);cursor:pointer;width:100%}
+.err{color:var(--accent);font-weight:700;margin-top:10px;min-height:1.2em}
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 18px 48px;margin:0}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;font:800 1rem "Bricolage Grotesque",sans-serif}
+ol.steps li::after{content:"";position:absolute;left:16px;top:38px;bottom:4px;width:2px;background:var(--line)}
+ol.steps li:last-child::after{display:none}
+.st{font-weight:700;margin-bottom:4px}
+.math{font-family:"Atkinson Hyperlegible",system-ui,sans-serif;background:var(--bg);border-left:4px solid var(--accent);padding:8px 12px;border-radius:0 8px 8px 0;margin:4px 0;overflow-x:auto;white-space:nowrap}
+.answer{background:var(--soft);border:2px solid var(--accent);border-radius:12px;padding:14px 16px;font:800 1.5rem "Bricolage Grotesque",sans-serif}
+.hint{color:var(--muted);font-size:.95rem;margin:2px 0 0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>Surface Area Solver</h1>
+<p class="sub">Pick a shape, enter the measurements, and see every step worked out.</p>
+
+<div class="tabs" role="tablist" id="tabs">
+<button role="tab" aria-selected="true" data-s="cone">Cone</button>
+<button role="tab" aria-selected="false" data-s="cyl">Cylinder</button>
+<button role="tab" aria-selected="false" data-s="prism">Rectangular prism</button>
+<button role="tab" aria-selected="false" data-s="sphere">Sphere</button>
+</div>
+
+<section class="card">
+<div class="top">
+<svg id="pic" viewBox="0 0 150 150" role="img" aria-label="Shape diagram"></svg>
+<div class="fields" id="fields"></div>
+</div>
+<div class="row" style="margin-top:14px">
+<label>Units<select id="unit"><option>cm</option><option>m</option><option>in</option><option>ft</option><option>mm</option><option>yd</option></select></label>
+<label>Value of π<select id="pi"><option value="3.14">3.14</option><option value="calc">Calculator π (3.14159…)</option></select></label>
+</div>
+<button class="go" id="solve">Solve step by step</button>
+<div class="err" id="err" role="alert"></div>
+</section>
+
+<section class="card" id="out" hidden>
+<ol class="steps" id="steps"></ol>
+<div class="answer" id="ans"></div>
+</section>
+</main>
+
+<script>
+(function(){
+var shape="cone", coneMode="slant";
+var $=function(id){return document.getElementById(id)};
+var stroke='stroke="currentColor" stroke-width="2.5" fill="none" stroke-linejoin="round"';
+var acc='stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="5 4" fill="none"';
+var pics={
+sphere:'<g color="var(--ink)"><circle cx="75" cy="75" r="56" '+stroke+'/><ellipse cx="75" cy="75" rx="56" ry="16" '+stroke+' stroke-opacity=".45"/><path d="M75 75 L131 75" '+acc+'/></g><text x="98" y="68" font-size="14" fill="var(--ink)">r</text>',
+cone:'<g color="var(--ink)"><ellipse cx="75" cy="118" rx="48" ry="14" '+stroke+'/><path d="M27 118 L75 18 L123 118" '+stroke+'/><path d="M75 118 L123 118" '+acc+'/><path d="M75 18 L75 118" '+acc+'/></g><text x="96" y="140" font-size="14" fill="var(--ink)">r</text><text x="80" y="72" font-size="14" fill="var(--ink)">h</text><text x="106" y="62" font-size="14" fill="var(--ink)">l</text>',
+cyl:'<g color="var(--ink)"><ellipse cx="75" cy="34" rx="44" ry="13" '+stroke+'/><path d="M31 34 V114 A44 13 0 0 0 119 114 V34" '+stroke+'/><path d="M75 34 L119 34" '+acc+'/><path d="M127 34 V114" '+acc+'/></g><text x="92" y="30" font-size="14" fill="var(--ink)">r</text><text x="132" y="78" font-size="14" fill="var(--ink)">h</text>',
+prism:'<g color="var(--ink)"><path d="M20 60 H100 V130 H20 Z M20 60 L50 30 H130 L100 60 M130 30 V100 L100 130" '+stroke+'/></g><text x="56" y="146" font-size="14" fill="var(--ink)">l</text><text x="122" y="122" font-size="14" fill="var(--ink)">w</text><text x="4" y="100" font-size="14" fill="var(--ink)">h</text>'
+};
+function inp(id,lbl){return '<label>'+lbl+'<input id="'+id+'" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></label>'}
+function build(){
+var f="";
+if(shape==="cone"){
+f=inp("r","Radius (r)")+'<label>I know the<select id="mode"><option value="slant">slant height (l)</option><option value="height">height (h)</option></select></label><div id="cm">'+inp("l","Slant height (l)")+'</div><p class="hint">Slant height is the length along the side of the cone. Height goes straight up the middle.</p>';
+}else if(shape==="cyl"){
+f=inp("r","Radius (r)")+inp("h","Height (h)")+'<p class="hint">If you only have the diameter, divide it by 2 to get the radius.</p>';
+}else if(shape==="sphere"){
+f=inp("r","Radius (r)")+'<p class="hint">If you only have the diameter, divide it by 2 to get the radius.</p>';
+}else{
+f=inp("l","Length (l)")+inp("w","Width (w)")+inp("h","Height (h)");
+}
+$("fields").innerHTML=f;
+$("pic").innerHTML=pics[shape];
+$("out").hidden=true;$("err").textContent="";
+if(shape==="cone"){$("mode").value=coneMode;$("mode").onchange=function(){coneMode=this.value;var v=$("r").value;$("cm").innerHTML=inp(coneMode==="slant"?"l":"h",coneMode==="slant"?"Slant height (l)":"Height (h)")}}
+}
+function fmt(n){return String(Math.round(n*100)/100)}
+function v(id){var e=$(id);return e?parseFloat(e.value):NaN}
+function step(t,lines){return '<li><div class="st">'+t+'</div>'+lines.map(function(x){return '<div class="math">'+x+'</div>'}).join("")+'</li>'}
+function solve(){
+var u=$("unit").value, P=$("pi").value==="calc"?Math.PI:3.14, pl=$("pi").value==="calc"?"3.14159…":"3.14";
+var s=[],ans="",err="";
+function bad(ids){return ids.some(function(i){var x=v(i);return !(x>0)})}
+if(shape==="cone"){
+var h=null,l,r=v("r");
+if(bad(["r",coneMode==="slant"?"l":"h"])){err="Enter positive numbers for every box.";}
+else{
+s.push(step("Write the formula",["SA = πr² + πrl","(base circle + curved side)"]));
+if(coneMode==="height"){
+h=v("h");l=Math.sqrt(r*r+h*h);
+s.push(step("Find the slant height from the height",["l = √(r² + h²)","l = √("+fmt(r)+"² + "+fmt(h)+"²)","l = √("+fmt(r*r)+" + "+fmt(h*h)+") = √"+fmt(r*r+h*h),"l ≈ "+fmt(l)+" "+u]));
+}else{l=v("l");s.push(step("Write down what you know",["r = "+fmt(r)+" "+u,"l = "+fmt(l)+" "+u]));}
+var b=P*r*r,c=P*r*l;
+s.push(step("Find the base area (πr²)",["π × "+fmt(r)+"² = "+pl+" × "+fmt(r*r),"= "+fmt(b)+" "+u+"²"]));
+s.push(step("Find the curved side area (πrl)",["π × "+fmt(r)+" × "+fmt(l)+" = "+pl+" × "+fmt(r*l),"= "+fmt(c)+" "+u+"²"]));
+s.push(step("Add them together",[fmt(b)+" + "+fmt(c)+" = "+fmt(b+c)+" "+u+"²"]));
+ans="SA ≈ "+fmt(b+c)+" "+u+"²";}
+}else if(shape==="sphere"){
+var r3=v("r");
+if(bad(["r"])){err="Enter a positive number for the radius.";}
+else{
+var sq=r3*r3,sa=4*P*sq;
+s.push(step("Write the formula",["SA = 4πr²","(a sphere has no flat faces, so one formula covers the whole surface)"]));
+s.push(step("Write down what you know",["r = "+fmt(r3)+" "+u]));
+s.push(step("Square the radius",["r² = "+fmt(r3)+" × "+fmt(r3)+" = "+fmt(sq)]));
+s.push(step("Multiply by 4 and π",["4 × π × "+fmt(sq)+" = 4 × "+pl+" × "+fmt(sq),"= "+fmt(sa)+" "+u+"²"]));
+ans="SA ≈ "+fmt(sa)+" "+u+"²";}
+}else if(shape==="cyl"){
+var r2=v("r"),h2=v("h");
+if(bad(["r","h"])){err="Enter positive numbers for every box.";}
+else{
+var tb=2*P*r2*r2,sd=2*P*r2*h2;
+s.push(step("Write the formula",["SA = 2πr² + 2πrh","(top and bottom circles + curved side)"]));
+s.push(step("Write down what you know",["r = "+fmt(r2)+" "+u,"h = "+fmt(h2)+" "+u]));
+s.push(step("Find the area of the two circles (2πr²)",["2 × π × "+fmt(r2)+"² = 2 × "+pl+" × "+fmt(r2*r2),"= "+fmt(tb)+" "+u+"²"]));
+s.push(step("Find the curved side area (2πrh)",["2 × π × "+fmt(r2)+" × "+fmt(h2)+" = 2 × "+pl+" × "+fmt(r2*h2),"= "+fmt(sd)+" "+u+"²"]));
+s.push(step("Add them together",[fmt(tb)+" + "+fmt(sd)+" = "+fmt(tb+sd)+" "+u+"²"]));
+ans="SA ≈ "+fmt(tb+sd)+" "+u+"²";}
+}else{
+var L=v("l"),W=v("w"),H=v("h");
+if(bad(["l","w","h"])){err="Enter positive numbers for every box.";}
+else{
+var a=L*W,bb=L*H,cc=W*H;
+s.push(step("Write the formula",["SA = 2(lw) + 2(lh) + 2(wh)","(a pair of top/bottom, front/back, and left/right faces)"]));
+s.push(step("Write down what you know",["l = "+fmt(L)+" "+u,"w = "+fmt(W)+" "+u,"h = "+fmt(H)+" "+u]));
+s.push(step("Find the area of each face (lw, lh, wh)",["lw = "+fmt(L)+" × "+fmt(W)+" = "+fmt(a)+" "+u+"²","lh = "+fmt(L)+" × "+fmt(H)+" = "+fmt(bb)+" "+u+"²","wh = "+fmt(W)+" × "+fmt(H)+" = "+fmt(cc)+" "+u+"²"]));
+s.push(step("Add the three areas",[fmt(a)+" + "+fmt(bb)+" + "+fmt(cc)+" = "+fmt(a+bb+cc)+" "+u+"²"]));
+s.push(step("Multiply by 2 (each face has a match)",["2 × "+fmt(a+bb+cc)+" = "+fmt(2*(a+bb+cc))+" "+u+"²"]));
+ans="SA = "+fmt(2*(a+bb+cc))+" "+u+"²";}
+}
+$("err").textContent=err;
+if(err){$("out").hidden=true;return}
+$("steps").innerHTML=s.join("");$("ans").textContent=ans;$("out").hidden=false;
+$("out").scrollIntoView({behavior:"smooth",block:"start"});
+}
+$("tabs").addEventListener("click",function(e){
+var b=e.target.closest("button");if(!b)return;
+shape=b.dataset.s;
+[].forEach.call($("tabs").children,function(x){x.setAttribute("aria-selected",x===b)});
+build();
+});
+$("solve").onclick=solve;
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.tagName==="INPUT")solve()});
+build();
+})();
+</script>
+</body>
+</html>
