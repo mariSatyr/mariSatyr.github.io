@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pizza Party: Area of Circles</title>
+<style>
+:root{--bg:#fff8ee;--card:#fff;--ink:#2b2118;--mut:#6b5b4b;--acc:#d9481c;--ok:#1f8a4c;--bad:#b3261e;--line:#ead9c3;--hint:#fff0d6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1611;--card:#2a2119;--ink:#f4e8d8;--mut:#c2ae98;--acc:#ff8a5c;--ok:#5fd58e;--bad:#ff8a80;--line:#4a3a2b;--hint:#3a2d1f}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.2rem;margin:0 0 .4em}
+.sub{color:var(--mut);margin:0 0 12px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+nav button{flex:1;min-width:48px;padding:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+nav button.on{border-color:var(--acc);background:var(--acc);color:#fff}
+nav button.done::after{content:" ✓"}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.tip{background:var(--hint);border-radius:10px;padding:10px 12px;margin:10px 0;font-size:.95rem}
+.step{border-left:4px solid var(--line);padding:4px 0 4px 12px;margin:14px 0}
+.step.cur{border-color:var(--acc)}.step.ok{border-color:var(--ok)}
+.q{font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+input{font:inherit;padding:8px 10px;width:130px;border:2px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+.go{padding:8px 14px;border:0;border-radius:8px;background:var(--acc);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.lnk{background:none;border:0;color:var(--acc);font:inherit;text-decoration:underline;cursor:pointer;padding:4px}
+.fb{margin-top:6px;font-weight:600}.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+.eq{font-family:ui-monospace,Menlo,monospace;background:var(--bg);padding:6px 10px;border-radius:8px;display:inline-block;margin:4px 0;overflow-x:auto;max-width:100%}
+.circ{display:block;margin:8px auto;max-width:260px;width:100%}
+table{border-collapse:collapse;width:100%;font-size:.95rem}td,th{border:1px solid var(--line);padding:6px;text-align:left}
+.final{background:var(--hint);border:2px solid var(--ok);border-radius:10px;padding:10px;margin-top:10px;font-weight:700}
+.formula{display:flex;gap:10px;flex-wrap:wrap}.formula div{flex:1;min-width:140px;background:var(--hint);border-radius:10px;padding:8px 10px}
+</style></head><body><main>
+<h1>🍕 Pizza Party!</h1>
+<p class="sub">Unit 5 · Area of Circles. Answer each step. Use π, round to the nearest hundredth, and include units.</p>
+<div class="card"><h2>Formulas to know</h2>
+<div class="formula"><div><b>Area</b><br>A = π × r²</div><div><b>Radius</b><br>r = d ÷ 2</div><div><b>Diameter</b><br>d = 2 × r</div></div>
+<div class="tip">Careful: r² means r × r, <b>not</b> r × 2. Use the π button on your calculator.</div></div>
+<nav id="nav"></nav>
+<div id="stage"></div>
+</main>
+<script>
+const P=Math.PI,f=n=>n.toFixed(2);
+const A12=P*36,A10=P*25;
+const probs=[
+{t:"1. What's the area of the pizza <u>with</u> the crust?",ctx:"The pizza (with crust) has a diameter of 12 inches.",
+ svg:'<circle cx="100" cy="100" r="90" fill="#e8b765" stroke="#b9772e" stroke-width="3"/><line x1="10" y1="100" x2="190" y2="100" stroke="#2b2118" stroke-width="2"/><text x="100" y="92" text-anchor="middle" font-size="14" fill="#2b2118">d = 12 in</text>',
+ steps:[
+ {q:"What is the diameter?",a:12,u:"in",h:"It's given in the problem: 12 inches."},
+ {q:"Find the radius: r = d ÷ 2 = 12 ÷ 2",a:6,u:"in",h:"Half of 12 is 6."},
+ {q:"Square the radius: r² = 6 × 6",a:36,u:"in²",h:"6 × 6 = 36."},
+ {q:"Multiply by π: A = π × 36",a:A12,u:"in²",h:"Type 3.14159… × 36 in your calculator, then round to 2 decimals.",fin:"Area with crust ≈ 113.10 square inches"}]},
+{t:"2. What's the area of the pizza <u>without</u> the crust?",ctx:"The crust is 1 inch wide <b>all the way around</b>, so it cuts into the diameter on both sides.",
+ svg:'<circle cx="100" cy="100" r="90" fill="#d9a24f" stroke="#b9772e" stroke-width="3"/><circle cx="100" cy="100" r="75" fill="#f2c94c" stroke="#b9772e" stroke-width="2"/><line x1="10" y1="100" x2="190" y2="100" stroke="#2b2118" stroke-width="2"/><text x="100" y="94" text-anchor="middle" font-size="13" fill="#2b2118">10 in</text><text x="18" y="130" font-size="11" fill="#2b2118">1 in crust</text>',
+ steps:[
+ {q:"Diameter without crust: take off 1 inch from each side. 12 − 1 − 1 = ?",a:10,u:"in",h:"The crust is on the left AND the right, so subtract 2 total."},
+ {q:"Radius: r = 10 ÷ 2",a:5,u:"in",h:"Half of 10."},
+ {q:"Square the radius: r² = 5 × 5",a:25,u:"in²",h:"5 × 5 = 25."},
+ {q:"Multiply by π: A = π × 25",a:A10,u:"in²",h:"3.14159… × 25 = 78.539…",fin:"Area without crust ≈ 78.54 square inches"}]},
+{t:"3. How much crust is there?",ctx:"Crust is the ring left over when you remove the inner circle from the whole pizza.",
+ svg:'<circle cx="100" cy="100" r="90" fill="#b9772e"/><circle cx="100" cy="100" r="75" fill="#f2c94c"/>',
+ steps:[
+ {q:"Area of the whole pizza (from #1)",a:A12,u:"in²",h:"Look back at problem 1: 113.10."},
+ {q:"Area without crust (from #2)",a:A10,u:"in²",h:"Look back at problem 2: 78.54."},
+ {q:"Subtract: whole − inside",a:A12-A10,u:"in²",h:"113.10 − 78.54.",fin:"Crust ≈ 34.56 square inches"}],
+ tip:"Checking: 36π − 25π = 11π ≈ 34.56. Both ways match!"},
+{t:"4. A pizza has an area of 707 in². What's its diameter? (nearest inch)",ctx:"Now we work <b>backwards</b>: from area to radius to diameter.",
+ svg:'<circle cx="100" cy="100" r="90" fill="#e8b765" stroke="#b9772e" stroke-width="3"/><text x="100" y="105" text-anchor="middle" font-size="16" fill="#2b2118">A = 707 in²</text>',
+ steps:[
+ {q:"Write A = π × r² with A = 707. Divide both sides by π: r² = 707 ÷ π",a:707/P,u:"in²",h:"707 ÷ 3.14159… ≈ 225.04",tol:.02},
+ {q:"Take the square root: r = √225.04 (nearest inch)",a:15,u:"in",h:"15 × 15 = 225, so r is about 15.",tol:.5},
+ {q:"Double the radius: d = 2 × 15",a:30,u:"in",h:"Diameter is twice the radius.",fin:"Diameter ≈ 30 inches"}],
+ tip:"Check it: r = 15 → A = π × 225 ≈ 706.86 ≈ 707 ✓"},
+{t:"5. Which pizza is the better buy?",ctx:"12-inch pizza: $16.99. Big pizza (707 in²): $19.50. Compare <b>price per square inch</b>.",
+ svg:'<circle cx="70" cy="100" r="40" fill="#e8b765" stroke="#b9772e" stroke-width="3"/><circle cx="150" cy="100" r="55" fill="#e8b765" stroke="#b9772e" stroke-width="3" transform="translate(0,0) scale(.7) translate(64,43)"/><text x="70" y="160" text-anchor="middle" font-size="12" fill="#2b2118">$16.99</text><text x="150" y="160" text-anchor="middle" font-size="12" fill="#2b2118">$19.50</text>',
+ steps:[
+ {q:"Price per sq inch of the 12-inch pizza: $16.99 ÷ 113.10 (round to 3 decimals)",a:16.99/A12,u:"$/in²",h:"Use the area from #1. Answer is about 0.150.",tol:.002,d:3},
+ {q:"Price per sq inch of the big pizza: $19.50 ÷ 707 (round to 3 decimals)",a:19.5/707,u:"$/in²",h:"About 0.028.",tol:.002,d:3},
+ {choice:true,q:"Which is cheaper per square inch, so the better buy?",opts:["The 12-inch pizza ($16.99)","The big pizza ($19.50)"],a:1}],
+ fin:"Better buy: the 707 in² pizza at about $0.03 per square inch vs about $0.15 for the 12-inch. You get over 6 times the pizza for only $2.51 more!"}
+];
+const st=probs.map(p=>({i:0,done:false}));let cur=0;
+function nav(){const n=document.getElementById('nav');n.innerHTML='';probs.forEach((p,i)=>{const b=document.createElement('button');b.textContent=i+1;b.className=(i==cur?'on ':'')+(st[i].done?'done':'');b.onclick=()=>{cur=i;render()};n.appendChild(b)})}
+function render(){nav();const p=probs[cur],s=st[cur];let h=`<div class="card"><h2>${p.t}</h2><p>${p.ctx}</p><svg class="circ" viewBox="0 0 200 200" role="img" aria-label="Diagram">${p.svg}</svg>`;
+p.steps.forEach((x,k)=>{if(k>s.i)return;const ok=k<s.i,c=ok?'ok':'cur';
+h+=`<div class="step ${c}"><div class="q">Step ${k+1}: ${x.q}</div>`;
+if(ok){h+=x.choice?`<div class="fb ok">✓ ${x.opts[x.a]}</div>`:`<div class="fb ok">✓ ${fmt(x.a,x)} ${x.u}</div>`}
+else{if(x.choice){h+='<div class="row">'+x.opts.map((o,j)=>`<button class="go" onclick="pick(${k},${j})">${o}</button>`).join('')+'</div>'}
+else h+=`<div class="row"><input id="in" inputmode="decimal" placeholder="answer" onkeydown="if(event.key=='Enter')chk(${k})"> <span>${x.u}</span><button class="go" onclick="chk(${k})">Check</button><button class="lnk" onclick="hint(${k})">Hint</button></div>`;
+h+='<div id="fb" class="fb"></div>'}
+h+='</div>'});
+if(s.done){const last=p.steps[p.steps.length-1];h+=`<div class="final">🎉 ${p.fin||last.fin}</div>`;if(p.tip)h+=`<div class="tip">${p.tip}</div>`;
+if(cur==4)h+=`<div class="tip">Note: the area 707 is already rounded, so the real 30-inch pizza is 706.86 in². The conclusion doesn't change.</div>`;
+h+=cur<4?`<div class="row"><button class="go" onclick="cur++;render()">Next problem →</button></div>`:`<div class="final">All done! Fill in your worksheet with the answers above.</div>`}
+h+='</div>';document.getElementById('stage').innerHTML=h;const i=document.getElementById('in');if(i)i.focus()}
+function fmt(a,x){return Number.isInteger(a)?a:a.toFixed(x.d||2)}
+function chk(k){const x=probs[cur].steps[k],v=parseFloat(document.getElementById('in').value.replace(/[^0-9.\-]/g,'')),fb=document.getElementById('fb');
+if(isNaN(v)){fb.className='fb bad';fb.textContent='Type a number first.';return}
+if(Math.abs(v-x.a)<=(x.tol??0.011))adv();else{fb.className='fb bad';fb.textContent='Not quite. Try again or tap Hint.'}}
+function pick(k,j){const x=probs[cur].steps[k];if(j==x.a)adv();else{const fb=document.getElementById('fb');fb.className='fb bad';fb.textContent='Compare the two numbers: a smaller price per square inch means more pizza for your money.'}}
+function hint(k){const fb=document.getElementById('fb');fb.className='fb';fb.innerHTML='💡 '+probs[cur].steps[k].h}
+function adv(){const s=st[cur];s.i++;if(s.i>=probs[cur].steps.length){s.done=true}render()}
+render();
+</script></body></html>
