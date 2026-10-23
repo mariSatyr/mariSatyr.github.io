@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prime Dash</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#120c33;--panel:#221a5a;--cy:#27e1ff;--mg:#ff3d81;--yl:#ffd23f;--gr:#3dffa0;--tx:#f4f1ff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Lilita One","Trebuchet MS",system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh}
+#app{position:relative;width:min(100vw,960px);aspect-ratio:2/1;max-height:100vh;user-select:none;touch-action:manipulation}
+canvas{width:100%;height:100%;display:block;background:#150f3a;border:3px solid var(--cy);border-radius:10px}
+#hud{position:absolute;top:10px;left:16px;right:16px;display:flex;justify-content:space-between;font-size:clamp(16px,3.2vw,28px);pointer-events:none}
+#lv{color:var(--mg);letter-spacing:2px}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(10,6,36,.72);border-radius:10px;padding:12px}
+.ov.off{display:none}
+.card{background:var(--panel);border:3px solid var(--cy);border-radius:14px;padding:clamp(12px,2.4vw,24px);width:min(100%,600px);text-align:center;max-height:100%;overflow:auto}
+h1{margin:0 0 6px;font-size:clamp(30px,6vw,56px);color:var(--yl);font-weight:400}
+p{margin:6px 0;font-size:clamp(14px,2.2vw,19px);line-height:1.35}
+.tag{display:inline-block;background:var(--mg);color:#fff;border-radius:20px;padding:2px 14px;font-size:clamp(13px,2vw,17px)}
+.q{font-size:clamp(18px,3.4vw,30px);margin:10px 0 14px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font:inherit;font-size:clamp(16px,2.8vw,26px);color:var(--tx);background:#33298a;border:3px solid var(--cy);border-radius:10px;padding:10px 6px;cursor:pointer}
+button:hover:not(:disabled){background:#4536b8}
+button:focus-visible{outline:3px solid var(--yl);outline-offset:2px}
+button.ok{background:#12794d;border-color:var(--gr)}
+button.no{background:#8a1f4a;border-color:var(--mg)}
+button.go{background:var(--yl);color:#1b1340;border-color:var(--yl);margin-top:12px;padding:10px 28px}
+.why{color:var(--gr)} .bad{color:#ff8fb3}
+</style>
+</head>
+<body>
+<div id="app">
+<canvas id="c" width="800" height="400" aria-label="Prime Dash game"></canvas>
+<div id="hud"><span id="lv"></span><span id="sc"></span></div>
+<div id="ov" class="ov"><div class="card" id="card"></div></div>
+</div>
+<script>
+const C=document.getElementById('c'),X=C.getContext('2d'),ov=document.getElementById('ov'),card=document.getElementById('card');
+const W=800,H=400,G=320,S=36;
+let st='menu',p,obs,speed,dist,lives,gates,inv,spawnIn,count,shake=0,held=false,last=0,Q,best=0;
+const r=n=>Math.floor(Math.random()*n),pick=a=>a[r(a.length)],shuf=a=>a.sort(()=>Math.random()-.5);
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const pool=[12,18,20,24,28,30,36,40,45,48,50,60,72,84,90];
+function fact(n){const f={};for(let d=2;d<=n;d++)while(n%d==0){f[d]=(f[d]||0)+1;n/=d}return f}
+const sup=e=>String(e).split('').map(c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[c]).join('');
+const fmt=f=>Object.keys(f).map(Number).sort((a,b)=>a-b).map(k=>k+(f[k]>1?sup(f[k]):'')).join(' × ');
+const isComp=c=>Object.values(fact(c)).reduce((a,b)=>a+b,0)>1;
+
+function mk(){
+  const k=pick(['f','g','l']);let tag,text,ans,why,d=new Set();
+  if(k=='f'){
+    const n=pick(pool);ans=fmt(fact(n));tag='Prime factors';
+    text=`Which is the prime factorization of ${n}?`;
+    why=`${n} = ${ans}. Every factor in it is prime.`;
+    const cs=[];for(let c=4;c<n;c++)if(n%c==0&&isComp(c))cs.push(c);
+    if(cs.length){const c=pick(cs);d.add(`${c} × ${n/c}`)}
+    while(d.size<3){const m=pick(pool);if(m!=n)d.add(fmt(fact(m)))}
+  }else if(k=='g'){
+    let g,a,b;do{g=2+r(8);a=2+r(7);b=2+r(7)}while(a==b||gcd(a,b)>1);
+    const x=g*a,y=g*b;ans=g;tag='GCF';text=`What is the GCF of ${x} and ${y}?`;
+    why=`${x} = ${fmt(fact(x))} and ${y} = ${fmt(fact(y))}. Multiply the shared primes: ${g}.`;
+    [x*y/g,Math.min(x,y),g*2,g+1].forEach(v=>d.add(v));d.delete(ans);
+    while(d.size<3){const v=g+r(14)-5;if(v>1&&v!=ans)d.add(v)}
+  }else{
+    let a,b;do{a=2+r(11);b=2+r(11)}while(a==b||a%b==0||b%a==0);
+    const l=a*b/gcd(a,b);ans=l;tag='LCM';text=`What is the LCM of ${a} and ${b}?`;
+    why=`${a} = ${fmt(fact(a))} and ${b} = ${fmt(fact(b))}. Use every prime at its highest power: ${l}.`;
+    [a*b,l*2,Math.max(a,b)*2,l+a,gcd(a,b)].forEach(v=>d.add(v));d.delete(ans);
+    while(d.size<3){const v=l+(r(9)+1)*pick([-1,1]);if(v>1&&v!=ans)d.add(v)}
+  }
+  const opts=shuf([String(ans),...[...d].slice(0,3).map(String)]);
+  return{tag,text,opts,ans:String(ans),why,done:false};
+}
+
+function hud(){
+  document.getElementById('lv').textContent='♥'.repeat(lives)+'♡'.repeat(Math.max(0,5-lives));
+  document.getElementById('sc').textContent=Math.floor(dist/10)+' m';
+}
+function reset(){
+  p={x:120,y:G-S,vy:0,r:0,on:true};obs=[];speed=5.6;dist=0;lives=3;gates=0;inv=0;spawnIn=320;count=0;hud();
+}
+function show(h){card.innerHTML=h;ov.classList.remove('off')}
+function menu(){
+  st='menu';reset();
+  show(`<h1>Prime Dash</h1>
+  <p>Hold <b>Space</b>, click or tap to jump over spikes. Land on blocks to ride them.</p>
+  <p>Glowing <span class="why">math gates</span> ask about prime factors, GCF and LCM. Answer right to earn a life (up to 5).</p>
+  <button class="go" id="start">Start running</button>`);
+  document.getElementById('start').onclick=start;
+}
+function start(){reset();ov.classList.add('off');st='play'}
+function over(){
+  st='over';const sc=Math.floor(dist/10);best=Math.max(best,sc);
+  show(`<h1>Crashed!</h1><p>Distance: <b>${sc} m</b> &nbsp; Best: <b>${best} m</b></p>
+  <p>Gates answered right: <b>${gates}</b></p><button class="go" id="again">Run again</button>`);
+  document.getElementById('again').onclick=start;
+}
+function ask(){
+  st='q';Q=mk();
+  show(`<span class="tag">${Q.tag}</span><div class="q">${Q.text}</div>
+  <div class="opts">${Q.opts.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div><div id="fb"></div>`);
+  card.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+}
+function answer(i){
+  if(Q.done)return;Q.done=true;
+  const bs=card.querySelectorAll('.opts button');
+  bs.forEach((b,j)=>{b.disabled=true;if(Q.opts[j]==Q.ans)b.classList.add('ok');else if(j==i)b.classList.add('no')});
+  const good=Q.opts[i]==Q.ans;
+  if(good){gates++;lives=Math.min(5,lives+1);hud()}
+  document.getElementById('fb').innerHTML=
+    `<p class="${good?'why':'bad'}"><b>${good?(lives==5&&false?'':'Correct! Extra life earned.'):'Not quite.'}</b></p><p>${Q.why}</p><button class="go" id="cont">Keep running</button>`;
+  const c=document.getElementById('cont');c.onclick=resume;c.focus();
+}
+function resume(){ov.classList.add('off');inv=70;st='play'}
+
+function hit(){
+  if(inv>0)return;lives--;inv=90;shake=10;hud();if(lives<=0)over();
+}
+function spawn(){
+  count++;const x=W+60;
+  if(count%5==0){obs.push({t:'g',x,w:50,h:210});spawnIn=330;return}
+  const k=pick(['s','s','ss','b','bb']);
+  if(k=='s'){obs.push({t:'s',x,w:34,h:34});spawnIn=300+r(160)}
+  else if(k=='ss'){obs.push({t:'s',x,w:34,h:34},{t:'s',x:x+34,w:34,h:34});spawnIn=340+r(160)}
+  else if(k=='b'){obs.push({t:'b',x,w:S,h:S,y:G-S});spawnIn=300+r(160)}
+  else{obs.push({t:'b',x,w:S*2,h:S,y:G-S});spawnIn=340+r(160)}
+}
+function step(dt){
+  dist+=speed*dt;speed=Math.min(8,5.6+dist/7000);
+  if(inv>0)inv-=dt;if(shake>0)shake-=dt;
+  spawnIn-=speed*dt;if(spawnIn<=0)spawn();
+  obs.forEach(o=>o.x-=speed*dt);obs=obs.filter(o=>o.x+o.w>-20);
+  if(held&&p.on){p.vy=-14;p.on=false}
+  const py=p.y;p.vy+=.9*dt;p.y+=p.vy*dt;p.on=false;
+  if(p.y>=G-S){p.y=G-S;p.vy=0;p.on=true}
+  for(const o of obs){
+    if(o.t=='g'){if(!o.done&&o.x<p.x+S){o.done=true;ask();return}continue}
+    const ox=p.x+S-5>o.x&&p.x+5<o.x+o.w;
+    if(o.t=='b'){
+      if(ox&&p.y+S>o.y&&p.y<o.y+o.h){
+        if(py+S<=o.y+8&&p.vy>=0){p.y=o.y-S;p.vy=0;p.on=true}else hit();
+      }
+    }else{
+      if(p.x+S-8>o.x+8&&p.x+8<o.x+o.w-8&&p.y+S>G-o.h+10)hit();
+    }
+  }
+  if(p.on)p.r=Math.round(p.r/(Math.PI/2))*Math.PI/2;else p.r+=.14*dt;
+  hud();
+}
+function draw(){
+  X.save();
+  if(shake>0)X.translate(r(9)-4,r(9)-4);
+  X.fillStyle='#150f3a';X.fillRect(0,0,W,H);
+  for(let i=0;i<9;i++){
+    const x=(((i*130-dist*.25)%1170)+1170)%1170-130;
+    X.fillStyle=i%2?'rgba(39,225,255,.07)':'rgba(255,61,129,.07)';X.fillRect(x,0,60,G);
+  }
+  X.fillStyle='#2b1f7a';X.fillRect(0,G,W,H-G);
+  X.fillStyle='#27e1ff';X.fillRect(0,G,W,3);
+  X.strokeStyle='rgba(39,225,255,.25)';X.lineWidth=2;
+  for(let i=0;i<22;i++){const x=(((i*40-dist)%880)+880)%880-40;X.beginPath();X.moveTo(x,G);X.lineTo(x-30,H);X.stroke()}
+  if(obs)for(const o of obs){
+    if(o.t=='s'){
+      X.fillStyle='#ff3d81';X.beginPath();X.moveTo(o.x,G);X.lineTo(o.x+o.w/2,G-o.h);X.lineTo(o.x+o.w,G);X.fill();
+      X.strokeStyle='#fff';X.lineWidth=2;X.stroke();
+    }else if(o.t=='b'){
+      X.fillStyle='#1b3a8f';X.fillRect(o.x,o.y,o.w,o.h);X.strokeStyle='#27e1ff';X.lineWidth=3;X.strokeRect(o.x+1.5,o.y+1.5,o.w-3,o.h-3);
+    }else{
+      const t=G-o.h;
+      X.fillStyle=o.done?'rgba(61,255,160,.08)':'rgba(61,255,160,.22)';X.fillRect(o.x,t,o.w,o.h);
+      X.fillStyle='#3dffa0';X.fillRect(o.x,t,6,o.h);X.fillRect(o.x+o.w-6,t,6,o.h);
+      X.font='48px "Lilita One",sans-serif';X.textAlign='center';X.fillText('?',o.x+o.w/2,t+o.h/2+16);
+    }
+  }
+  if(p&&!(inv>0&&Math.floor(inv/5)%2)){
+    X.save();X.translate(p.x+S/2,p.y+S/2);X.rotate(p.r);
+    X.fillStyle='#ffd23f';X.fillRect(-S/2,-S/2,S,S);X.strokeStyle='#1b1340';X.lineWidth=3;X.strokeRect(-S/2+1.5,-S/2+1.5,S-3,S-3);
+    X.fillStyle='#1b1340';X.fillRect(-9,-8,7,7);X.fillRect(4,-8,7,7);X.fillRect(-9,7,20,4);
+    X.restore();
+  }
+  X.restore();
+}
+function loop(t){
+  const dt=Math.min(2.5,(t-last)/16.67||1);last=t;
+  if(st=='play')step(dt);draw();requestAnimationFrame(loop);
+}
+const jumpKey=e=>e.code=='Space'||e.code=='ArrowUp'||e.code=='KeyW';
+addEventListener('keydown',e=>{
+  if(st=='play'&&jumpKey(e)){held=true;e.preventDefault()}
+  else if(st=='q'&&!Q.done&&/^[1-4]$/.test(e.key)&&Q.opts[e.key-1]!==undefined)answer(e.key-1);
+});
+addEventListener('keyup',e=>{if(jumpKey(e))held=false});
+C.addEventListener('pointerdown',()=>{held=true});
+addEventListener('pointerup',()=>{held=false});
+menu();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
