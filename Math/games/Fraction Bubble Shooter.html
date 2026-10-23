@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fraction Bubble Shooter</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07203a;--panel:#0d3a5c;--aq:#3de0ff;--co:#ff6f61;--go:#ffcf3f;--mi:#7dffb2;--tx:#f2fbff;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Fredoka","Trebuchet MS",system-ui,sans-serif;font-weight:500;display:flex;justify-content:center;align-items:center;min-height:100vh}
+#app{position:relative;width:min(100vw,calc((100vh - 44px)*.75),520px);user-select:none}
+#hud{display:flex;justify-content:space-between;padding:4px 8px;font-size:clamp(15px,3.8vw,24px);font-weight:700}
+#lv{color:var(--co);letter-spacing:2px}
+canvas{width:100%;aspect-ratio:3/4;display:block;border:3px solid var(--aq);border-radius:12px;touch-action:none;cursor:crosshair}
+.ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(3,14,28,.78);border-radius:12px;padding:10px}
+.ov.off{display:none}
+.card{background:var(--panel);border:3px solid var(--aq);border-radius:16px;padding:clamp(10px,3vw,20px);width:100%;text-align:center;max-height:100%;overflow:auto}
+h1{margin:0 0 6px;font-size:clamp(26px,7vw,42px);color:var(--go);font-weight:700}
+p{margin:6px 0;font-size:clamp(14px,3.2vw,18px);line-height:1.35}
+.tag{display:inline-block;background:var(--go);color:#3a2a00;border-radius:20px;padding:2px 14px;font-size:clamp(13px,3vw,16px);font-weight:700}
+.big{font-size:clamp(26px,8vw,44px);margin:8px 0 12px;display:flex;justify-content:center;align-items:center;gap:6px;font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fr{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05}
+.fr i{font-style:normal;padding:0 5px}
+.fr i:first-child{border-bottom:.09em solid currentColor}
+.w{margin-right:2px}
+button{font:inherit;font-weight:700;font-size:clamp(18px,5vw,28px);color:var(--tx);background:#14587f;border:3px solid var(--aq);border-radius:12px;padding:8px 6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;min-height:clamp(56px,16vw,86px)}
+button:hover:not(:disabled){background:#1b72a3}
+button:focus-visible{outline:3px solid var(--go);outline-offset:2px}
+button.ok{background:#12794d;border-color:var(--mi)}
+button.no{background:#8a2a3a;border-color:var(--co)}
+button.go{display:inline-flex;background:var(--go);color:#3a2a00;border-color:var(--go);margin-top:12px;padding:8px 28px;font-size:clamp(16px,4vw,22px);min-height:0}
+.good{color:var(--mi)} .bad{color:#ffa39b}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="hud"><span id="lv"></span><span id="rw"></span><span id="sc"></span></div>
+<canvas id="c" width="480" height="640" aria-label="Bubble shooter game"></canvas>
+<div id="ov" class="ov"><div class="card" id="card"></div></div>
+</div>
+<script>
+const C=document.getElementById('c'),X=C.getContext('2d'),ov=document.getElementById('ov'),card=document.getElementById('card');
+const W=480,H=640,R=20,D=40,RH=R*Math.sqrt(3),LINE=520,SX=240,SY=585,MIN=3,EVERY=7;
+const COL=['#ff4d4d','#3d8bff','#3ddc84','#a86bff','#ff8fe0'];
+let grid,off,st='menu',lives,score,right,shots,cur,nxt,shot,parts=[],falls=[],pend,Q,best=0,aim=Math.PI/2,swapped=false,last=0;
+const r=n=>Math.floor(Math.random()*n),pick=a=>a[r(a.length)],shuf=a=>a.sort(()=>Math.random()-.5);
+const fr=(w,n,d)=>`${w?`<span class="w">${w}</span>`:''}<span class="fr"><i>${n}</i><i>${d}</i></span>`;
+const len=i=>((i+off)%2)?11:12,cx=(i,c)=>((i+off)%2?2*R:R)+c*D,cy=i=>R+i*RH;
+const ncol=()=>Math.min(5,4+Math.floor(score/400));
+const row=i=>Array.from({length:len(i)},()=>Math.random()<.07?5:r(ncol()));
+function nbrs(i,c){
+  const k=(i+off)%2==0?[c-1,c]:[c,c+1],o=[[i,c-1],[i,c+1]];
+  for(const di of[-1,1])for(const kk of k)o.push([i+di,kk]);
+  return o.filter(([a,b])=>a>=0&&a<grid.length&&b>=0&&b<len(a));
+}
+function present(){const s=new Set();grid.forEach(rw=>rw.forEach(v=>{if(v>=0&&v<5)s.add(v)}));return[...s]}
+function ammo(){const p=present();return p.length?pick(p):r(5)}
+function ensure(i){while(grid.length<=i)grid.push(Array(len(grid.length)).fill(-1))}
+
+/* questions: mixed <-> improper */
+function mk(){
+  const d=2+r(7),w=1+r(5),n=1+r(d-1),top=w*d+n;
+  if(Math.random()<.5){
+    const ans=`${top}/${d}`,set=new Map();
+    [[w+n,d],[w*n+d,d],[top,n],[top+1,d],[top-1,d],[w*d,d]].forEach(([a,b])=>set.set(`${a}/${b}`,[a,b]));
+    set.delete(ans);
+    const ds=[...set.values()].filter(v=>v[0]>0).slice(0,3);
+    const opts=shuf([{k:ans,h:fr(0,top,d)},...ds.map(v=>({k:`${v[0]}/${v[1]}`,h:fr(0,v[0],v[1])}))]);
+    return{tag:'Mixed to improper',q:fr(w,n,d),opts,ans,why:`${w} × ${d} + ${n} = ${top}, so ${w}\u202F${n}/${d} = ${top}/${d}.`};
+  }
+  const ans=`${w}-${n}-${d}`,set=new Map();
+  [[w+1,n,d],[w-1,n,d],[w,d-n,d],[n,w,d],[w,n,d+1],[w+2,n,d]].forEach(([a,b,c])=>{
+    if(a>=1&&b>=1&&b<c&&`${a}-${b}-${c}`!=ans)set.set(`${a}-${b}-${c}`,[a,b,c])});
+  const ds=[...set.values()].slice(0,3);
+  while(ds.length<3){const a=1+r(7);if(a!=w&&!ds.some(v=>v[0]==a))ds.push([a,n,d])}
+  const opts=shuf([{k:ans,h:fr(w,n,d)},...ds.map(v=>({k:v.join('-'),h:fr(v[0],v[1],v[2])}))]);
+  return{tag:'Improper to mixed',q:fr(0,top,d),opts,ans,why:`${top} ÷ ${d} = ${w} remainder ${n}, so ${top}/${d} = ${w}\u202F${n}/${d}.`};
+}
+
+function hud(){
+  document.getElementById('lv').textContent='♥'.repeat(lives)+'♡'.repeat(Math.max(0,5-lives));
+  document.getElementById('rw').textContent='New row in '+(EVERY-shots%EVERY);
+  document.getElementById('sc').textContent='Score '+score;
+}
+function show(h){card.innerHTML=h;ov.classList.remove('off')}
+function reset(){
+  off=0;lives=3;score=0;right=0;shots=0;pend=0;parts=[];falls=[];shot=null;aim=Math.PI/2;
+  grid=[];for(let i=0;i<5;i++)grid.push(row(i));grid[1][2]=5;grid[3][7]=5;
+  cur=ammo();nxt=ammo();hud();
+}
+function menu(){
+  st='menu';reset();
+  show(`<h1>Fraction Bubble Shooter</h1>
+  <p>Aim and tap to shoot. Match <b>${MIN} or more</b> bubbles of one color to pop them. Anything left hanging falls.</p>
+  <p><b>Golden ? bubbles</b> ask a fraction question when you pop next to them or drop them. Answer right to earn a life (up to 5).</p>
+  <p>If bubbles reach the dashed line, you lose a life. Tap the small bubble to swap.</p>
+  <button class="go" id="start">Start shooting</button>`);
+  document.getElementById('start').onclick=start;
+}
+function start(){reset();ov.classList.add('off');st='aim'}
+function over(){
+  st='over';best=Math.max(best,score);
+  show(`<h1>Game over</h1><p>Score: <b>${score}</b> &nbsp; Best: <b>${best}</b></p><p>Golden questions right: <b>${right}</b></p><button class="go" id="again">Play again</button>`);
+  document.getElementById('again').onclick=start;
+}
+function ask(){
+  st='q';Q=mk();Q.done=false;
+  show(`<span class="tag">${Q.tag}</span><div class="big">${Q.q}<span>=</span><span>?</span></div>
+  <div class="opts">${Q.opts.map((o,i)=>`<button data-i="${i}">${o.h}</button>`).join('')}</div><div id="fb"></div>`);
+  card.querySelectorAll('.opts button').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+}
+function answer(i){
+  if(Q.done)return;Q.done=true;
+  card.querySelectorAll('.opts button').forEach((b,j)=>{b.disabled=true;if(Q.opts[j].k==Q.ans)b.classList.add('ok');else if(j==i)b.classList.add('no')});
+  const good=Q.opts[i].k==Q.ans,full=lives>=5;
+  if(good){right++;lives=Math.min(5,lives+1);hud()}
+  document.getElementById('fb').innerHTML=
+    `<p class="${good?'good':'bad'}"><b>${good?(full?'Correct! Your lives are already full.':'Correct! Extra life earned.'):'Not quite.'}</b></p><p>${Q.why}</p><button class="go" id="cont">Keep shooting</button>`;
+  const c=document.getElementById('cont');
+  c.onclick=()=>{pend--;if(pend>0)ask();else{ov.classList.add('off');st='aim'}};c.focus();
+}
+
+function burst(x,y,col){for(let i=0;i<8;i++){const a=i/8*6.28,v=2+Math.random()*2;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:col})}}
+function kill(a,b,pts){const v=grid[a][b];burst(cx(a,b),cy(a),v==5?'#ffcf3f':COL[v]);grid[a][b]=-1;score+=pts}
+function fire(){
+  if(st!='aim')return;
+  const p=present();if(p.length&&!p.includes(cur))cur=pick(p);
+  shot={x:SX,y:SY,vx:Math.cos(aim)*11,vy:-Math.sin(aim)*11,c:cur};cur=nxt;nxt=ammo();st='fly';shots++;hud();
+}
+function stepFly(dt){
+  const n=Math.ceil(11*dt/4);
+  for(let s=0;s<n;s++){
+    shot.x+=shot.vx*dt/n;shot.y+=shot.vy*dt/n;
+    if(shot.x<R){shot.x=R;shot.vx=-shot.vx}else if(shot.x>W-R){shot.x=W-R;shot.vx=-shot.vx}
+    if(shot.y<=R){land();return}
+    const r0=Math.floor((shot.y-R)/RH);
+    for(let i=Math.max(0,r0-2);i<=Math.min(grid.length-1,r0+2);i++)
+      for(let c=0;c<grid[i].length;c++)
+        if(grid[i][c]>=0&&(cx(i,c)-shot.x)**2+(cy(i)-shot.y)**2<(D-6)**2){land();return}
+  }
+}
+function land(){
+  let bi=0,bc=0,bd=1e9;const r0=Math.max(0,Math.round((shot.y-R)/RH));
+  for(let i=Math.max(0,r0-1);i<=r0+1;i++){ensure(i);for(let c=0;c<grid[i].length;c++)if(grid[i][c]<0){
+    const d=(cx(i,c)-shot.x)**2+(cy(i)-shot.y)**2;if(d<bd){bd=d;bi=i;bc=c}}}
+  grid[bi][bc]=shot.c;shot=null;resolve(bi,bc);
+}
+function resolve(i,c){
+  const col=grid[i][c],seen=new Set([i+','+c]),stk=[[i,c]],cl=[[i,c]];
+  while(stk.length){const[a,b]=stk.pop();for(const[x,y]of nbrs(a,b)){const k=x+','+y;if(!seen.has(k)&&grid[x][y]==col){seen.add(k);stk.push([x,y]);cl.push([x,y])}}}
+  if(cl.length>=MIN){
+    cl.forEach(([a,b])=>kill(a,b,10));
+    for(const[a,b]of cl)for(const[x,y]of nbrs(a,b))if(grid[x][y]==5){kill(x,y,10);pend++}
+    const ok=new Set(),q=[];
+    for(let k=0;k<grid[0].length;k++)if(grid[0][k]>=0){ok.add('0,'+k);q.push([0,k])}
+    while(q.length){const[a,b]=q.pop();for(const[x,y]of nbrs(a,b)){const k=x+','+y;if(grid[x][y]>=0&&!ok.has(k)){ok.add(k);q.push([x,y])}}}
+    for(let a=0;a<grid.length;a++)for(let b=0;b<grid[a].length;b++)if(grid[a][b]>=0&&!ok.has(a+','+b)){
+      const v=grid[a][b];if(v==5)pend++;falls.push({x:cx(a,b),y:cy(a),vy:0,v});grid[a][b]=-1;score+=20}
+  }
+  if(shots%EVERY==0){off^=1;grid.unshift(row(0))}
+  while(grid.length>1&&grid[grid.length-1].every(v=>v<0))grid.pop();
+  if(grid.every(rw=>rw.every(v=>v<0))){grid=[];for(let k=0;k<4;k++)grid.push(row(k));score+=100}
+  let m=-1;grid.forEach((rw,k)=>{if(rw.some(v=>v>=0))m=k});
+  if(m>=0&&cy(m)+R>LINE){
+    lives--;
+    for(let k=Math.max(0,m-2);k<=m;k++)for(let b=0;b<grid[k].length;b++)if(grid[k][b]>=0)kill(k,b,0);
+    if(lives<=0){hud();over();return}
+  }
+  const p=present();if(p.length&&!p.includes(cur))cur=pick(p);
+  hud();
+  if(pend>0)ask();else st='aim';
+}
+
+function bub(x,y,v,rr=R){
+  const g=X.createRadialGradient(x-rr*.3,y-rr*.35,rr*.1,x,y,rr);
+  if(v==5){g.addColorStop(0,'#fff6c2');g.addColorStop(1,'#f2a900');X.shadowColor='#ffcf3f';X.shadowBlur=10}
+  else{g.addColorStop(0,'#ffffff');g.addColorStop(.3,COL[v]);g.addColorStop(1,COL[v])}
+  X.fillStyle=g;X.beginPath();X.arc(x,y,rr-1,0,6.283);X.fill();X.shadowBlur=0;
+  X.strokeStyle='rgba(0,0,0,.3)';X.lineWidth=2;X.stroke();
+  if(v==5){X.fillStyle='#5a3b00';X.font='700 '+Math.round(rr*1.2)+'px Fredoka,sans-serif';X.textAlign='center';X.textBaseline='middle';X.fillText('?',x,y+2)}
+}
+function draw(){
+  const g=X.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b4a73');g.addColorStop(1,'#061a30');X.fillStyle=g;X.fillRect(0,0,W,H);
+  X.strokeStyle='#ff6f61';X.lineWidth=2;X.setLineDash([10,8]);X.beginPath();X.moveTo(0,LINE);X.lineTo(W,LINE);X.stroke();X.setLineDash([]);
+  grid.forEach((rw,i)=>rw.forEach((v,c)=>{if(v>=0)bub(cx(i,c),cy(i),v)}));
+  for(const f of falls)bub(f.x,f.y,f.v);
+  if(st=='aim'){
+    X.fillStyle='rgba(255,255,255,.7)';
+    for(let k=1;k<=7;k++){X.beginPath();X.arc(SX+Math.cos(aim)*k*28,SY-Math.sin(aim)*k*28,3,0,6.283);X.fill()}
+  }
+  if(shot)bub(shot.x,shot.y,shot.c);
+  if(st!='fly'&&st!='over')bub(SX,SY,cur);
+  bub(SX-90,SY+10,nxt,14);
+  for(const p of parts){X.globalAlpha=Math.max(0,p.l);X.fillStyle=p.c;X.beginPath();X.arc(p.x,p.y,4*p.l+1,0,6.283);X.fill()}
+  X.globalAlpha=1;
+}
+function loop(ts){
+  const dt=Math.min(2.5,(ts-last)/16.67||1);last=ts;
+  if(st=='fly')stepFly(dt);
+  falls.forEach(f=>{f.vy+=.6*dt;f.y+=f.vy*dt});falls=falls.filter(f=>f.y<H+R);
+  parts.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.l-=.045*dt});parts=parts.filter(p=>p.l>0);
+  draw();requestAnimationFrame(loop);
+}
+const pos=e=>{const b=C.getBoundingClientRect();return[(e.clientX-b.left)*W/b.width,(e.clientY-b.top)*H/b.height]};
+function setAim(e){const[x,y]=pos(e);aim=Math.min(Math.PI-.2,Math.max(.2,Math.atan2(SY-y,x-SX)))}
+C.addEventListener('pointerdown',e=>{
+  if(st!='aim')return;const[x,y]=pos(e);swapped=false;
+  if((x-(SX-90))**2+(y-(SY+10))**2<28*28){[cur,nxt]=[nxt,cur];swapped=true;return}
+  setAim(e);
+});
+C.addEventListener('pointermove',e=>{if(st=='aim')setAim(e)});
+C.addEventListener('pointerup',e=>{if(st=='aim'&&!swapped){setAim(e);fire()}swapped=false});
+menu();requestAnimationFrame(loop);
+</script>
+</body>
+</html>
