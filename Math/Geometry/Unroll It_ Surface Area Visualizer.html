@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Unroll It: Surface Area Visualizer</title>
+<style>
+:root{--bg:#f4f5f7;--card:#ffffff;--ink:#18202c;--mut:#5a6577;--line:#d9dde4;--acc:#1f5fe0;--accink:#ffffff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212b;--ink:#e9edf3;--mut:#9aa5b6;--line:#2f3846;--acc:#6f9dff;--accink:#0d1422;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161c;--card:#1b212b;--ink:#e9edf3;--mut:#9aa5b6;--line:#2f3846;--acc:#6f9dff;--accink:#0d1422;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+main{max-width:1020px;margin:0 auto;padding:18px 14px 28px}
+h1{font:700 2rem/1.1 "Trebuchet MS","Segoe UI",sans-serif;margin:4px 0 6px;letter-spacing:-.01em}
+.sub{margin:0 0 14px;color:var(--mut);max-width:60ch}
+#tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 15px}
+button:hover{border-color:var(--acc)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.on,button.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:700}
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px}
+@media (max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+canvas{display:block;width:100%;aspect-ratio:6/5;touch-action:none;cursor:grab;border-radius:8px}
+canvas:active{cursor:grabbing}
+.bar{display:flex;align-items:center;gap:10px;margin-top:8px}
+.bar input{flex:1;min-width:0}
+#st{min-width:8.5em;text-align:right;color:var(--mut);font-size:.9rem}
+.row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.row button{font-size:.88rem;padding:5px 12px}
+.hint{color:var(--mut);font-size:.85rem;margin-left:auto}
+h2{font-size:1.25rem;margin:2px 0 4px}
+#idea{margin:0 0 12px;color:var(--mut)}
+.sl{display:grid;grid-template-columns:5.5em 1fr 2.4em;gap:8px;align-items:center;margin:6px 0}
+.sl output{text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--acc);width:100%}
+#lg{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}
+.r{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.r i{width:14px;height:14px;border-radius:3px;display:block}
+.r small{display:block;color:var(--mut);font-size:.82rem}
+.r b{font-variant-numeric:tabular-nums}
+.tot{display:flex;justify-content:space-between;padding-top:10px;font-weight:700;font-size:1.1rem}
+#cap{margin:8px 0 0;color:var(--mut);font-size:.88rem}
+.foot{margin-top:18px;text-align:center}
+.foot a{color:var(--acc);font-weight:700}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<h1>Unroll it</h1>
+<p class="sub">Surface area is the area of a shape’s skin. Slide to unroll each solid into a flat net, then add up the pieces.</p>
+<nav id="tabs" aria-label="Choose a shape"></nav>
+<section class="grid">
+  <div class="card">
+    <canvas id="cv" role="img" aria-label="3D shape that unrolls into a flat net"></canvas>
+    <div class="bar">
+      <button id="play" class="pri">Unroll</button>
+      <input type="range" id="tr" min="0" max="1000" value="0" aria-label="Unroll amount">
+      <span id="st"></span>
+    </div>
+    <div class="row">
+      <button id="top">Top-down view</button>
+      <button id="rv">Reset view</button>
+      <span class="hint">Drag the shape to spin it</span>
+    </div>
+  </div>
+  <div class="card">
+    <h2 id="sh"></h2>
+    <p id="idea"></p>
+    <div id="sl"></div>
+    <div id="lg"></div>
+    <p id="cap"></p>
+  </div>
+</section>
+<footer class="foot"><a href="https://www.instagram.com/fusionteachersunion/" target="_blank" rel="noopener noreferrer">Follow Fusion Teachers Union on Instagram</a></footer>
+</main>
+<script>
+const TAU=Math.PI*2,PI=Math.PI;
+const $=s=>document.querySelector(s);
+const cv=$('#cv'),ctx=cv.getContext('2d');
+const P={prism:{L:4,W:3,H:2},cyl:{r:2,h:4},cone:{r:2,h:3},sphere:{r:2.5}};
+const SH={
+ prism:{tab:'Rectangular prism',idea:'A box is six rectangles. Opposite faces match, so there are only three different sizes to add.',ctl:[['L','Length',1,8,.5],['W','Width',1,8,.5],['H','Height',1,8,.5]]},
+ cyl:{tab:'Cylinder',idea:'The curved side unrolls into a rectangle. Its width is the circle’s circumference, 2πr, and its height is h.',ctl:[['r','Radius',.5,4,.1],['h','Height',1,8,.5]]},
+ cone:{tab:'Cone',idea:'The curved side unrolls into a pie slice. Its radius is the slant height s, and its arc is the base’s circumference.',ctl:[['r','Radius',.5,4,.1],['h','Height',1,8,.5]]},
+ sphere:{tab:'Sphere',idea:'A sphere can’t lie perfectly flat, but thin orange-peel strips come close. Their total area is exactly 4πr², the same as four circles of radius r.',ctl:[['r','Radius',.5,4,.1]]}
+};
+let shape='prism',t=0,yaw=-.55,pitch=.85,model,anim=null;
+const f1=v=>v.toFixed(1);
+
+/* ---- tiny matrix helpers (3x4 affine) ---- */
+const I3=()=>[1,0,0,0,0,1,0,0,0,0,1,0];
+function mul(A,B){const r=[];for(let i=0;i<3;i++){for(let j=0;j<3;j++)r[i*4+j]=A[i*4]*B[j]+A[i*4+1]*B[4+j]+A[i*4+2]*B[8+j];r[i*4+3]=A[i*4]*B[3]+A[i*4+1]*B[7]+A[i*4+2]*B[11]+A[i*4+3];}return r}
+function rot(a,b,th){let ux=b[0]-a[0],uy=b[1]-a[1];const l=Math.hypot(ux,uy);ux/=l;uy/=l;
+ const c=Math.cos(th),s=Math.sin(th),k=1-c;
+ const R=[c+k*ux*ux,k*ux*uy,s*uy, k*ux*uy,c+k*uy*uy,-s*ux, -s*uy,s*ux,c];
+ return [R[0],R[1],R[2],a[0]-(R[0]*a[0]+R[1]*a[1]), R[3],R[4],R[5],a[1]-(R[3]*a[0]+R[4]*a[1]), R[6],R[7],R[8],-(R[6]*a[0]+R[7]*a[1])]}
+const ap=(m,x,y)=>[m[0]*x+m[1]*y+m[3],m[4]*x+m[5]*y+m[7],m[8]*x+m[9]*y+m[11]];
+
+/* ---- hinged net model: flat faces that fold about shared edges ---- */
+function hinged(F){
+ const xs=[],ys=[];F.forEach(f=>f.pts.forEach(p=>{xs.push(p[0]);ys.push(p[1])}));
+ const cx=(Math.min(...xs)+Math.max(...xs))/2,cy=(Math.min(...ys)+Math.max(...ys))/2;
+ const sh=p=>[p[0]-cx,p[1]-cy];
+ F.forEach(f=>{f.pts=f.pts.map(sh);
+  if(f.h){f.h=[sh(f.h[0]),sh(f.h[1])];
+   const c=[0,0];f.pts.forEach(p=>{c[0]+=p[0]/f.pts.length;c[1]+=p[1]/f.pts.length});
+   const a=f.h[0],b=f.h[1],l=Math.hypot(b[0]-a[0],b[1]-a[1]);
+   const cz=((b[0]-a[0])/l)*(c[1]-a[1])-((b[1]-a[1])/l)*(c[0]-a[0]);
+   f.sg=cz>0?1:-1}});
+ return {faces:t=>{const M=[],out=[];
+  F.forEach((f,i)=>{let m=I3();if(f.par>=0)m=mul(M[f.par],rot(f.h[0],f.h[1],f.sg*f.ang(t)));M[i]=m;
+   out.push({p:f.pts.map(q=>ap(m,q[0],q[1])),col:f.col,edge:f.edge})});return out}}}
+const hsl=(h,s,l)=>({h,s,l});
+function circle(cx,cy,r,n=48){const a=[];for(let i=0;i<n;i++)a.push([cx+r*Math.cos(TAU*i/n),cy+r*Math.sin(TAU*i/n)]);return a}
+
+function build(){
+ const p=P[shape];let m,rows,total,cap;
+ if(shape==='prism'){
+  const {L,W,H}=p,A=hsl(212,75,56),B=hsl(150,55,44),C=hsl(33,88,54),up=t=>(1-t)*PI/2,e=1;
+  m=hinged([
+   {pts:[[0,0],[L,0],[L,W],[0,W]],par:-1,col:A,edge:e},
+   {pts:[[0,-H],[L,-H],[L,0],[0,0]],par:0,h:[[0,0],[L,0]],ang:up,col:B,edge:e},
+   {pts:[[0,W],[L,W],[L,W+H],[0,W+H]],par:0,h:[[0,W],[L,W]],ang:up,col:B,edge:e},
+   {pts:[[-H,0],[0,0],[0,W],[-H,W]],par:0,h:[[0,0],[0,W]],ang:up,col:C,edge:e},
+   {pts:[[L,0],[L+H,0],[L+H,W],[L,W]],par:0,h:[[L,0],[L,W]],ang:up,col:C,edge:e},
+   {pts:[[0,W+H],[L,W+H],[L,2*W+H],[0,2*W+H]],par:2,h:[[0,W+H],[L,W+H]],ang:up,col:A,edge:e}]);
+  rows=[[A,'Top and bottom',`2 × ${L} × ${W}`,2*L*W],[B,'Front and back',`2 × ${L} × ${H}`,2*L*H],[C,'Left and right',`2 × ${W} × ${H}`,2*W*H]];
+  cap='Surface area = 2(LW + LH + WH)';
+ }else if(shape==='cyl'){
+  const r=p.r,h=p.h,N=48,k=N/2,w=TAU*r/N,a=w/(2*Math.tan(PI/N)),Rc=w/(2*Math.sin(PI/N));
+  const S=hsl(165,55,42),D=hsl(30,88,54),F=[],id={};
+  const strip=(i,par,hx)=>{const x0=(i-k)*w-w/2;id[i]=F.length;
+   F.push({pts:[[x0,-h/2],[x0+w,-h/2],[x0+w,h/2],[x0,h/2]],par,h:hx===null?null:[[hx,-h/2],[hx,h/2]],ang:t=>(1-t)*TAU/N,col:hsl(165,55,42+((i>>2)%2)*7)})};
+  strip(k,-1,null);
+  for(let i=k+1;i<N;i++)strip(i,id[i-1],(i-k)*w-w/2);
+  for(let i=k-1;i>=0;i--)strip(i,id[i+1],(i-k)*w+w/2);
+  const q=t=>(1-t)*PI/2;
+  F.push({pts:circle(0,h/2+a,Rc),par:0,h:[[-w/2,h/2],[w/2,h/2]],ang:q,col:D});
+  F.push({pts:circle(0,-h/2-a,Rc),par:0,h:[[-w/2,-h/2],[w/2,-h/2]],ang:q,col:D});
+  m=hinged(F);
+  rows=[[S,'Curved side (rectangle)',`2πr × h = ${f1(TAU*r)} × ${h}`,TAU*r*h],[D,'Two circles',`2 × πr² = 2 × ${f1(PI*r*r)}`,2*PI*r*r]];
+  cap='Surface area = 2πr² + 2πrh';
+ }else if(shape==='cone'){
+  const r=p.r,h=p.h,s=Math.hypot(r,h),N=60,k=N/2,phi=(TAU*r/s)/N;
+  const al=Math.asin(Math.min(1,Math.sin(phi/2)/Math.sin(PI/N))),Rb=s*Math.sin(al),ab=Rb*Math.cos(PI/N);
+  const e=i=>[Math.sin(al)*Math.cos(TAU*i/N),Math.sin(al)*Math.sin(TAU*i/N),Math.cos(al)];
+  const cr=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const n0=cr(e(0),e(1)),n1=cr(e(1),e(2)),dt=n0[0]*n1[0]+n0[1]*n1[1]+n0[2]*n1[2];
+  const dl=Math.acos(Math.max(-1,Math.min(1,dt/(Math.hypot(...n0)*Math.hypot(...n1)))));
+  const df=s*Math.cos(phi/2),base=PI-Math.acos(Math.min(1,ab/df));
+  const S=hsl(278,55,58),D=hsl(40,88,54),F=[],id={};
+  const dir=a=>[s*Math.cos(a),s*Math.sin(a)];
+  const wedge=(i,par,edgeAng)=>{const psi=-PI/2+(i-k)*phi;id[i]=F.length;
+   F.push({pts:[[0,0],dir(psi-phi/2),dir(psi+phi/2)],par,h:edgeAng===null?null:[[0,0],dir(edgeAng)],ang:t=>(1-t)*dl,col:hsl(278,55,58+((i>>2)%2)*7)})};
+  wedge(k,-1,null);
+  for(let i=k+1;i<N;i++)wedge(i,id[i-1],-PI/2+(i-k)*phi-phi/2);
+  for(let i=k-1;i>=0;i--)wedge(i,id[i+1],-PI/2+(i-k)*phi+phi/2);
+  F.push({pts:circle(0,-(df+ab),Rb),par:0,h:[dir(-PI/2-phi/2),dir(-PI/2+phi/2)],ang:t=>(1-t)*base,col:D});
+  m=hinged(F);
+  rows=[[S,'Curved side (sector)',`πrs = π × ${r} × ${f1(s)}`,PI*r*s],[D,'Circle base',`πr² = π × ${r}²`,PI*r*r]];
+  cap=`Slant height s = √(r² + h²) = ${f1(s)}. Surface area = πr² + πrs`;
+ }else{
+  const R=p.r,G=12,B=10,w=TAU*R/G,quads=[];
+  for(let g=0;g<G;g++)for(let j=0;j<B;j++)quads.push([g,-PI/2+PI*j/B,-PI/2+PI*(j+1)/B]);
+  const cols=[hsl(200,72,52),hsl(168,58,44)];
+  const pt=(g,u,ph,t)=>{const lam=u*PI/G,Lg=g*TAU/G+lam,c=Math.cos(ph);
+   const ax=R*c*Math.sin(Lg),ay=R*Math.sin(ph),az=R*c*Math.cos(Lg);
+   const bx=(g-(G-1)/2)*w+R*lam*c,by=R*ph;
+   return [ax+(bx-ax)*t,ay+(by-ay)*t,az*(1-t)]};
+  m={faces:t=>quads.map(([g,a,b])=>({p:[pt(g,-1,a,t),pt(g,1,a,t),pt(g,1,b,t),pt(g,-1,b,t)],col:cols[g%2]}))};
+  rows=[[cols[0],'12 peel strips (together)',`4πr² = 4 × π × ${R}²`,4*PI*R*R]];
+  cap='Surface area = 4πr²';
+ }
+ let R=0;[0,.5,1].forEach(tt=>m.faces(tt).forEach(f=>f.p.forEach(q=>{R=Math.max(R,Math.hypot(q[0],q[1],q[2]))})));
+ model={m,R,rows,cap};
+ total=rows.reduce((s,r)=>s+r[3],0);model.total=total;
+ legend();
+}
+function legend(){
+ $('#lg').innerHTML=model.rows.map(r=>`<div class="r"><i style="background:hsl(${r[0].h} ${r[0].s}% ${r[0].l}%)"></i><span>${r[1]}<small>${r[2]}</small></span><b>${f1(r[3])}</b></div>`).join('')+`<div class="tot"><span>Total surface area</span><span>${f1(model.total)} sq units</span></div>`;
+ $('#cap').textContent=model.cap;
+}
+
+/* ---- drawing ---- */
+let dpr=1;
+function fit(){dpr=window.devicePixelRatio||1;cv.width=Math.round(cv.clientWidth*dpr);cv.height=Math.round(cv.clientHeight*dpr);draw()}
+function draw(){
+ const w=cv.clientWidth,h=cv.clientHeight;if(!w)return;
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const S=Math.min(w,h*1.2)*.46/model.R,cy=Math.cos(yaw),sy=Math.sin(yaw),sp=Math.sin(pitch),cp=Math.cos(pitch);
+ const fs=model.m.faces(t);
+ fs.forEach(f=>{f.q=f.p.map(([x,y,z])=>{const x1=x*cy-y*sy,y1=x*sy+y*cy;return [x1,y1*sp+z*cp,-y1*cp+z*sp]});
+  f.d=f.q.reduce((s,q)=>s+q[2],0)/f.q.length});
+ fs.sort((a,b)=>a.d-b.d);
+ ctx.lineJoin='round';
+ fs.forEach(f=>{const [a,b,c]=f.q,u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];
+  const nz=u[0]*v[1]-u[1]*v[0],nl=Math.hypot(u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],nz),fc=nl>1e-9?Math.abs(nz/nl):.6;
+  const l=Math.min(80,f.col.l*(.8+.3*fc)),col=`hsl(${f.col.h} ${f.col.s}% ${l}%)`;
+  ctx.beginPath();f.q.forEach((q,i)=>{const X=w/2+q[0]*S,Y=h/2-q[1]*S;i?ctx.lineTo(X,Y):ctx.moveTo(X,Y)});ctx.closePath();
+  ctx.fillStyle=col;ctx.fill();
+  if(f.edge){ctx.strokeStyle='rgba(10,15,25,.55)';ctx.lineWidth=1.4}else{ctx.strokeStyle=col;ctx.lineWidth=.8}
+  ctx.stroke()});
+ $('#st').textContent=t<.03?'Solid shape':t>.97?'Flat net':'Unrolling…';
+ $('#play').textContent=t<.5?'Unroll':'Fold back';
+}
+
+/* ---- interaction ---- */
+function setT(v){t=Math.max(0,Math.min(1,v));$('#tr').value=Math.round(t*1000);draw()}
+function play(){
+ const from=t,to=t<.5?1:0,dur=300+2200*Math.abs(to-from),t0=performance.now();
+ anim={};const me=anim;
+ const step=n=>{if(anim!==me)return;const p=Math.min(1,(n-t0)/dur),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  setT(from+(to-from)*e);if(p<1)requestAnimationFrame(step);else anim=null};
+ requestAnimationFrame(step)}
+$('#play').onclick=play;
+$('#tr').oninput=e=>{anim=null;setT(e.target.value/1000)};
+$('#top').onclick=()=>{pitch=PI/2;yaw=0;draw()};
+$('#rv').onclick=()=>{pitch=.85;yaw=-.55;draw()};
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag[0])*.01;pitch=Math.max(.1,Math.min(PI/2,pitch+(e.clientY-drag[1])*.01));drag=[e.clientX,e.clientY];draw()});
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,()=>{drag=null}));
+
+function controls(){
+ const d=SH[shape];$('#sh').textContent=d.tab;$('#idea').textContent=d.idea;
+ $('#sl').innerHTML=d.ctl.map(c=>`<label class="sl"><span>${c[1]}</span><input type="range" data-k="${c[0]}" min="${c[2]}" max="${c[3]}" step="${c[4]}" value="${P[shape][c[0]]}"><output>${P[shape][c[0]]}</output></label>`).join('');
+ $('#sl').querySelectorAll('input').forEach(i=>i.oninput=()=>{P[shape][i.dataset.k]=+i.value;i.nextElementSibling.textContent=i.value;build();draw()});
+}
+function pick(s){shape=s;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));controls();build();draw()}
+$('#tabs').innerHTML=Object.keys(SH).map(k=>`<button data-s="${k}">${SH[k].tab}</button>`).join('');
+$('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>pick(b.dataset.s));
+new ResizeObserver(fit).observe(cv);
+pick('prism');fit();
+setTimeout(()=>{if(t===0&&!anim)play()},700);
+</script>
+</body>
+</html>
