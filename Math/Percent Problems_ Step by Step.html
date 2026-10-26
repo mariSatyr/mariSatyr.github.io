@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Percent Problems: Step by Step</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--tx:#1f2430;--mu:#5d6475;--ac:#2f6fed;--ok:#1e8e4e;--bad:#c93a3a;--bd:#dcdad2;--hi:#eaf1ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181d;--card:#20232b;--tx:#eceef3;--mu:#a2a8b6;--ac:#6b9bff;--ok:#4cc582;--bad:#ff7777;--bd:#363a46;--hi:#1f2c47;color-scheme:dark}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:8px 0 4px}
+.sub{color:var(--mu);margin:0 0 14px}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+nav button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:6px 12px;font-size:.95rem;cursor:pointer}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+nav button.done::after{content:" ✓";color:var(--ok)}
+nav button.on.done::after{color:#fff}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:12px}
+.q{font-weight:600}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--tx);font-size:1rem;cursor:pointer}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 18%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 15%,transparent)}
+.step{border-left:4px solid var(--ac);background:var(--hi);border-radius:0 10px 10px 0;padding:10px 12px;margin:10px 0}
+.step h3{margin:0 0 4px;font-size:1rem}
+.step p{margin:4px 0}
+.math{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--card);border-radius:6px;padding:2px 6px;display:inline-block;margin:2px 0}
+.try{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.try input{width:130px;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font-size:1rem}
+button.go{background:var(--ac);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer}
+button.alt{background:transparent;color:var(--ac);border:1px solid var(--ac);border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer}
+.fb{font-weight:600;margin-top:4px}
+.ans{border:2px solid var(--ok);border-radius:12px;padding:10px 12px;margin-top:12px;font-weight:600}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tip{color:var(--mu);font-size:.92rem}
+</style></head><body><main>
+<h1>Percent Problems, Step by Step</h1>
+<p class="sub">Pick a problem. Try each step yourself, then check it. Take your time.</p>
+<nav id="nav"></nav>
+<div id="app"></div>
+</main>
+<script>
+const P=[
+{id:"8a",t:"8a. The raise",q:"Jada’s sister earns $15 per hour. The store gives her a 9% raise. How much will she make per hour after the raise?",
+steps:[
+{h:"Find the raise amount",b:"A 9% increase means we add 9% <i>of $15</i>. Change 9% to a decimal: 9 ÷ 100 = <span class='math'>0.09</span>.",ask:"What is 0.09 × 15?",a:1.35,ex:"0.09 × 15 = 1.35"},
+{h:"Add it to the old pay",b:"New pay = old pay + raise.",ask:"What is 15 + 1.35?",a:16.35,ex:"15 + 1.35 = 16.35"}],
+fin:"$16.35 per hour",tip:"Shortcut: 100% + 9% = 109%, so 15 × 1.09 = 16.35."},
+{id:"8b",t:"8b. Markup",q:"The store bought a table for $200 and sold it for $350. What percentage was the markup?",
+steps:[
+{h:"Find the markup in dollars",b:"Markup = selling price − cost.",ask:"What is 350 − 200?",a:150,ex:"350 − 200 = 150"},
+{h:"Compare to the original cost",b:"Percent markup = markup ÷ <i>cost</i> (the store’s original price, $200), not the selling price.",ask:"What is 150 ÷ 200?",a:0.75,ex:"150 ÷ 200 = 0.75"},
+{h:"Change to a percent",b:"Multiply the decimal by 100.",ask:"0.75 as a percent? (number only)",a:75,ex:"0.75 × 100 = 75%"}],
+fin:"75% markup"},
+{id:"8c",t:"8c. Commission",q:"Jada’s sister earns 3.5% of what she sells. Last week she sold $7,000 of furniture. How much was her commission?",
+steps:[
+{h:"Change the percent to a decimal",b:"Move the decimal point two places left.",ask:"3.5% as a decimal?",a:0.035,ex:"3.5 ÷ 100 = 0.035"},
+{h:"Multiply by the sales",b:"“Of” means multiply: commission = 0.035 × 7,000.",ask:"What is 0.035 × 7000?",a:245,ex:"0.035 × 7000 = 245"}],
+fin:"$245"},
+{id:"9",t:"9. Simple interest",q:"Lehana and Marty each deposit $100. Lehana earns 2.5% simple interest per year; Marty earns 2%. How much more interest did Lehana earn than Marty after three years?",
+ch:["A. $0.50","B. $1.50","C. $5.00","D. $15.00"],c:1,
+steps:[
+{h:"Use the simple interest formula",b:"<span class='math'>I = P × r × t</span><br>P = principal ($100), r = rate as a decimal, t = years (3).",ask:"Lehana’s interest: 100 × 0.025 × 3 = ?",a:7.5,ex:"100 × 0.025 = 2.50 per year; × 3 = 7.50"},
+{h:"Do the same for Marty",b:"Marty’s rate is 2% = 0.02.",ask:"Marty’s interest: 100 × 0.02 × 3 = ?",a:6,ex:"100 × 0.02 = 2.00 per year; × 3 = 6.00"},
+{h:"Subtract",b:"“How much more” means subtract.",ask:"7.50 − 6.00 = ?",a:1.5,ex:"7.50 − 6.00 = 1.50"}],
+fin:"B. $1.50"},
+{id:"10",t:"10. Discount, then increase",q:"A camera originally priced at $450 gets a 40% discount. After the sale, the discounted price is increased by 40%. What is the price after the increase?",
+ch:["A. $252","B. $360","C. $378","D. $450"],c:2,
+steps:[
+{h:"Find the sale price",b:"A 40% discount means she pays 100% − 40% = <span class='math'>60%</span> of $450.",ask:"What is 0.60 × 450?",a:270,ex:"0.60 × 450 = 270"},
+{h:"Increase the SALE price by 40%",b:"The increase is on the new price ($270), not on $450. Pay 100% + 40% = <span class='math'>140%</span>.",ask:"What is 1.40 × 270?",a:378,ex:"1.40 × 270 = 378"}],
+fin:"C. $378",tip:"Why not $450? A 40% drop and a 40% rise are taken from different starting amounts, so they don’t cancel out."},
+{id:"11",t:"11. Three shirts",q:"Ky buys three shirts at $49.96 each. The third shirt is 50% off, then a 7.1% tax is applied to the total. What is the mean cost of each shirt, including tax?",
+ch:["A. $41.99","B. $42.70","C. $44.59","D. $45.18"],c:2,
+steps:[
+{h:"Price of the third shirt",b:"50% off means half price.",ask:"What is 49.96 ÷ 2?",a:24.98,ex:"49.96 ÷ 2 = 24.98"},
+{h:"Total before tax",b:"Two full-price shirts plus the half-price shirt.",ask:"What is 49.96 + 49.96 + 24.98?",a:124.9,ex:"99.92 + 24.98 = 124.90"},
+{h:"Add the tax",b:"Total with tax = 124.90 × 1.071 (100% + 7.1% = 107.1%).",ask:"What is 124.90 × 1.071? (round to cents)",a:133.77,ex:"124.90 × 1.071 = 133.7679 ≈ 133.77"},
+{h:"Find the mean",b:"Mean = total ÷ number of shirts.",ask:"What is 133.77 ÷ 3? (round to cents)",a:44.59,ex:"133.77 ÷ 3 = 44.59"}],
+fin:"C. $44.59"},
+{id:"B",t:"Bonus. Snow shovels & salt",q:"Last year: 5 identical shovels cost $172.50 total; each bag of salt cost $6.20. This year: 2 shovels cost $70.38 total; 4 bags of salt cost $26.04 total. Which item had the greatest percent increase? Give it to the nearest percent.",
+steps:[
+{h:"Shovel price last year (one shovel)",b:"The totals are for several items, so first find the price of <i>one</i>.",ask:"172.50 ÷ 5 = ?",a:34.5,ex:"172.50 ÷ 5 = 34.50"},
+{h:"Shovel price this year (one shovel)",b:"",ask:"70.38 ÷ 2 = ?",a:35.19,ex:"70.38 ÷ 2 = 35.19"},
+{h:"Shovel percent increase",b:"Percent increase = (new − old) ÷ old. New − old = 35.19 − 34.50 = 0.69.",ask:"0.69 ÷ 34.50 as a percent? (number only)",a:2,ex:"0.69 ÷ 34.50 = 0.02 = 2%"},
+{h:"Salt price this year (one bag)",b:"Last year one bag was $6.20.",ask:"26.04 ÷ 4 = ?",a:6.51,ex:"26.04 ÷ 4 = 6.51"},
+{h:"Salt percent increase",b:"New − old = 6.51 − 6.20 = 0.31.",ask:"0.31 ÷ 6.20 as a percent? (number only)",a:5,ex:"0.31 ÷ 6.20 = 0.05 = 5%"},
+{h:"Compare",b:"Shovels went up 2%. Salt went up 5%.",ask:"",a:null}],
+fin:"Salt, with a 5% increase",tip:"Show your work: write each division and the percent-increase formula on your paper."}
+];
+const done=new Set();let cur=0,shown=0,pick=null;
+const $=s=>document.querySelector(s);
+function nav(){$("#nav").innerHTML=P.map((p,i)=>`<button class="${i==cur?'on':''} ${done.has(i)?'done':''}" onclick="go(${i})">${p.id=="B"?"Bonus":p.id}</button>`).join("")}
+function go(i){cur=i;shown=0;pick=null;draw()}
+function draw(){nav();const p=P[cur];let h=`<div class="card"><div class="q">${p.t}</div><p>${p.q}</p>`;
+if(p.ch){h+=p.ch.map((c,i)=>`<button class="opt ${pick==null?'':i==p.c?'right':i==pick?'wrong':''}" onclick="choose(${i})">${c}</button>`).join("");
+h+=`<p class="tip">${pick==null?"Optional: take a guess first, then work through the steps.":pick==p.c?"Nice guess! Now see why it works below.":"Not quite. Work through the steps to find out why."}</p>`}
+h+=`</div>`;
+for(let i=0;i<=shown&&i<p.steps.length;i++){const s=p.steps[i];
+h+=`<div class="step"><h3>Step ${i+1}: ${s.h}</h3>${s.b?`<p>${s.b}</p>`:""}`;
+if(s.ask){h+=`<p><b>${s.ask}</b></p><div class="try"><input id="in${i}" inputmode="decimal" placeholder="Your answer" onkeydown="if(event.key=='Enter')chk(${i})"><button class="go" onclick="chk(${i})">Check</button><button class="alt" onclick="rev(${i})">Show me</button></div><div class="fb" id="fb${i}"></div>`}
+else h+=`<div class="try"><button class="go" onclick="adv(${i})">Compare</button></div>`;
+h+=`</div>`}
+if(shown>=p.steps.length)h+=`<div class="ans">Final answer: ${p.fin}</div>${p.tip?`<p class="tip">${p.tip}</p>`:""}<div class="row">${cur<P.length-1?`<button class="go" onclick="go(${cur+1})">Next problem</button>`:""}</div>`;
+$("#app").innerHTML=h}
+function choose(i){if(pick!=null)return;pick=i;draw()}
+function ok(i){const p=P[cur];if(i==shown){shown++;if(shown>=p.steps.length)done.add(cur);const y=scrollY;draw();scrollTo(0,y)}}
+function chk(i){const s=P[cur].steps[i],v=parseFloat($("#in"+i).value.replace(/[$,%\s]/g,""));
+if(isNaN(v)){$("#fb"+i).innerHTML="Type a number first.";return}
+if(Math.abs(v-s.a)<0.006){$("#fb"+i).innerHTML=`<span style="color:var(--ok)">Correct! ${s.ex}</span><div class="row"><button class="go" onclick="ok(${i})">${i<P[cur].steps.length-1?"Next step":"See final answer"}</button></div>`}
+else $("#fb"+i).innerHTML=`<span style="color:var(--bad)">Not quite. Re-read the step and try again.</span>`}
+function rev(i){const s=P[cur].steps[i];$("#fb"+i).innerHTML=`<span>${s.ex}</span><div class="row"><button class="go" onclick="ok(${i})">${i<P[cur].steps.length-1?"Next step":"See final answer"}</button></div>`}
+function adv(i){ok(i)}
+draw();
+</script></body></html>
