@@ -1,0 +1,874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Reading Comprehension Test Prep Advice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#fcfcfa;
+    --surface:#ffffff;
+    --surface-2:#f3f2ee;
+    --ink:#1b1e26;
+    --ink-soft:#454a57;
+    --ink-faint:#6d7280;
+    --line:#ddd9d0;
+    --line-strong:#b9b3a6;
+    --accent:#b23a1f;
+    --accent-ink:#8f2c15;
+    --accent-soft:#f9e9e3;
+    --green:#1f5c46;
+    --green-soft:#e4efe9;
+    --amber:#8a5a00;
+    --amber-soft:#f7ecd2;
+    --chip:#eceae4;
+    --radius:6px;
+    --shadow:0 1px 2px rgba(27,30,38,.06), 0 6px 18px -8px rgba(27,30,38,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14161b;
+      --surface:#1c1f26;
+      --surface-2:#23262f;
+      --ink:#ece9e2;
+      --ink-soft:#b9bcc4;
+      --ink-faint:#8b8f9a;
+      --line:#33363f;
+      --line-strong:#4a4e59;
+      --accent:#e07a5c;
+      --accent-ink:#f0a48d;
+      --accent-soft:#3a2620;
+      --green:#7fc3a6;
+      --green-soft:#1e2f28;
+      --amber:#e0b45c;
+      --amber-soft:#332b17;
+      --chip:#2a2d36;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -8px rgba(0,0,0,.5);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{transition:none !important} }
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:16px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:0 20px 80px}
+  a{color:var(--accent-ink); text-decoration:underline; text-underline-offset:2px}
+  a:hover{color:var(--accent)}
+
+  /* ---------- Masthead ---------- */
+  .mast{padding:44px 0 8px; border-bottom:3px solid var(--ink); }
+  .mast .kicker{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--accent-ink); margin:0 0 12px;
+  }
+  h1{
+    font-family:"IBM Plex Serif", serif; font-weight:700;
+    font-size:clamp(30px, 5.4vw, 46px); line-height:1.08; margin:0 0 14px; letter-spacing:-.01em;
+  }
+  .lede{font-size:clamp(16px,2.2vw,19px); color:var(--ink-soft); max-width:46em; margin:0 0 18px}
+  .lede strong{color:var(--ink)}
+  .mast-meta{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--ink-faint);
+    display:flex; flex-wrap:wrap; gap:6px 22px; padding-bottom:20px;
+  }
+
+  /* ---------- Section scaffold ---------- */
+  section{margin-top:52px}
+  .sec-head{display:flex; align-items:baseline; gap:14px; border-bottom:1px solid var(--line-strong); padding-bottom:8px; margin-bottom:20px}
+  .sec-num{font-family:"IBM Plex Mono", monospace; font-size:13px; color:var(--accent-ink); font-weight:600}
+  h2{font-family:"IBM Plex Serif", serif; font-size:clamp(23px,3.4vw,30px); font-weight:600; margin:0; line-height:1.15}
+  .sec-sub{color:var(--ink-soft); max-width:48em; margin:0 0 18px}
+  h3{font-family:"IBM Plex Serif", serif; font-size:19px; font-weight:600; margin:26px 0 10px}
+  p{margin:0 0 12px}
+  ul{margin:0 0 12px; padding-left:20px}
+  li{margin-bottom:6px}
+  .src{font-size:13px; color:var(--ink-faint)}
+  .src::before{content:"— "}
+
+  /* ---------- Filter bar ---------- */
+  .filterbar{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    padding:14px 0 12px; border-bottom:1px solid var(--line);
+    display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  }
+  .filterbar .flabel{font-family:"IBM Plex Mono", monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin-right:4px}
+  .fbtn{
+    font:inherit; font-size:14px; font-weight:500; cursor:pointer;
+    background:var(--surface); color:var(--ink); border:1px solid var(--line-strong);
+    padding:7px 14px; border-radius:999px; transition:background .15s, color .15s, border-color .15s;
+  }
+  .fbtn:hover{border-color:var(--ink)}
+  .fbtn[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+  .fbtn:focus-visible, button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .fnote{font-size:13px; color:var(--ink-faint); margin:10px 0 0; min-height:1.2em}
+
+  /* ---------- Cards ---------- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px}
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px 18px 14px; box-shadow:var(--shadow);
+  }
+  .card h4{font-family:"IBM Plex Serif", serif; font-size:17px; font-weight:600; margin:0 0 8px; line-height:1.25}
+  .card p, .card li{font-size:14.5px}
+  .card .src{display:block; margin-top:10px}
+  .card.dim{display:none}
+  .tags{display:flex; flex-wrap:wrap; gap:5px; margin:0 0 10px}
+  .tag{
+    font-family:"IBM Plex Mono", monospace; font-size:10.5px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; background:var(--chip); color:var(--ink-soft);
+    padding:2px 8px; border-radius:3px;
+  }
+  .tag.all-tests{background:var(--green-soft); color:var(--green)}
+  @media (prefers-color-scheme: dark){ .tag.all-tests{color:var(--green)} }
+  .action-lead{font-weight:600}
+  blockquote{
+    margin:12px 0; padding:10px 14px; border-left:3px solid var(--accent);
+    background:var(--accent-soft); font-family:"IBM Plex Serif", serif; font-style:italic; font-size:15px;
+  }
+  blockquote .src{display:block; font-style:normal; font-family:"IBM Plex Sans", sans-serif; margin-top:6px}
+
+  /* ---------- Decision panel ---------- */
+  .decision{
+    background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden;
+  }
+  .decision .d-head{padding:18px 20px 4px}
+  .decision .d-head h3{margin:0 0 6px}
+  .d-cols{display:grid; grid-template-columns:1fr 1fr; gap:0}
+  .d-col{padding:16px 20px 18px}
+  .d-col + .d-col{border-left:1px solid var(--line)}
+  .d-col .verdict{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; font-weight:600; letter-spacing:.08em;
+    text-transform:uppercase; margin:0 0 8px;
+  }
+  .d-col.qf .verdict{color:var(--accent-ink)}
+  .d-col.pf .verdict{color:var(--green)}
+  .d-col h4{font-family:"IBM Plex Serif", serif; font-size:18px; margin:0 0 8px}
+  .d-col p, .d-col li{font-size:14.5px}
+  .d-foot{border-top:1px solid var(--line); background:var(--surface-2); padding:14px 20px; font-size:14.5px}
+  @media (max-width:640px){
+    .d-cols{grid-template-columns:1fr}
+    .d-col + .d-col{border-left:none; border-top:1px solid var(--line)}
+  }
+
+  /* ---------- Tables ---------- */
+  .tablewrap{border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:var(--surface); box-shadow:var(--shadow)}
+  table{border-collapse:collapse; width:100%; font-size:14.5px}
+  th, td{padding:11px 14px; text-align:left; vertical-align:top}
+  thead th{
+    font-family:"IBM Plex Mono", monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-soft); background:var(--surface-2); border-bottom:1px solid var(--line-strong);
+  }
+  tbody tr + tr td, tbody tr + tr th{border-top:1px solid var(--line)}
+  @media (min-width:641px){ tbody th{white-space:nowrap} }
+  tbody th{font-weight:600}
+  td.num, th.num{font-variant-numeric:tabular-nums}
+  .stack-table td::before{display:none}
+  @media (max-width:640px){
+    .stack-table thead{display:none}
+    .stack-table, .stack-table tbody, .stack-table tr, .stack-table td, .stack-table th{display:block; width:100%}
+    .stack-table tr{padding:10px 0}
+    .stack-table td, .stack-table th{border:none !important; padding:3px 14px}
+    .stack-table td::before{
+      display:block; content:attr(data-th);
+      font-family:"IBM Plex Mono", monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+      color:var(--ink-faint); margin-bottom:2px;
+    }
+    .stack-table tbody th{font-family:"IBM Plex Serif", serif; font-size:16px; padding-top:6px}
+  }
+
+  .callout{
+    border:1px solid var(--amber); background:var(--amber-soft); border-radius:var(--radius);
+    padding:14px 16px; font-size:14.5px; margin:16px 0;
+  }
+  .callout .c-title{font-weight:700; margin:0 0 4px}
+  .callout p:last-child{margin-bottom:0}
+  .callout.red{border-color:var(--accent); background:var(--accent-soft)}
+  .callout.green{border-color:var(--green); background:var(--green-soft)}
+
+  /* ---------- Stepper (stuck script) ---------- */
+  .stepper{background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px}
+  .step-dots{display:flex; gap:8px; margin-bottom:16px}
+  .step-dot{
+    flex:1; height:6px; border-radius:3px; background:var(--chip); border:none; cursor:pointer; padding:0;
+  }
+  .step-dot.done{background:var(--accent)}
+  .step-body{min-height:150px}
+  .step-body .s-num{font-family:"IBM Plex Mono", monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink); margin:0 0 6px}
+  .step-body h4{font-family:"IBM Plex Serif", serif; font-size:20px; margin:0 0 8px}
+  .step-nav{display:flex; justify-content:space-between; align-items:center; margin-top:14px; gap:10px}
+  .navbtn{
+    font:inherit; font-weight:600; font-size:14px; cursor:pointer; border-radius:var(--radius);
+    padding:9px 18px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink);
+  }
+  .navbtn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+  @media (prefers-color-scheme: dark){ .navbtn.primary{color:#1b120e} }
+  .navbtn:disabled{opacity:.4; cursor:default}
+  .step-count{font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--ink-faint)}
+
+  /* ---------- Error log ---------- */
+  .logtable td, .logtable th{font-size:13px}
+  .copyrow{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px}
+  .copybtn{
+    font:inherit; font-weight:600; font-size:14px; cursor:pointer; border-radius:var(--radius);
+    padding:9px 18px; border:1px solid var(--ink); background:var(--ink); color:var(--bg);
+  }
+  .copied{font-size:13px; color:var(--green); font-weight:600}
+
+  /* ---------- Sources ---------- */
+  .sources{font-size:14px}
+  .sources li{margin-bottom:8px; word-break:break-word}
+  .badge{
+    display:inline-block; font-family:"IBM Plex Mono", monospace; font-size:10.5px; font-weight:600;
+    letter-spacing:.05em; text-transform:uppercase; padding:1px 7px; border-radius:3px; margin-right:6px;
+    background:var(--green-soft); color:var(--green); vertical-align:1px;
+  }
+  .badge.index{background:var(--chip); color:var(--ink-soft)}
+  footer{margin-top:60px; border-top:1px solid var(--line-strong); padding-top:16px; font-size:13px; color:var(--ink-faint)}
+  .twocol{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:640px){ .twocol{grid-template-columns:1fr} .grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="kicker">Compiled from the test-prep publishers · For tutoring use</p>
+    <h1>Reading Comprehension: What the Prep Books Actually Advise</h1>
+    <p class="lede">Kaplan, Princeton Review, Piqosity, PrepMaven and others agree on a core routine — <strong>predict in your own words, prove every answer from the text, eliminate traps by name, and never let one question eat the section</strong>. They disagree on one thing: whether to read the passage or the questions first. That disagreement resolves by test format, not philosophy — and the guessing rule is different on the SSAT than everywhere else.</p>
+    <div class="mast-meta">
+      <span>Sources read in full: Kaplan · Princeton Review · Piqosity · PrepMaven · Prepped &amp; Polished</span>
+      <span>Researched 2026-10-28</span>
+    </div>
+  </header>
+
+  <div class="filterbar" role="group" aria-label="Filter advice by test">
+    <span class="flabel">Show advice for</span>
+    <button class="fbtn" data-filter="all" aria-pressed="true">All tests</button>
+    <button class="fbtn" data-filter="sat" aria-pressed="false">Digital SAT</button>
+    <button class="fbtn" data-filter="act" aria-pressed="false">ACT</button>
+    <button class="fbtn" data-filter="isee" aria-pressed="false">ISEE</button>
+    <button class="fbtn" data-filter="ssat" aria-pressed="false">SSAT</button>
+  </div>
+  <p class="fnote" id="fnote" aria-live="polite"></p>
+
+  <!-- ============ 1. THE BIG DECISION ============ -->
+  <section id="decision">
+    <div class="sec-head"><span class="sec-num">01</span><h2>The one real disagreement: questions first or passage first?</h2></div>
+    <p class="sec-sub">No source claims one order wins for every test. The deciding factor is how long the passage is and how many questions hang off it — short passage, few questions: you can hold the task in mind. Long passage, ten questions: you can't.</p>
+
+    <div class="decision">
+      <div class="d-cols">
+        <div class="d-col qf">
+          <p class="verdict">Questions first</p>
+          <h4>Short passage · 1–6 questions</h4>
+          <ul>
+            <li><strong>Digital SAT</strong> (1 short passage, 1 question): Kaplan — “Because each passage only has one question, reading the question before you jump into the passage will allow you to focus in on exactly what you need.” Princeton Review agrees: read the stem to label the task, then read only what that question needs.</li>
+            <li><strong>ISEE</strong> (≈400 words, 6 questions): Piqosity — read the questions first, <em>but not the answer choices</em>; jot notes about what to look for, then read actively.</li>
+            <li><strong>SSAT</strong> (≈250–350 words, 5 questions): PrepMaven — preview the questions before actively reading so you know what to look for.</li>
+          </ul>
+        </div>
+        <div class="d-col pf">
+          <p class="verdict">Passage first</p>
+          <h4>Long passage · 10 questions</h4>
+          <ul>
+            <li><strong>ACT</strong> (~750 words, 10 questions): Kaplan calls questions-first “a common myth” — “It is almost impossible to remember to look for the answer to 10 different questions while reading an unfamiliar passage containing 750 words and trying to synthesize the big ideas.” Read for main idea and purpose first, take paragraph notes, then use line references and keywords to locate details.</li>
+            <li>CollegeMatchPoint/ATX makes the same practical case for the ACT: questions-first was a 1980s Princeton Review innovation weakened by later format changes.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="d-foot">
+        <strong>Tutor move:</strong> don’t settle this by argument — test it. Run the same student through two timed passage sets of equal difficulty, once questions-first and once passage-first, and compare accuracy and time left. Keep the winner for that student. Defaults if you skip the experiment: digital SAT → questions-first; ACT → passage-first; ISEE/SSAT → questions skimmed, stems only, no choices.
+      </div>
+    </div>
+
+    <div class="callout red">
+      <p class="c-title">Outdated SAT advice is still circulating — don’t teach it</p>
+      <p>Anything quoting a 65-minute section, 5 long passages, 52 questions, “13 minutes per passage,” or “detail questions follow passage order” describes the <strong>pre-2024 SAT</strong>. The current digital SAT is 54 questions in two 32-minute modules with short passages and one question each. Several otherwise useful pages (Princeton Review’s older tips page, CollegeMatchPoint, Kaplan’s older study guide) mix the two formats — check the format before quoting timing from them.</p>
+    </div>
+  </section>
+
+  <!-- ============ 2. THE NUMBERS ============ -->
+  <section id="numbers">
+    <div class="sec-head"><span class="sec-num">02</span><h2>The numbers: pacing budgets and guessing rules</h2></div>
+    <p class="sec-sub">Teach these figures, not old-format ones. The guessing rule is the single most test-specific fact on this page — it reverses on the SSAT.</p>
+
+    <h3>Section timing and per-passage budgets</h3>
+    <div class="tablewrap">
+      <table class="stack-table">
+        <thead><tr><th scope="col">Test</th><th scope="col">Section</th><th scope="col">Budget to teach</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Digital SAT Reading &amp; Writing</th><td data-th="Section">54 questions · 2 modules × 32 min</td><td data-th="Budget">~70 sec/question. Princeton Review’s two-pass plan: Pass 1 ≈ 18–20 min of the module on quick wins, then flagged questions, final 60–90 sec to fill every blank.</td></tr>
+          <tr><th scope="row">ACT Reading</th><td data-th="Section">35 min · 4 passages × 10 questions</td><td data-th="Budget">~8–9 min per passage, all-in. A common split is ~3.5 min reading + ~5 min answering (older ACT guidance, still arithmetically consistent with 35 min).</td></tr>
+          <tr><th scope="row">ISEE Reading Comprehension</th><td data-th="Section">35 min · 6 passages × 6 questions (Lower Level differs)</td><td data-th="Budget">~5–6 min per passage set. Save longer, harder passages for last (Piqosity).</td></tr>
+          <tr><th scope="row">SSAT Reading (Middle/Upper)</th><td data-th="Section">40 min · 40 questions · ~8 passages</td><td data-th="Budget">~1 min/question on average — but PrepMaven’s rule is accuracy over quantity: you do not need to finish all 40 for a competitive score.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Guessing rules — they differ by test, teach them exactly</h3>
+    <div class="tablewrap">
+      <table class="stack-table">
+        <thead><tr><th scope="col">Test</th><th scope="col">Rule</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">SAT · ACT · ISEE</th><td data-th="Rule"><strong>No wrong-answer penalty — answer every question.</strong> If you skip one, enter a guess immediately rather than leaving it for later. Kaplan ACT’s version: pre-pick a “Letter of the Day” (e.g. A/F or B/G) for blind guesses. Piqosity on the ISEE: “DO NOT leave it blank.”</td></tr>
+          <tr><th scope="row">SSAT Middle / Upper</th><td data-th="Rule"><strong>−¼ point per wrong answer; blank = 0.</strong> Guess only if you can eliminate at least one choice (Kaplan SSAT; Prepped &amp; Polished says guess if you can eliminate 1–2). Elementary SSAT has no penalty — answer everything there.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <p class="c-title">A pacing line to avoid repeating</p>
+      <p>Prepped &amp; Polished’s “about a minute per passage and a minute to a minute and a half per question” doesn’t survive arithmetic: applied to the ISEE (6 passages × 6 questions) it exceeds the 35-minute section. It’s flagged in the research so tutors don’t pass it on.</p>
+    </div>
+  </section>
+
+  <!-- ============ 3. BEFORE READING ============ -->
+  <section id="before">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Before reading the passage</h2></div>
+    <div class="grid">
+      <article class="card" data-tests="sat">
+        <div class="tags"><span class="tag">Digital SAT</span></div>
+        <h4>Read the blurb first</h4>
+        <p>On SAT passages — especially literature — read the italic intro first: author, year, source, context. It frames everything that follows and costs seconds.</p>
+        <span class="src">Kaplan, <em>5 Must-Know SAT Reading Tips</em></span>
+      </article>
+      <article class="card" data-tests="isee">
+        <div class="tags"><span class="tag">ISEE</span></div>
+        <h4>Bank the no-reading questions first</h4>
+        <p>When you skim the questions, answer any vocabulary or figurative-language questions that need no passage reading <em>before</em> you read. It banks points and reduces the reading load.</p>
+        <span class="src">Piqosity, <em>ISEE Reading Comprehension Strategies</em></span>
+      </article>
+      <article class="card" data-tests="act ssat isee">
+        <div class="tags"><span class="tag">ACT</span><span class="tag">SSAT</span><span class="tag">ISEE</span></div>
+        <h4>Work in your strongest order, not printed order</h4>
+        <p>Start with your strongest passage type (Kaplan ACT). On the SSAT, tackle what’s easiest first and take passages out of order (PrepMaven). On the ISEE, judge “will this passage take me a long time?” and save longer, harder ones for last (Piqosity).</p>
+        <span class="src">Kaplan ACT · PrepMaven SSAT · Piqosity ISEE</span>
+      </article>
+      <article class="card" data-tests="isee ssat">
+        <div class="tags"><span class="tag">ISEE</span><span class="tag">SSAT</span></div>
+        <h4>Learn the test before reviewing content</h4>
+        <p>Start prep with a full timed diagnostic, read the score report for weak sections and question types, and learn that test’s scoring and guessing rule first. PrepMaven on the SSAT: the test is predictable — know its passage types and question types.</p>
+        <span class="src">TestPrep-Online (ISEE) · PrepMaven (SSAT)</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 4. WHILE READING ============ -->
+  <section id="while">
+    <div class="sec-head"><span class="sec-num">04</span><h2>While reading: annotate for retrieval, not decoration</h2></div>
+    <p class="sec-sub">Every mark a student makes must help them find an answer later. That is the shared principle behind every publisher’s annotation advice.</p>
+    <div class="grid">
+      <article class="card" data-tests="isee ssat act">
+        <div class="tags"><span class="tag">ISEE</span><span class="tag">SSAT</span><span class="tag">ACT</span></div>
+        <h4>A few words per paragraph, in your own words</h4>
+        <p>Paraphrase each paragraph’s main idea in the margin — “more than just underlining” (PrepMaven). Kaplan ACT: short notes on topic and purpose, and keep track of different people and opinions. On the ISEE, you’re allowed to write all over the test booklet — take advantage of it (Piqosity).</p>
+        <span class="src">PrepMaven · Kaplan ACT · Piqosity · Boston Tutoring Services</span>
+      </article>
+      <article class="card" data-tests="ssat act">
+        <div class="tags"><span class="tag">SSAT</span><span class="tag">ACT</span></div>
+        <h4>Map the passage</h4>
+        <p>Visualize the passage as a map: Where is the thesis sentence? Underline it. What is the structure as a whole? Read for main ideas, statements of opinion or argument, transition words, keywords from the questions, and concluding statements.</p>
+        <span class="src">PrepMaven, <em>6 SSAT Reading Strategies</em></span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>“What it says” / “What it does”</h4>
+        <p>After each paragraph, say in one sentence what it <em>says</em>, and what it <em>does</em> — “provides evidence for the author’s first main reason,” “introduces an opposing view.” This general active-reading move (Princeton’s McGraw Center; SkillsYouNeed) is the mechanism underneath all the publisher annotation advice, and it transfers to every test.</p>
+        <span class="src">Princeton McGraw Center · SkillsYouNeed</span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>What not to do</h4>
+        <ul>
+          <li>Don’t read every word slowly to “learn” the passage — focus on answering questions, not studying the text, and don’t keep rereading parts you don’t understand (Prepped &amp; Polished; Princeton Review).</li>
+          <li>Don’t highlight everything. “Put down your highlighter. Make marginal notes instead” (Princeton McGraw).</li>
+          <li>Don’t rely on memory instead of going back: “Memories can be faulty… line references are provided for a reason” (Kaplan ACT).</li>
+        </ul>
+      </article>
+      <article class="card" data-tests="sat act isee ssat" style="grid-column:1/-1">
+        <div class="tags"><span class="tag">Digital SAT</span><span class="tag all-tests">All tests</span></div>
+        <h4>Watch the signal words</h4>
+        <p>Kaplan’s SAT keyword table — teach students to tag these as they read. Princeton Review’s digital SAT advice is the same move: “Circle pivot words like <em>however, although, therefore</em> to stay oriented.”</p>
+        <div class="tablewrap" style="box-shadow:none">
+          <table class="stack-table">
+            <thead><tr><th scope="col">Signal</th><th scope="col">Words</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Opinion</th><td data-th="Words"><em>fortunately, disappointing, I suggest, it seems likely</em></td></tr>
+              <tr><th scope="row">Emphasis</th><td data-th="Words"><em>especially, crucial, above all</em></td></tr>
+              <tr><th scope="row">Continuation</th><td data-th="Words"><em>moreover, in addition</em></td></tr>
+              <tr><th scope="row">Contrast</th><td data-th="Words"><em>but, yet, despite, however, on the other hand</em></td></tr>
+              <tr><th scope="row">Argument</th><td data-th="Words"><em>thus, therefore, because, for example, to illustrate</em></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="src">Kaplan SAT keyword table · Princeton Review</span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat" style="grid-column:1/-1">
+        <div class="tags"><span class="tag all-tests">Paired passages</span></div>
+        <h4>Two passages? One at a time</h4>
+        <p>Do Passage 1’s questions first, then Passage 2’s, and the both-passage questions last — it saves time and keeps you from confusing the two texts (Princeton Review). On the digital SAT each question has its own short passage or short pair, so tailor your reading to that one question and use only that excerpt (Kaplan). Before answering any comparison question, be able to state each author’s claim in 5–7 words and whether they agree, disagree, or extend — that formulation comes from secondary SAT guides and matches Princeton Review’s one-at-a-time rule, but isn’t publisher-verified.</p>
+        <span class="src">Princeton Review · Kaplan · secondary guides (comparison rule)</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 5. HARD PASSAGES ============ -->
+  <section id="hard-passages">
+    <div class="sec-head"><span class="sec-num">05</span><h2>The hard-passage routine: hunt the main idea, slog without stalling</h2></div>
+    <p class="sec-sub">For the passage that looks like a wall — dense, unfamiliar, easy to zone out on. This routine is assembled from the moves in §04 and §06, sequenced the way a tutor would drill them; each step is sourced, the sequence is the drill.</p>
+
+    <h3>Part A — Hunt the main idea before you read deeply</h3>
+    <ol style="padding-left:22px; margin:0 0 12px">
+      <li style="margin-bottom:6px"><strong>Read the frame first:</strong> the blurb (author, year, source) and the first and last paragraphs. Conclusions and topic sentences are where main ideas live (Kaplan SAT; PrepMaven).</li>
+      <li style="margin-bottom:6px"><strong>Find and underline the thesis sentence.</strong> Then ask PrepMaven’s map questions: What is the structure as a whole? Where do the ideas turn? The signal words in §04 mark the turns — a <em>however</em> or <em>therefore</em> usually carries more weight than a full paragraph of examples.</li>
+      <li style="margin-bottom:6px"><strong>Say the main idea in one sentence, in your own words, before answering anything.</strong> “If you could summarize a passage in one sentence, that sentence would be the main idea” (Union Test Prep). CollegeMatchPoint’s version: the summary you make to yourself after a first reading <em>is</em> your main-idea answer.</li>
+    </ol>
+
+    <h3>Part B — Work through the dense parts in chunks</h3>
+    <ol style="padding-left:22px; margin:0 0 12px">
+      <li style="margin-bottom:6px"><strong>One paragraph at a time, pen moving.</strong> After each paragraph, write the margin note: what it <em>says</em> in a few words, and what it <em>does</em> (evidence, example, opposing view, conclusion). The note is the checkpoint — if you can’t write it, you drifted, and you re-read that one paragraph now, while it’s cheap (Princeton McGraw; SkillsYouNeed).</li>
+      <li style="margin-bottom:6px"><strong>Track people and opinions as separate entries.</strong> Dense passages usually tangle <em>who thinks what</em>, not vocabulary. Kaplan ACT: keep track of different people and opinions in your notes as you go.</li>
+      <li style="margin-bottom:6px"><strong>When a sentence won’t yield, mark it and keep moving.</strong> Put a symbol in the margin and read on — later sentences often define or simplify the hard one, and the questions may never touch it. Prepped &amp; Polished is blunt: “Do not keep rereading portions that you don’t understand.” Rereading a stuck sentence three times is how a passage eats its whole time budget (§02).</li>
+      <li style="margin-bottom:6px"><strong>Answer from the map, hunt details only when asked.</strong> Detail questions send you back with keywords as a scavenger hunt (§06); don’t re-read the whole passage hunting for one fact — go to the paragraph your map says holds it, read that sentence plus its context, and answer (PrepMaven; Kaplan ACT).</li>
+    </ol>
+
+    <h3>Part C — Staying engaged instead of zoning out</h3>
+    <ul>
+      <li><strong>Give the pen a job on every paragraph.</strong> The annotation routine above doubles as the attention routine: zoning out is what happens between checkpoints, and a required margin note every paragraph makes drift visible immediately instead of a page later.</li>
+      <li><strong>Predict as you read.</strong> Before each new paragraph, guess where the author is going — agreement, objection, example? Piqosity and PrepMaven both prescribe prediction during pleasure reading as the way the skill is built; on the test, a wrong prediction still keeps you reading <em>against</em> the text instead of sliding over it.</li>
+      <li><strong>Use the questions as anchors where the format allows.</strong> On questions-first tests (digital SAT, ISEE, SSAT — §01), you already know what you’re hunting; on the ACT, your paragraph map serves the same anchoring job when you reach the questions.</li>
+      <li><strong>Treat fading stamina as a training problem, not a test-day problem.</strong> Princeton Review: build it in practice — module-length timed bursts on weeknights, one full section on the weekend, brief reset between modules — so a hard passage late in the section meets a reader who has rehearsed exactly that fatigue.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 6. BY QUESTION TYPE ============ -->
+  <section id="types">
+    <div class="sec-head"><span class="sec-num">06</span><h2>By question type: the concrete move for each</h2></div>
+
+    <div class="callout green">
+      <p class="c-title">The universal first move — predict, then prove</p>
+      <p>Every publisher converges here. Kaplan SAT calls it Predict-and-Match; Kaplan ACT: “Predict an answer BEFORE you look at the answer choices.” Princeton Review: prediction in plain language plus proof — “If you can’t point to that support, you’re not done.” PrepMaven SSAT: cover the choices and predict. <strong>Tutor drill:</strong> cover the choices with a hand or card until the student says a prediction aloud. If they can’t predict, they haven’t located the evidence yet — send them back to the passage; don’t let them shop the choices.</p>
+    </div>
+
+    <div class="grid">
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Main idea / primary purpose / best title</h4>
+        <ul>
+          <li>Summarize the whole passage in one sentence — “If you could summarize a passage in one sentence, that sentence would be the main idea” (Union Test Prep, ISEE).</li>
+          <li>Reject choices that cover only one paragraph or example (too narrow) or import ideas the passage never raises (too broad). Piqosity’s worked example: a title fitting only the first part or the last sentences is wrong; the right one captures overall scope.</li>
+          <li>Source the main idea from thesis and topic sentences and concluding statements (PrepMaven).</li>
+          <li>Within a passage, save main-idea questions for last — after the detail questions, you know the themes (Princeton Review). A within-passage ordering rule, not a section rule.</li>
+        </ul>
+        <span class="src">Union Test Prep · Princeton Review · PrepMaven · Piqosity</span>
+      </article>
+
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Detail / locate information</h4>
+        <ul>
+          <li>Turn the question’s keywords into a scavenger hunt: find the keyword in the passage, read that sentence plus its context, then answer (PrepMaven).</li>
+          <li>For a line reference, read <em>around</em> it — lines 10–14 for a line-12 question (Kaplan ACT).</li>
+          <li>Digital SAT evidence questions: check the sentence plus one line before and after. The right evidence must <em>directly prove</em> the claim, not merely mention the topic — “If I quoted this sentence, would it make the claim obviously true?” (Princeton Review).</li>
+          <li>A detail answer is directly stated; no inference is needed. If you’re inferring, you’re probably answering the wrong question type.</li>
+        </ul>
+        <span class="src">PrepMaven · Kaplan ACT · Princeton Review · Piqosity</span>
+      </article>
+
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Inference / implication</h4>
+        <ul>
+          <li>Stated facts plus <em>one</em> logical step — never outside knowledge, never a second leap. PrepMaven: “SSAT inferences rarely take too many steps away from the passage.” Its example: “Bailey enjoys traveling” supports “finds pleasure in it,” <em>not</em> “enjoys traveling in Europe.”</li>
+          <li>If it’s directly stated, it is <em>not</em> an inference — teach students to separate stated from implied explicitly (Union Test Prep; Piqosity).</li>
+          <li>Prefer the weaker, hedged inference that matches the passage’s strength. Watch the cause-vs-correlation trap: without <em>because</em> or <em>therefore</em>, prefer “association” over “causes” (Princeton Review).</li>
+        </ul>
+        <span class="src">Princeton Review · PrepMaven · Union Test Prep · Piqosity</span>
+      </article>
+
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Vocabulary in context — the Blank-It method</h4>
+        <ul>
+          <li>Cover the target word. Read the sentence (and a line around it) without it. Predict your own simple word that fits the meaning <em>and</em> the tone. Only then look at the choices.</li>
+          <li>Don’t plug choices in first — Princeton Review warns that doing so makes distractors feel “right.”</li>
+          <li>Use context clues, not the most familiar dictionary meaning: synonyms/antonyms, examples or definitions in the sentence, roots and affixes. More than one choice may technically work — pick the <em>best</em> fit and eliminate by connotation (Union Test Prep’s example: <em>odor/fumes</em> are negative; fresh pies get <em>aroma</em>).</li>
+          <li>Even if you’re 100% sure you know the word, check the passage — it may be used non-traditionally (PrepMaven). If two SAT choices are close, pick the one matching the passage’s tone and strength (Princeton Review).</li>
+        </ul>
+        <span class="src">Princeton Review + Kaplan (convergent) · Union Test Prep · PrepMaven · Piqosity</span>
+      </article>
+
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Tone / purpose / function / structure</h4>
+        <ul>
+          <li>Function questions: label what the sentence or paragraph <em>does</em> — define, give an example, contrast, qualify, concede, conclude — then pick the choice naming that job (Princeton Review).</li>
+          <li>Tone comes from the author’s specific adjectives, verbs, and connotations, not from the topic (PrepMaven: “thrill / unexpected” → suspense and urgency; Piqosity: negative-connotation words signal dislike). Avoid extreme tone words.</li>
+          <li>Link purpose and tone: if the purpose is “to explain,” the tone is likely informative or interested, not angry or mocking. Genre is a useful prior — scientific study → “to explain,” editorial → “to persuade” — but verify against the actual passage (PrepMaven).</li>
+          <li>Structure questions (ISEE): name the pattern — sequence, comparison, cause/effect — and ask why the author presented the ideas in this order (Piqosity). A Venn diagram is a good practice drill for compare/contrast.</li>
+          <li>Figurative language (ISEE/SSAT): learn the devices before test day — simile (<em>like/as</em>), metaphor, personification, hyperbole, irony, imagery — and ask what mood or theme the device creates, not what it literally says (Piqosity).</li>
+        </ul>
+        <span class="src">Princeton Review · PrepMaven · Piqosity · Union Test Prep</span>
+      </article>
+
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>EXCEPT / NOT / “all of the following”</h4>
+        <ul>
+          <li>Invert the task: strike off every choice you <em>do</em> find in the passage. The one remaining is the answer (PrepMaven, for EXCEPT questions).</li>
+          <li>Re-read the stem for NOT/EXCEPT before answering — this is one of the most common careless-error catches in review.</li>
+          <li>On the ACT, older guidance says to skip EXCEPT and Roman-numeral questions and do them last — teach that as a pacing choice, not a content rule.</li>
+        </ul>
+        <span class="src">PrepMaven · secondary ACT guidance</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 6. TRAPS ============ -->
+  <section id="traps">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Trap answers: teach students to name the trap</h2></div>
+    <p class="sec-sub">The same traps appear in Kaplan’s ACT advice, Princeton Review’s digital SAT advice, and PrepMaven’s SSAT advice — that convergence across publishers is strong evidence they’re test-wide, not one book’s folklore. A choice the student can name is a choice they can discard.</p>
+    <div class="tablewrap">
+      <table class="stack-table">
+        <thead><tr><th scope="col">Trap</th><th scope="col">How to spot it</th><th scope="col">The counter-move</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Extreme / absolute language</th><td data-th="Spot it"><em>always, never, all, none, best, worst, completely, must, impossible</em></td><td data-th="Counter-move">Eliminate unless the passage is equally absolute. Mirror the passage’s hedging: if the text says <em>may / can / often</em>, the answer must too.</td></tr>
+          <tr><th scope="row">Half-right, half-wrong</th><td data-th="Spot it">Starts accurately, then tacks on an unsupported phrase</td><td data-th="Counter-move">Read to the <em>end</em> of the choice. If any part overreaches, the whole choice is wrong — one word can sink it.</td></tr>
+          <tr><th scope="row">Out-of-scope / unsupported</th><td data-th="Spot it">A concept, fact, or motive that never appears in the passage</td><td data-th="Counter-move">Ask: “Can I point to a line that backs this?” If not, eliminate it.</td></tr>
+          <tr><th scope="row">Opposite / reverse logic</th><td data-th="Spot it">Same keywords, flipped meaning; cause and effect swapped</td><td data-th="Counter-move">Restate the author’s point in your own words first, then compare <em>meaning</em>, not wording.</td></tr>
+          <tr><th scope="row">Misused / distorted detail</th><td data-th="Spot it">A true statement from the passage that answers a different question, or keywords reused misleadingly</td><td data-th="Counter-move">Ask: “Is this true <em>and</em> does it answer <em>this</em> question?” Both must hold.</td></tr>
+          <tr><th scope="row">Too broad / too narrow</th><td data-th="Spot it">Scope drift — a main-idea choice covering one example, or a whole category the passage never discusses</td><td data-th="Counter-move">Match exact scope: time, place, group, degree, condition.</td></tr>
+          <tr><th scope="row">Echo wording</th><td data-th="Spot it">Borrows the passage’s vocabulary but subtly changes the claim or scope</td><td data-th="Counter-move">Match ideas, not words. Familiar phrasing is a warning sign, not a recommendation.</td></tr>
+          <tr><th scope="row">Cause vs. correlation</th><td data-th="Spot it">The passage shows two things occurring together; the choice claims one causes the other</td><td data-th="Counter-move">Require a causal signal (<em>because, therefore</em>); otherwise prefer the “association” wording.</td></tr>
+          <tr><th scope="row">Tone / purpose mismatch</th><td data-th="Spot it">A neutral or cautiously positive passage paired with a negative or emphatic answer (or the reverse)</td><td data-th="Counter-move">Check tone and purpose alignment before locking anything in.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The elimination routine — teach it verbatim</h3>
+    <ol style="padding-left:22px; margin:0 0 12px">
+      <li style="margin-bottom:6px"><strong>Predict first.</strong></li>
+      <li style="margin-bottom:6px"><strong>Cross out every choice with a demonstrable flaw</strong> — physically, in the booklet or with the digital strikethrough tool.</li>
+      <li style="margin-bottom:6px"><strong>Compare survivors on the small scope words</strong> — <em>only, primarily, may, often, because</em> (Princeton Review).</li>
+      <li style="margin-bottom:6px"><strong>Choose the best answer, not the most intelligent-sounding one.</strong> The correct answer “will be flawless” and fully supported (Kaplan ACT).</li>
+      <li style="margin-bottom:6px"><strong>If two remain,</strong> pick the one with the shortest, clearest, closest textual support — the fewest assumptions.</li>
+    </ol>
+  </section>
+
+  <!-- ============ 7. PACING ============ -->
+  <section id="pacing">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Pacing, minute by minute</h2></div>
+    <div class="grid">
+      <article class="card" data-tests="sat">
+        <div class="tags"><span class="tag">Digital SAT</span></div>
+        <h4>Two passes per module</h4>
+        <p><strong>Pass 1 (≈18–20 min):</strong> quick wins only — clear grammar, simple vocab, obvious main idea or function. Flag anything slow. <strong>Pass 2:</strong> work the flagged questions methodically. <strong>Final 60–90 seconds:</strong> confirm every question is filled. Hard cap: if a question won’t budge in 40–50 seconds, flag it and move on. In practice, use a 32-minute timer and aim to be 2–3 questions ahead at the midpoint.</p>
+        <span class="src">Princeton Review, <em>SAT Reading and Writing Tips</em></span>
+      </article>
+      <article class="card" data-tests="act">
+        <div class="tags"><span class="tag">ACT</span></div>
+        <h4>Four 8½-minute units</h4>
+        <p>Treat the section as four units of ~8–9 minutes, one per passage, and finish each passage’s questions inside its unit — returning later forces expensive re-reading. Never spend the whole section on one passage; move on at the budget. Take the passages in any order, strongest first.</p>
+        <span class="src">Kaplan ACT · ACT pacing guidance</span>
+      </article>
+      <article class="card" data-tests="isee">
+        <div class="tags"><span class="tag">ISEE</span></div>
+        <h4>Order by reading cost</h4>
+        <p>35 minutes, 6 passages. Before starting each passage, judge “Will this passage take me a long time to read?” Save the longer and harder ones for last. And never leave a blank — there is no penalty.</p>
+        <span class="src">Piqosity</span>
+      </article>
+      <article class="card" data-tests="ssat">
+        <div class="tags"><span class="tag">SSAT</span></div>
+        <h4>Accuracy over completion</h4>
+        <p>40 minutes, 40 questions. Easiest passages and questions first. If a question stalls around 45–60 seconds, mark it, guess only if you’ve eliminated at least one choice, and move on. Second pass: marked questions first. Protect the final 60–90 seconds to bubble anything with at least one elimination — and leave only untouched questions blank.</p>
+        <span class="src">PrepMaven · SSAT penalty-strategy guides</span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat" style="grid-column:1/-1">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Train the clock, don’t just meet it on test day</h4>
+        <p>Practice under timed conditions periodically with <em>full sections</em>, not only untimed drills. Princeton Review’s shape: module-length bursts on weeknights plus one full section on the weekend, in a quiet room, with an on-screen timer and a brief reset between modules. Stamina problems are practice problems — they’re fixed in training, not on test day.</p>
+        <span class="src">Princeton Review · Kaplan</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 8. WHEN STUCK ============ -->
+  <section id="stuck">
+    <div class="sec-head"><span class="sec-num">09</span><h2>When stuck: a four-step script to run without thinking</h2></div>
+    <p class="sec-sub">Synthesized from Princeton Review’s “If You Freeze” guidance, Kaplan’s triage system, and Piqosity’s skip-and-return rule — each step is sourced; the combination is the script to drill until it’s automatic.</p>
+
+    <div class="stepper" aria-label="When stuck, step by step">
+      <div class="step-dots" id="stepDots" role="tablist" aria-label="Script steps"></div>
+      <div class="step-body" id="stepBody"></div>
+      <div class="step-nav">
+        <button class="navbtn" id="stepPrev" type="button">← Back</button>
+        <span class="step-count" id="stepCount"></span>
+        <button class="navbtn primary" id="stepNext" type="button">Next step →</button>
+      </div>
+    </div>
+
+    <div class="twocol" style="margin-top:16px">
+      <div class="callout" style="margin:0">
+        <p class="c-title">If you’re behind on time</p>
+        <p>Cap the next two tricky questions at 60 seconds each: eliminate, choose the most supportable answer, and finish the set. Then use the final two minutes to fill blanks and revisit only quickly-solvable flagged items. <span class="src">Princeton Review</span></p>
+      </div>
+      <div class="callout" style="margin:0">
+        <p class="c-title">If two choices feel identical</p>
+        <p>Translate the question into your own words, re-read only the tied lines, eliminate anything extreme or off-scope, predict, mark, and move. <span class="src">Princeton Review</span></p>
+      </div>
+    </div>
+    <div class="callout" style="margin-top:16px">
+      <p class="c-title">If English isn’t the student’s first language</p>
+      <p>Read two lines around the target word, blank it out, predict a simple word, eliminate non-matches — and guess and move if you can’t narrow it to one. Between sessions, build a small deck of academic and tone words, each with the student’s own example sentence. <span class="src">Princeton Review</span></p>
+    </div>
+  </section>
+
+  <!-- ============ 9. REVIEWING MISTAKES ============ -->
+  <section id="review">
+    <div class="sec-head"><span class="sec-num">10</span><h2>Reviewing mistakes: the highest-leverage tutoring work</h2></div>
+    <p class="sec-sub">Princeton Review’s error-log routine is the most detailed in the sources. It’s written for the SAT but the routine is test-agnostic — apply it to ISEE, SSAT, and ACT prep unchanged.</p>
+
+    <h3>The error log — one row per miss or guess</h3>
+    <div class="tablewrap">
+      <table class="logtable stack-table">
+        <thead><tr>
+          <th scope="col">Date</th><th scope="col">Section</th><th scope="col">Question type / skill</th><th scope="col">Source</th><th scope="col">Your answer + why</th><th scope="col">Correct answer</th><th scope="col">Error type / cause</th><th scope="col">Key takeaway</th><th scope="col">Reviewed?</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td data-th="Date">—</td><td data-th="Section">—</td><td data-th="Type">e.g. Inference</td><td data-th="Source">Practice test / set</td><td data-th="Your answer">Choice + the reasoning used</td><td data-th="Correct">Correct choice</td><td data-th="Cause">Content · Process · Pacing · Careless · Misunderstood logic · Guessed</td><td data-th="Takeaway">The rule or reading move to use next time</td><td data-th="Reviewed?">☐</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="copyrow">
+      <button class="copybtn" id="copyLog" type="button">Copy the error-log template</button>
+      <span class="copied" id="copiedMsg" role="status"></span>
+    </div>
+    <p class="src" style="margin-top:6px">Copies as tab-separated text that pastes straight into a spreadsheet. Template columns: Princeton Review.</p>
+
+    <h3>After every set — the four-step review</h3>
+    <ol style="padding-left:22px; margin:0 0 12px">
+      <li style="margin-bottom:6px"><strong>Fill the log</strong> for every miss <em>and</em> every guess.</li>
+      <li style="margin-bottom:6px"><strong>Re-solve missed items untimed</strong> until the reasoning is airtight.</li>
+      <li style="margin-bottom:6px"><strong>Create two same-type practice items</strong> for tomorrow.</li>
+      <li style="margin-bottom:6px"><strong>Two days later, retest that skill timed.</strong></li>
+    </ol>
+    <p>Weekly shape: Day 1, a baseline full section and categorize the misses; reading-focus days on Function/Evidence, then Words-in-Context/Tone; a mixed timed set; Day 7, a full-section retest — compare accuracy by skill and plan next week around the top two weaknesses. <span class="src">Princeton Review</span></p>
+
+    <div class="grid" style="margin-top:18px">
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Classify every mistake by cause, then target the cause</h4>
+        <p>Vocabulary gap, comprehension error, or careless mistake? Each has a different fix, so name it in the log and target that specific weakness in the next session. Track weak question types — inference? main idea? vocabulary? — and drill the weakest. And review explanations for correct answers too, not just wrong ones: a guessed-correct answer is still a gap.</p>
+        <span class="src">TestPrep-Online (ISEE) · consistent with Princeton Review’s log</span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Benchmark, build stamina, don’t just take more tests</h4>
+        <p>Take at least one benchmark test before test day, and build up section-by-section before full-length tests so the full exam “feels manageable, not overwhelming” (TestPrep-Online). Piqosity’s claim that multiple practice exams improve performance is Piqosity’s — treat it as their assertion, not independent research. A secondary SAT guide puts the balance bluntly: spend 2–3 days reviewing each full test before taking another; mastery happens when you correct old mistakes, not when you add new tests.</p>
+        <span class="src">Piqosity · TestPrep-Online · secondary SAT guide</span>
+      </article>
+      <article class="card" data-tests="sat act isee ssat">
+        <div class="tags"><span class="tag all-tests">All tests</span></div>
+        <h4>Read for fun — with intention</h4>
+        <p>Read widely and eclectically at or slightly above the student’s level: articles, editorials, journal pieces, older texts and primary documents, poetry, creative nonfiction, science and history writing. While reading for fun, run the test skills without questions guiding you: define new words, summarize each chapter before moving on, predict what happens next, annotate, invent your own questions, infer from characterization and tone. Kaplan ACT: “try to explain the authors’ findings to a friend.” Kaplan’s enrichment version: pick a news article, write SAT-style questions for it, and swap with a study partner — it teaches how test-makers build wrong answers.</p>
+        <span class="src">Piqosity · PrepMaven · Kaplan ACT · Kaplan study guide</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 10. SCOPE ============ -->
+  <section id="scope">
+    <div class="sec-head"><span class="sec-num">11</span><h2>What’s test-specific, what’s universal</h2></div>
+    <div class="tablewrap">
+      <table class="stack-table">
+        <thead><tr><th scope="col">Advice</th><th scope="col">Scope</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Questions-first, tailored reading, predict-and-match</th><td data-th="Scope"><strong>Digital SAT-specific</strong> — built for one question per short passage. Do not generalize it to ACT-length passages.</td></tr>
+          <tr><th scope="row">Passage-first, paragraph notes, strongest passage first, Letter of the Day</th><td data-th="Scope"><strong>ACT-specific</strong> (Kaplan ACT). Strongest-first ordering also transfers to SSAT/ISEE.</td></tr>
+          <tr><th scope="row">Questions skimmed (stems only), annotate in the booklet, save hard passages for last, never blank</th><td data-th="Scope"><strong>ISEE-specific</strong> (Piqosity).</td></tr>
+          <tr><th scope="row">Preview + cover choices + predict, margin paraphrase, accuracy over completion, penalty-aware guessing</th><td data-th="Scope"><strong>SSAT-specific</strong> (PrepMaven; Prepped &amp; Polished).</td></tr>
+          <tr><th scope="row">Predict → prove from the text → eliminate traps (extreme / half-right / out-of-scope / opposite / misused detail)</th><td data-th="Scope"><strong>General — all four tests.</strong> The trap taxonomy is identical across Kaplan ACT, Princeton Review SAT, and PrepMaven SSAT.</td></tr>
+          <tr><th scope="row">Summarize each paragraph in your own words; “what it says / what it does”; margin notes over highlighting</th><td data-th="Scope"><strong>General reading skill</strong> (Princeton McGraw; SkillsYouNeed) — the mechanism behind all publisher annotation advice.</td></tr>
+          <tr><th scope="row">Error log + re-solve untimed + same-type drill tomorrow + timed retest in 2 days</th><td data-th="Scope"><strong>General practice method</strong> (from Princeton Review’s SAT page, but test-agnostic in practice).</td></tr>
+          <tr><th scope="row">Paired passages one at a time; main-idea questions last</th><td data-th="Scope"><strong>Old SAT origin, general principle.</strong> Still sound for paired passages on ISEE/SSAT/ACT — but the old SAT timing and passage order around it are obsolete.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The three disagreements, resolved</h3>
+    <ul>
+      <li><strong>Questions-first vs passage-first:</strong> resolved by format, not philosophy (§01). Short passage + few questions → questions-first. Long passage + 10 questions → passage-first. Test both with the individual student.</li>
+      <li><strong>Read every word vs read what you need:</strong> every current publisher source favors targeted reading. The partial dissent — read a paragraph fully before highlighting or summarizing it — is about <em>study</em> reading, not timed test reading. Don’t conflate them.</li>
+      <li><strong>Finish everything vs prioritize accuracy:</strong> on no-penalty tests (SAT/ACT/ISEE), finish everything and guess freely. On the SSAT, accuracy wins and unfinished is fine. Never teach one guessing rule for both.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 11. NOT VERIFIED ============ -->
+  <section id="gaps">
+    <div class="sec-head"><span class="sec-num">12</span><h2>Open questions — what this research could not verify</h2></div>
+    <p class="sec-sub">Named plainly so nothing below gets quoted as settled advice.</p>
+    <ul>
+      <li><strong>Test Prep Works (ISEE/SSAT books):</strong> its books exist and are noted as not produced or endorsed by ERB, but no specific Test Prep Works reading strategy was found in an accessible primary source. Nothing on this page is attributed to them.</li>
+      <li><strong>Barron’s (SAT/ACT):</strong> searches surfaced only aggregator and pirated PDFs, which were not used. No Barron’s-specific reading advice is reported.</li>
+      <li><strong>Ivy Global (SSAT/ISEE):</strong> only test-format details were verified (e.g. that you may write in the ISEE test booklet). No Ivy Global strategy chapter was accessible.</li>
+      <li><strong>ISEE Lower Level passage count — a live discrepancy:</strong> Piqosity says Lower Level is 5 passages × 5 questions; an Ivy Global Lower Level sample shows 6 passages. Confirm current level specs against official ERB/ISEE materials before teaching passage counts.</li>
+      <li><strong>College Board:</strong> no College Board–authored strategy page was read in full in this research; it appears only via publisher and secondary references to official practice tests and the Khan Academy collaboration. Don’t quote College Board as the direct source for a specific tactic based on this page.</li>
+      <li><strong>Kaplan’s SSAT guessing rule</strong> (guess if you can eliminate ≥1 choice) rests on a search-result snippet rather than a full page read; it is corroborated by Prepped &amp; Polished and SSAT penalty guides.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 12. SOURCES ============ -->
+  <section id="sources">
+    <div class="sec-head"><span class="sec-num">13</span><h2>Sources</h2></div>
+    <p class="sec-sub">Read 2026-10-28. “Read in full” means the complete page was opened and read; “index only” means the claim rests on search-result text and is labeled as such wherever it’s used above.</p>
+    <h3>Read in full</h3>
+    <ul class="sources">
+      <li><span class="badge">Read in full</span>Kaplan — <em>5 Must-Know SAT Reading Tips</em><br /><a href="https://www.kaptest.com/study/sat/5-must-know-sat-reading-tips/">kaptest.com/study/sat/5-must-know-sat-reading-tips</a></li>
+      <li><span class="badge">Read in full</span>Kaplan — <em>10 Must-Know ACT Reading Tips</em><br /><a href="https://www.kaptest.com/study/act/10-must-know-act-reading-tips/">kaptest.com/study/act/10-must-know-act-reading-tips</a></li>
+      <li><span class="badge">Read in full</span>Kaplan — <em>ACT/SAT Study Guide</em> (pre-digital format; used for ACT-side method only)<br /><a href="https://kaptestmocha.cdn.prismic.io/kaptest%2F4845e01b-bf0e-4628-b724-f97e37f63b8b_sat_act_studyguide.pdf">kaptestmocha.cdn.prismic.io — sat_act_studyguide.pdf</a></li>
+      <li><span class="badge">Read in full</span>Princeton Review — <em>SAT Reading and Writing Tips</em> (published 2025-09-17)<br /><a href="https://www.princetonreview.com/sat-study/sat-reading-writing-tips">princetonreview.com/sat-study/sat-reading-writing-tips</a></li>
+      <li><span class="badge">Read in full</span>Princeton Review — <em>SAT Reading Tips</em> (older, pre-digital format page)<br /><a href="https://www.princetonreview.com/college-advice/sat-reading-tips">princetonreview.com/college-advice/sat-reading-tips</a></li>
+      <li><span class="badge">Read in full</span>Piqosity — <em>ISEE Reading Comprehension Strategies</em> (updated 2026-09-29)<br /><a href="https://www.piqosity.com/isee-reading-comprehension-strategies/">piqosity.com/isee-reading-comprehension-strategies</a></li>
+      <li><span class="badge">Read in full</span>PrepMaven — <em>6 SSAT Reading Strategies</em> (updated 2024-05-29)<br /><a href="https://prepmaven.com/blog/test-prep/ssat-reading-strategies/">prepmaven.com/blog/test-prep/ssat-reading-strategies</a></li>
+      <li><span class="badge">Read in full</span>Prepped &amp; Polished — <em>SSAT &amp; ISEE Reading Comprehension</em> (2013, updated 2023)<br /><a href="https://www.preppedandpolished.com/ssat-isee-reading-comprehension/">preppedandpolished.com/ssat-isee-reading-comprehension</a></li>
+      <li><span class="badge">Read in full</span>CollegeMatchPoint / ATX Test Prep — <em>SAT &amp; ACT Reading</em> (2019, updated 2025-10-21; its SAT format description is outdated)<br /><a href="https://www.collegematchpoint.com/college-matchpoint-blog/satactreading">collegematchpoint.com/college-matchpoint-blog/satactreading</a></li>
+      <li><span class="badge">Read in full</span>Union Test Prep — <em>ISEE Upper Level Reading Comprehension study guide</em><br /><a href="https://uniontestprep.com/isee/study-guide/upper-level-reading-comprehension/pages/1">uniontestprep.com/isee/study-guide/upper-level-reading-comprehension</a></li>
+    </ul>
+    <h3>Index only (search-result text, not read in full)</h3>
+    <ul class="sources">
+      <li><span class="badge index">Index only</span>Kaplan SSAT feed — guessing rule snippet<br /><a href="https://www.kaptest.com/study/category/ssat/feed/">kaptest.com/study/category/ssat/feed</a></li>
+      <li><span class="badge index">Index only</span>TestPrep-Online — ISEE practice tests and guidance<br /><a href="https://www.testprep-online.com/isee-practice-tests">testprep-online.com/isee-practice-tests</a></li>
+      <li><span class="badge index">Index only</span>Princeton McGraw Center — <em>Active Reading Strategies</em><br /><a href="https://mcgraw.princeton.edu/undergraduates/resources/resource-library/active-reading-strategies">mcgraw.princeton.edu — active-reading-strategies</a></li>
+      <li><span class="badge index">Index only</span>SkillsYouNeed — <em>Active Reading</em><br /><a href="https://www.skillsyouneed.com/rhubarb/active-reading-study.html">skillsyouneed.com/rhubarb/active-reading-study</a></li>
+      <li><span class="badge index">Index only</span>SSAT penalty corroboration — Test Ninjas score calculator; Sapneil Tutoring penalty/guessing strategy; Prep4SSAT reading guide<br /><a href="https://test-ninjas.com/ssat-score-calculator">test-ninjas.com/ssat-score-calculator</a> · <a href="https://www.sapneiltutoring.com/post/ssat-penalty-rule-guessing-strategy">sapneiltutoring.com — ssat-penalty-rule-guessing-strategy</a> · <a href="https://www.prep4ssat.com/blog/detail/how_to_prepare_for_the_ssat___reading_section">prep4ssat.com — how to prepare for the SSAT reading section</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    Compiled 2026-10-28 from the sources listed above. Advice is attributed to the publisher or source that published it; where sources disagreed or a claim could not be verified from a primary source, the page says so rather than smoothing it over.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Test filter ---------- */
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".fbtn"));
+  var cards = Array.prototype.slice.call(document.querySelectorAll(".card[data-tests]"));
+  var fnote = document.getElementById("fnote");
+  var names = { sat:"Digital SAT", act:"ACT", isee:"ISEE", ssat:"SSAT" };
+
+  function applyFilter(key){
+    buttons.forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-filter") === key ? "true" : "false"); });
+    var shown = 0;
+    cards.forEach(function(c){
+      var tests = (c.getAttribute("data-tests") || "").split(/\s+/);
+      var match = key === "all" || tests.indexOf(key) !== -1;
+      c.classList.toggle("dim", !match);
+      if (match) shown++;
+    });
+    fnote.textContent = key === "all"
+      ? ""
+      : "Showing " + shown + " advice cards tagged for the " + names[key] + " (cards tagged “All tests” apply to every test and stay visible). Timing tables, traps, and sources always show in full.";
+  }
+  buttons.forEach(function(b){
+    b.addEventListener("click", function(){ applyFilter(b.getAttribute("data-filter")); });
+  });
+
+  /* ---------- Stuck script stepper ---------- */
+  var steps = [
+    {
+      title: "Re-read the stem and name the type",
+      body: "Purpose? Vocabulary? Evidence? Inference? Read the stem again, name the type out loud, then re-read just the lines that match that task. Freezing usually means you never pinned down what the question is actually asking.",
+      src: "Princeton Review — “If You Freeze”"
+    },
+    {
+      title: "Predict roughly, eliminate what you can",
+      body: "Make a quick prediction — even a rough one — and cross off any choice you can prove flawed. Then mark the question and move on. Kaplan’s triage version: easy questions first, circle the unsure ones, X the ones you don’t understand, and return only with time to spare.",
+      src: "Princeton Review · Kaplan triage"
+    },
+    {
+      title: "Move on — momentum protects the section",
+      body: "“Momentum matters more than cracking one hard item.” One stuck question is a small loss; a stalled section is a big one. Piqosity’s ISEE version is identical: if you get stuck, skip it and make sure to answer it later.",
+      src: "Princeton Review · Piqosity"
+    },
+    {
+      title: "On return, apply your test’s guessing rule",
+      body: "SAT, ACT, ISEE — no penalty: guess. If you’re truly blind, use your pre-chosen Letter of the Day (Kaplan ACT suggests A/F or B/G). SSAT Middle/Upper — the −¼ penalty applies: guess only if you eliminated at least one choice, otherwise leave it blank. Final minute: fill every SAT/ACT/ISEE blank; on the SSAT, bubble only questions with at least one elimination.",
+      src: "Kaplan · PrepMaven · SSAT penalty guides"
+    }
+  ];
+  var dotsWrap = document.getElementById("stepDots");
+  var body = document.getElementById("stepBody");
+  var prev = document.getElementById("stepPrev");
+  var next = document.getElementById("stepNext");
+  var count = document.getElementById("stepCount");
+  var current = 0;
+
+  steps.forEach(function(_, i){
+    var d = document.createElement("button");
+    d.type = "button";
+    d.className = "step-dot";
+    d.setAttribute("role", "tab");
+    d.setAttribute("aria-label", "Step " + (i + 1));
+    d.addEventListener("click", function(){ show(i); });
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function show(i){
+    current = Math.max(0, Math.min(steps.length - 1, i));
+    var s = steps[current];
+    body.innerHTML = "";
+    var num = document.createElement("p"); num.className = "s-num"; num.textContent = "Step " + (current + 1) + " of " + steps.length;
+    var h = document.createElement("h4"); h.textContent = s.title;
+    var p = document.createElement("p"); p.textContent = s.body;
+    var src = document.createElement("span"); src.className = "src"; src.textContent = s.src;
+    body.appendChild(num); body.appendChild(h); body.appendChild(p); body.appendChild(src);
+    dots.forEach(function(d, j){ d.classList.toggle("done", j <= current); d.setAttribute("aria-selected", j === current ? "true" : "false"); });
+    count.textContent = "Step " + (current + 1) + " / " + steps.length;
+    prev.disabled = current === 0;
+    next.textContent = current === steps.length - 1 ? "Back to step 1" : "Next step →";
+  }
+  prev.addEventListener("click", function(){ show(current - 1); });
+  next.addEventListener("click", function(){ show(current === steps.length - 1 ? 0 : current + 1); });
+  show(0);
+
+  /* ---------- Copy error-log template ---------- */
+  var copyBtn = document.getElementById("copyLog");
+  var copiedMsg = document.getElementById("copiedMsg");
+  var template = [
+    "Date\tSection\tQuestion Type / Skill\tSource\tYour Answer + Why\tCorrect Answer\tError Type / Cause\tKey Takeaway\tReviewed?",
+    "\t\t\t\t\t\tContent / Process / Pacing / Careless / Misunderstood Logic / Guessed\t\t"
+  ].join("\n");
+  copyBtn.addEventListener("click", function(){
+    function done(){ copiedMsg.textContent = "Copied — paste it into a spreadsheet to start your log."; }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(template).then(done, function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = template; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); }
+      catch(e){ copiedMsg.textContent = "Copy didn’t work here — the columns are listed in the table above."; }
+      document.body.removeChild(ta);
+    }
+  });
+})();
+</script>
+</body>
+</html>
