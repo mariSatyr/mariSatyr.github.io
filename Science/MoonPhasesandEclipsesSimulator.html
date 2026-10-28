@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Moon Phases and Eclipses Simulator</title>
+<style>
+:root{--bg:#f4f5f7;--card:#ffffff;--ink:#18202c;--mut:#5a6577;--line:#d9dde4;--acc:#1f5fe0;--accink:#ffffff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--card:#1b212b;--ink:#e9edf3;--mut:#9aa5b6;--line:#2f3846;--acc:#6f9dff;--accink:#0d1422;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12161c;--card:#1b212b;--ink:#e9edf3;--mut:#9aa5b6;--line:#2f3846;--acc:#6f9dff;--accink:#0d1422;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Trebuchet MS","Segoe UI",system-ui,sans-serif}
+main{max-width:1020px;margin:0 auto;padding:18px 14px 28px}
+h1{font-size:2rem;line-height:1.1;margin:4px 0 6px}
+.sub{margin:0 0 14px;color:var(--mut);max-width:62ch}
+.tabs,.chips,.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{margin-bottom:14px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 15px}
+button:hover{border-color:var(--acc)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.on,button.pri{background:var(--acc);color:var(--accink);border-color:var(--acc);font-weight:700}
+.chips button{font-size:.85rem;padding:4px 11px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+canvas{display:block;width:100%;aspect-ratio:1/1;border-radius:8px;touch-action:none}
+#A{cursor:grab}
+.cap{margin:6px 2px 0;color:var(--mut);font-size:.85rem}
+h2{font-size:1.25rem;margin:10px 0 4px}
+#tx{margin:0;color:var(--mut)}
+.sl{display:grid;grid-template-columns:11em 1fr 3.2em;gap:8px;align-items:center;margin:6px 0}
+.sl output{text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{accent-color:var(--acc);width:100%}
+.row{margin-top:10px}
+label.ck{display:flex;gap:6px;align-items:center}
+.hide{display:none!important}
+.foot{margin-top:18px;text-align:center}
+.foot a{color:var(--acc);font-weight:700}
+</style>
+</head>
+<body>
+<main>
+<h1>Moon phases and eclipses</h1>
+<p class="sub">Half of the Moon is always lit by the Sun. The Sun stays in the center while Earth travels around it and the Moon travels around Earth. Move them to see why we see different phases, and when the Sun, Moon and Earth line up for an eclipse.</p>
+<div class="tabs" id="tabs"><button data-t="phase" class="on">Moon phases</button><button data-t="ecl">Eclipses</button></div>
+<section class="grid">
+  <div class="card">
+    <canvas id="A" role="img" aria-label="View from above: Earth orbits the Sun and the Moon orbits Earth"></canvas>
+    <p class="cap">Looking down on the system (not to scale). The Sun stays put. Drag Earth around its orbit, or drag the Moon around Earth.</p>
+  </div>
+  <div class="card">
+    <canvas id="B" role="img" aria-label="What the Moon or Sun looks like from Earth"></canvas>
+    <h2 id="hd"></h2>
+    <p id="tx"></p>
+  </div>
+</section>
+<section class="card">
+  <label class="sl"><span>Earth around Sun</span><input type="range" id="sS" min="0" max="359" step="1"><output id="oS"></output></label>
+  <label class="sl"><span>Moon around Earth</span><input type="range" id="sM" min="0" max="359" step="1"><output id="oM"></output></label>
+  <div class="row">
+    <button id="play" class="pri">Run time</button>
+    <label class="ck">Speed <input type="range" id="spd" min="0.5" max="8" step="0.5" value="2" aria-label="Speed in days per second"></label>
+    <button id="reset">Reset</button>
+  </div>
+  <div class="row chips" id="chips"></div>
+  <div class="row ecl hide">
+    <button id="jn">Jump to New Moon</button><button id="jf">Jump to Full Moon</button>
+    <label class="ck"><input type="checkbox" id="tilt"> Tilt the Moon’s orbit (realistic, 5°)</label>
+  </div>
+</section>
+<footer class="foot"><a href="https://www.instagram.com/fusionteachersunion/" target="_blank" rel="noopener noreferrer">Follow Fusion Teachers Union on Instagram</a></footer>
+</main>
+<script>
+const TAU=Math.PI*2,PI=Math.PI,D2R=PI/180,N=60,TILT=5.1;
+const $=s=>document.querySelector(s);
+const wrap=a=>((a%360)+360)%360,sgn=a=>{a=wrap(a);return a>180?a-360:a};
+const A=$('#A'),B=$('#B'),ca=A.getContext('2d'),cb=B.getContext('2d');
+let ea=0,sun=180,moon=270,tab='phase',tilt=false,playing=false,last=0,dpr=1,drag=null;
+const PH=[
+['New Moon','The Moon is between Earth and the Sun, so its lit half faces away from us. We see its dark side, so it looks invisible.'],
+['Waxing Crescent','A thin sliver on the right (Northern Hemisphere). “Waxing” means the lit part we can see is growing each night.'],
+['First Quarter','Half of the Moon looks lit, the right half. It is a quarter of the way around its orbit, which is why it is called a quarter Moon.'],
+['Waxing Gibbous','More than half looks lit and it is still growing toward Full Moon.'],
+['Full Moon','Earth is between the Sun and the Moon, so the whole lit half faces us.'],
+['Waning Gibbous','Past full. More than half looks lit, but the lit part is shrinking (“waning”) and is now on the left.'],
+['Third Quarter','Half lit again, but now the left half. The Moon is three-quarters of the way around its orbit.'],
+['Waning Crescent','A thin sliver on the left that keeps shrinking until the next New Moon.']];
+const pidx=d=>d<6||d>354?0:d<84?1:d<=96?2:d<174?3:d<=186?4:d<264?5:d<=276?6:7;
+
+function lens(r1,r2,s){if(s>=r1+r2)return 0;if(s<=Math.abs(r1-r2))return PI*Math.min(r1,r2)**2;
+ const cl=v=>Math.max(-1,Math.min(1,v));
+ return r1*r1*Math.acos(cl((s*s+r1*r1-r2*r2)/(2*s*r1)))+r2*r2*Math.acos(cl((s*s+r2*r2-r1*r1)/(2*s*r2)))-.5*Math.sqrt((-s+r1+r2)*(s+r1-r2)*(s-r1+r2)*(s+r1+r2))}
+
+function ecl(){
+ const d=wrap(moon-sun),dn=sgn(d),dl=sgn(d-180),beta=tilt?TILT*Math.sin((moon-N)*D2R):0;
+ const solar=Math.abs(dn)<=Math.abs(dl),off=solar?dn:dl,near=Math.abs(off)<=6,sep=Math.hypot(off,beta);
+ let type='none';
+ if(near){if(solar){const f=lens(.8,1.3,sep)/(PI*.64);type=f>.995?'total':f>.001?'partial':'none'}
+  else type=sep<=1.1?'total':sep<2.7?'partial':sep<3.7?'pen':'none'}
+ return {solar,off,near,beta,sep,type}}
+
+function eclText(e){
+ const up=e.beta>0?'above':'below',a=Math.abs(e.beta).toFixed(1),flat=tilt?'':' With a flat orbit like this, it would happen every month!';
+ if(!e.near)return['No eclipse possible right now','Solar eclipses can only happen at New Moon and lunar eclipses only at Full Moon. Use a “Jump to” button.'];
+ if(e.solar){
+  if(e.type==='total')return['Total solar eclipse','The Moon is exactly between the Sun and Earth and blocks the whole Sun. Only people inside the Moon’s small, dark shadow see this.'+flat];
+  if(e.type==='partial')return['Partial solar eclipse','The Moon covers part of the Sun. People in the Moon’s outer shadow see a bite taken out of the Sun.'+flat];
+  return['New Moon, but no eclipse',tilt?`The Moon is ${a}° ${up} the Sun’s path, so its shadow passes ${up} Earth.`:'The Moon is not quite lined up with the Sun. Nudge it closer.']}
+ if(e.type==='total')return['Total lunar eclipse','Earth is between the Sun and Moon, and Earth’s dark shadow covers the Moon. It glows red because Earth’s air bends some sunlight onto it. Everyone on the night side can see it.'+flat];
+ if(e.type==='partial')return['Partial lunar eclipse','Part of the Moon enters the dark center of Earth’s shadow.'+flat];
+ if(e.type==='pen')return['Penumbral lunar eclipse','The Moon passes through only Earth’s faint outer shadow, so it just dims a little.'+flat];
+ return['Full Moon, but no eclipse',tilt?`The Moon is ${a}° ${up} Earth’s shadow, so it passes ${up} it.`:'The Moon is not quite lined up with Earth’s shadow. Nudge it closer.']}
+
+function ball(c,x,y,r,phi,lit,dark){c.fillStyle=dark;c.beginPath();c.arc(x,y,r,0,TAU);c.fill();c.fillStyle=lit;c.beginPath();c.arc(x,y,r,phi-PI/2,phi+PI/2);c.closePath();c.fill()}
+function txt(c,s,x,y,col,al){c.fillStyle=col;c.textAlign=al||'center';c.fillText(s,x,y)}
+
+function drawA(){
+ const w=A.clientWidth;if(!w)return;const c=ca,S=w/420,cx=w/2,cy=w/2,Re=13*S,Ro=140*S,Rm=46*S,rm=8*S,sa=sun*D2R,e=ecl();
+ c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#0b1020';c.fillRect(0,0,w,w);c.font=`${12*S}px sans-serif`;
+ const ex=cx+Ro*Math.cos(ea*D2R),ey=cy-Ro*Math.sin(ea*D2R),mx=ex+Rm*Math.cos(moon*D2R),my=ey-Rm*Math.sin(moon*D2R);
+ c.lineWidth=1.5;c.setLineDash([4,5]);
+ c.strokeStyle='rgba(255,214,90,.3)';c.beginPath();c.arc(cx,cy,Ro,0,TAU);c.stroke();
+ c.strokeStyle='rgba(255,255,255,.3)';c.beginPath();c.arc(ex,ey,Rm,0,TAU);c.stroke();
+ if(tab==='ecl'&&tilt){c.strokeStyle='rgba(125,211,252,.8)';[N,N+180].forEach(a=>{c.beginPath();c.moveTo(ex,ey);c.lineTo(ex+78*S*Math.cos(a*D2R),ey-78*S*Math.sin(a*D2R));c.stroke()});
+  txt(c,'orbit crossing line',ex+78*S*Math.cos(N*D2R)+4*S,ey-78*S*Math.sin(N*D2R)-4*S,'#7dd3fc','left')}
+ c.setLineDash([]);
+ const pp=[-Math.sin(sa),-Math.cos(sa)],ax=-Math.cos(sa)*120*S,ay=Math.sin(sa)*120*S;
+ c.fillStyle='rgba(140,160,230,.16)';c.beginPath();c.moveTo(ex+pp[0]*Re,ey+pp[1]*Re);c.lineTo(ex+pp[0]*Re+ax,ey+pp[1]*Re+ay);c.lineTo(ex-pp[0]*Re+ax,ey-pp[1]*Re+ay);c.lineTo(ex-pp[0]*Re,ey-pp[1]*Re);c.fill();
+ c.strokeStyle='rgba(255,214,90,.35)';c.lineWidth=2;
+ for(let i=0;i<14;i++){const a=i*TAU/14;c.beginPath();c.moveTo(cx+Math.cos(a)*34*S,cy+Math.sin(a)*34*S);c.lineTo(cx+Math.cos(a)*50*S,cy+Math.sin(a)*50*S);c.stroke()}
+ const g=c.createRadialGradient(cx,cy,0,cx,cy,52*S);g.addColorStop(0,'rgba(255,225,110,1)');g.addColorStop(.5,'rgba(255,200,60,.55)');g.addColorStop(1,'rgba(255,200,60,0)');
+ c.fillStyle=g;c.beginPath();c.arc(cx,cy,52*S,0,TAU);c.fill();c.fillStyle='#ffd54a';c.beginPath();c.arc(cx,cy,26*S,0,TAU);c.fill();
+ txt(c,'Sun',cx,cy+4*S,'#7a4a00');
+ ball(c,ex,ey,Re,-sa,'#4f8ff7','#14213d');txt(c,'Earth',ex,ey+Re+15*S,'#cbd5e1');
+ c.strokeStyle='rgba(255,255,255,.35)';c.lineWidth=1.2;c.beginPath();c.moveTo(ex,ey);c.lineTo(mx,my);c.stroke();
+ ball(c,mx,my,rm,-sa,'#f3efe0','#2b3040');
+ if(tab==='ecl'&&!e.solar&&e.near&&e.type!=='none'){c.fillStyle=e.type==='total'?'rgba(140,35,20,.7)':'rgba(0,0,0,.35)';c.beginPath();c.arc(mx,my,rm,0,TAU);c.fill()}
+ txt(c,'Moon',mx,my-rm-6*S,'#cbd5e1');
+ [[ex,ey,Re+6*S,'#7fb0ff'],[mx,my,rm+5*S,'#fff']].forEach(([x,y,r,col])=>{c.strokeStyle=col;c.globalAlpha=.7;c.lineWidth=2;c.beginPath();c.arc(x,y,r,0,TAU);c.stroke();c.globalAlpha=1});
+}
+
+function drawB(){
+ const w=B.clientWidth;if(!w)return;const c=cb,cx=w/2,cy=w/2,d=wrap(moon-sun);
+ c.setTransform(dpr,0,0,dpr,0,0);c.font=`${w/28}px sans-serif`;
+ if(tab==='phase'){
+  c.fillStyle='#0b1020';c.fillRect(0,0,w,w);c.fillStyle='rgba(255,255,255,.6)';
+  for(let i=0;i<40;i++){c.fillRect((i*97%113)/113*w,(i*61%127)/127*w,1.6,1.6)}
+  const R=.34*w,sg=Math.sin(d*D2R)>=0?1:-1,k=Math.cos(d*D2R);
+  c.fillStyle='#262d42';c.beginPath();c.arc(cx,cy,R,0,TAU);c.fill();
+  c.fillStyle='#f3efe0';c.beginPath();
+  for(let i=0;i<=60;i++){const t=PI*i/60,x=cx+sg*R*Math.sin(t),y=cy-R*Math.cos(t);i?c.lineTo(x,y):c.moveTo(x,y)}
+  for(let i=60;i>=0;i--){const t=PI*i/60;c.lineTo(cx+sg*R*Math.sin(t)*k,cy-R*Math.cos(t))}
+  c.closePath();c.fill();c.strokeStyle='rgba(255,255,255,.25)';c.beginPath();c.arc(cx,cy,R,0,TAU);c.stroke();
+  txt(c,'What you see from Earth (Northern Hemisphere)',cx,w*.07,'#cbd5e1');return}
+ const e=ecl(),K=w/9;
+ if(!e.near){c.fillStyle='#0b1020';c.fillRect(0,0,w,w);txt(c,'Move the Moon near New Moon',cx,cy-6,'#cbd5e1');txt(c,'or Full Moon to see an eclipse view',cx,cy+w/20,'#cbd5e1');return}
+ const mx=cx-e.off*K,my=cy-e.beta*K;
+ if(e.solar){
+  const tot=e.type==='total';c.fillStyle=tot?'#0b1020':'#5aa9e6';c.fillRect(0,0,w,w);
+  if(tot){const g=c.createRadialGradient(cx,cy,.8*K,cx,cy,3*K);g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.beginPath();c.arc(cx,cy,3*K,0,TAU);c.fill()}
+  c.fillStyle='#ffd54a';c.beginPath();c.arc(cx,cy,.8*K,0,TAU);c.fill();
+  c.fillStyle='#0b0f1c';c.beginPath();c.arc(mx,my,1.3*K,0,TAU);c.fill();c.strokeStyle='rgba(255,255,255,.4)';c.stroke();
+  txt(c,'Sun',cx,cy+1.2*K+w/20,'#fff');txt(c,'Moon (dark side)',mx,my-1.3*K-8,'#fff');txt(c,'Looking at the Sun (sizes exaggerated)',cx,w*.06,'#fff');return}
+ c.fillStyle='#10172c';c.fillRect(0,0,w,w);
+ c.fillStyle='rgba(0,0,0,.35)';c.beginPath();c.arc(cx,cy,2.9*K,0,TAU);c.fill();c.fillStyle='rgba(0,0,0,.45)';c.beginPath();c.arc(cx,cy,1.9*K,0,TAU);c.fill();
+ c.strokeStyle='rgba(255,255,255,.3)';c.setLineDash([4,4]);c.beginPath();c.arc(cx,cy,1.9*K,0,TAU);c.stroke();c.beginPath();c.arc(cx,cy,2.9*K,0,TAU);c.stroke();c.setLineDash([]);
+ c.fillStyle='#f3efe0';c.beginPath();c.arc(mx,my,.8*K,0,TAU);c.fill();
+ c.save();c.beginPath();c.arc(mx,my,.8*K,0,TAU);c.clip();
+ c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.arc(cx,cy,2.9*K,0,TAU);c.fill();c.fillStyle='rgba(150,40,20,.8)';c.beginPath();c.arc(cx,cy,1.9*K,0,TAU);c.fill();c.restore();
+ txt(c,'Earth’s dark shadow',cx,cy+1.9*K+w/18,'#cbd5e1');txt(c,'Full Moon passing the shadow (sizes exaggerated)',cx,w*.06,'#cbd5e1');
+}
+
+function info(){
+ const d=wrap(moon-sun);
+ if(tab==='phase'){const i=pidx(d),lit=Math.round((1-Math.cos(d*D2R))/2*100);
+  $('#hd').textContent=`${PH[i][0]} · ${lit}% lit · day ${(d/360*29.53).toFixed(1)}`;
+  $('#tx').textContent=PH[i][1]+' Half of the Moon is always lit; the phase is how much of that half we can see.';
+  document.querySelectorAll('#chips button').forEach((b,j)=>b.classList.toggle('on',j===i))}
+ else{const t=eclText(ecl());$('#hd').textContent=t[0];$('#tx').textContent=t[1]}
+}
+function draw(){info();drawA();drawB()}
+function sync(){$('#sS').value=Math.round(ea)%360;$('#sM').value=Math.round(moon)%360;$('#oS').textContent=Math.round(ea)%360+'°';$('#oM').textContent=Math.round(moon)%360+'°';draw()}
+
+function loop(n){if(!playing)return;const dt=Math.min(.05,(n-last)/1000);last=n;const days=dt*(+$('#spd').value);
+ moon=wrap(moon+13.176*days);ea=wrap(ea+.986*days);sun=wrap(ea+180);sync();requestAnimationFrame(loop)}
+function setPlay(v){playing=v;$('#play').textContent=v?'Pause':'Run time';if(v){last=performance.now();requestAnimationFrame(loop)}}
+$('#play').onclick=()=>setPlay(!playing);
+$('#reset').onclick=()=>{setPlay(false);ea=0;sun=180;moon=270;sync()};
+$('#sS').oninput=e=>{ea=+e.target.value;sun=wrap(ea+180);sync()};
+$('#sM').oninput=e=>{moon=+e.target.value;sync()};
+$('#jn').onclick=()=>{moon=sun;sync()};
+$('#jf').onclick=()=>{moon=wrap(sun+180);sync()};
+$('#tilt').onchange=e=>{tilt=e.target.checked;sync()};
+$('#chips').innerHTML=PH.map(p=>`<button>${p[0]}</button>`).join('');
+document.querySelectorAll('#chips button').forEach((b,i)=>b.onclick=()=>{setPlay(false);moon=wrap(sun+i*45);sync()});
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;
+ document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+ $('#chips').classList.toggle('hide',tab!=='phase');document.querySelectorAll('.ecl').forEach(x=>x.classList.toggle('hide',tab!=='ecl'));sync()});
+
+function pg(e){const r=A.getBoundingClientRect(),S=r.width/420,cx=r.width/2,x=e.clientX-r.left,y=e.clientY-r.top,ex=cx+140*S*Math.cos(ea*D2R),ey=cx-140*S*Math.sin(ea*D2R);return {S,cx,x,y,ex,ey}}
+A.addEventListener('pointerdown',e=>{const g=pg(e),de=Math.hypot(g.x-g.ex,g.y-g.ey);
+ if(de<64*g.S&&de>10*g.S)drag='moon';else if(de>=64*g.S&&Math.hypot(g.x-g.cx,g.y-g.cx)>40*g.S)drag='earth';else return;
+ A.setPointerCapture(e.pointerId);A.dispatchEvent(new PointerEvent('pointermove',e))});
+A.addEventListener('pointermove',e=>{if(!drag)return;const g=pg(e);
+ if(drag==='earth'){ea=wrap(Math.atan2(-(g.y-g.cx),g.x-g.cx)/D2R);sun=wrap(ea+180)}
+ else{moon=wrap(Math.atan2(-(g.y-g.ey),g.x-g.ex)/D2R);const st=tab==='phase'?45:180,d=wrap(moon-sun),q=Math.round(d/st)*st;if(Math.abs(d-q)<=4)moon=wrap(sun+q)}
+ sync()});
+['pointerup','pointercancel'].forEach(n=>A.addEventListener(n,()=>{drag=null}));
+function fit(){dpr=devicePixelRatio||1;[A,B].forEach(c=>{c.width=Math.round(c.clientWidth*dpr);c.height=Math.round(c.clientHeight*dpr)});draw()}
+new ResizeObserver(fit).observe(A);
+sync();fit();
+</script>
+</body>
+</html>
