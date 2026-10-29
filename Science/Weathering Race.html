@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weathering Race</title>
+<style>
+:root{--bg:#f3efe6;--card:#fffdf8;--ink:#2a2a26;--mute:#6b675c;--line:#d9d2c0;--sky:#cfe6ef;--accent:#2f6f8f;--good:#2e7d4f;--bad:#b3402f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1d1c;--card:#262927;--ink:#f0ede4;--mute:#a7a392;--line:#3c403c;--sky:#2a3d45;--accent:#6bb4d4;--good:#6cc58e;--bad:#e8826f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1b1d1c;--card:#262927;--ink:#f0ede4;--mute:#a7a392;--line:#3c403c;--sky:#2a3d45;--accent:#6bb4d4;--good:#6cc58e;--bad:#e8826f;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Iowan Old Style',serif;line-height:1.45}
+main{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+h1{font-size:2rem;margin:.2em 0}
+h2{font-size:1.25rem;margin:0 0 .3em}
+.sans,button,.stat{font-family:'Trebuchet MS',system-ui,sans-serif}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0 14px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.top{display:flex;justify-content:space-between;font:600 .9rem 'Trebuchet MS',system-ui,sans-serif;color:var(--mute)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:0;text-align:left;cursor:pointer;color:var(--ink);overflow:hidden;font-size:1rem}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--card))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--card))}
+.opt svg{display:block;width:100%;height:auto}
+.info{padding:8px 10px 10px}
+.info b{display:block;font-size:1.05rem}
+.stat{font-size:.85rem;color:var(--mute);display:block}
+.tag{font:700 1rem 'Trebuchet MS',sans-serif;color:var(--accent)}
+.fb{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:none}
+.fb.show{display:block}
+button.go{margin-top:12px;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:1.05rem;font-weight:700;cursor:pointer}
+button.go:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+button.alt{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+.hidden{display:none}
+.intro,.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.card{text-align:center;border:3px solid var(--accent);padding:26px 18px}
+.pct{font-size:5rem;font-weight:700;line-height:1;margin:.1em 0;color:var(--accent)}
+.stars{font-size:2rem;letter-spacing:6px}
+.name{width:100%;max-width:300px;font:1.1rem Georgia,serif;text-align:center;border:0;border-bottom:2px solid var(--line);background:transparent;color:var(--ink);padding:4px;margin:6px 0}
+.rows{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:12px 0}
+.rows span{font:600 .85rem 'Trebuchet MS',sans-serif;padding:3px 9px;border-radius:99px;border:1px solid var(--line)}
+.rows .y{background:color-mix(in srgb,var(--good) 20%,var(--card))}
+.rows .n{background:color-mix(in srgb,var(--bad) 20%,var(--card))}
+@media (max-width:480px){.stat{font-size:.78rem}.pair{gap:8px}}
+</style>
+</head>
+<body>
+<main>
+<section id="intro" class="intro">
+<h1>Weathering Race</h1>
+<p>Weathering breaks rock down. It happens faster in some conditions than others. In each round you see two rocks that differ in <b>one</b> thing: wind speed, surface area, rock type, or climate. Click the rock that will <b>weather faster</b>.</p>
+<p class="sans" style="color:var(--mute)">10 rounds. Finish to get your score card, then try again for a higher percent.</p>
+<button class="go" id="start">Start the race</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="top"><span id="rd">Round 1 of 10</span><span id="sc">Correct: 0</span></div>
+<div class="bar"><i id="pb"></i></div>
+<h2 id="q"></h2>
+<div class="pair" id="pair"></div>
+<div class="fb" id="fb"></div>
+<button class="go hidden" id="next">Next round</button>
+</section>
+
+<section id="end" class="hidden">
+<div class="card" id="card">
+<div class="stars" id="stars"></div>
+<h1>You did it!</h1>
+<input class="name" id="nm" placeholder="Type your name" maxlength="30" aria-label="Your name">
+<div class="pct" id="pct"></div>
+<div class="sans" id="msg"></div>
+<div class="rows" id="rows"></div>
+<div class="stat" id="best"></div>
+</div>
+<button class="go" id="again">Try again for a higher score</button>
+</section>
+</main>
+<script>
+var ROCKS={granite:{n:'Granite',c:'#8d8a86'},sandstone:{n:'Sandstone',c:'#c9935a'},limestone:{n:'Limestone',c:'#d8d0b4'},quartzite:{n:'Quartzite',c:'#b9b4c4'},chalk:{n:'Chalk',c:'#f1efe6'},basalt:{n:'Basalt',c:'#4a4a50'},marble:{n:'Marble',c:'#e4e0e0'}};
+var CL={dry:['Dry desert','☀️'],rain:['Warm, rainy','🌧️'],freeze:['Freezes and thaws daily','❄️'],cold:['Stays frozen, little water','🧊'],acid:['Acid rain','🧪']};
+function R(r,w,p,c){return{r:r,w:w,p:p,c:c}}
+var POOL=[
+['wind','Which rock weathers faster?',R('sandstone',5,1,'dry'),R('sandstone',45,1,'dry'),'b','Faster wind carries more sand and dust that scrapes the rock, so abrasion is quicker.'],
+['wind','Which rock weathers faster?',R('granite',60,1,'dry'),R('granite',8,1,'dry'),'a','Strong winds blast the surface with grains, wearing it away faster than gentle breezes.'],
+['wind','Which rock weathers faster?',R('limestone',12,1,'rain'),R('limestone',50,1,'rain'),'b','Higher wind speed means more abrasion and quicker drying and wetting cycles.'],
+['area','Which rock weathers faster?',R('granite',20,1,'rain'),R('granite',20,8,'rain'),'b','Smaller pieces have more total surface area exposed to wind and water, so weathering speeds up.'],
+['area','Which rock weathers faster?',R('sandstone',20,10,'dry'),R('sandstone',20,1,'dry'),'a','More exposed surface area means more places for weathering to attack.'],
+['area','Which rock weathers faster?',R('limestone',15,1,'acid'),R('limestone',15,6,'acid'),'b','Crumbled rock exposes far more surface to the acid than one solid block.'],
+['mat','Which rock weathers faster?',R('sandstone',20,1,'rain'),R('granite',20,1,'rain'),'a','Sandstone is grains held together by weak cement. Granite is tightly interlocked crystals, so it is harder.'],
+['mat','Which rock weathers faster?',R('quartzite',20,1,'acid'),R('limestone',20,1,'acid'),'b','Limestone reacts with acid and dissolves. Quartzite barely reacts.'],
+['mat','Which rock weathers faster?',R('basalt',25,1,'rain'),R('chalk',25,1,'rain'),'b','Chalk is soft and dissolves easily. Basalt is dense and hard.'],
+['mat','Which rock weathers faster?',R('marble',20,1,'acid'),R('granite',20,1,'acid'),'a','Marble is made of calcite, which acid dissolves. Granite resists it.'],
+['clim','Which rock weathers faster?',R('granite',15,1,'freeze'),R('granite',15,1,'cold'),'a','Water seeps into cracks, freezes, expands, and pries the rock apart. Repeating that speeds weathering.'],
+['clim','Which rock weathers faster?',R('limestone',10,1,'dry'),R('limestone',10,1,'acid'),'b','Acid rain chemically dissolves limestone. Dry air has little water to do that.'],
+['clim','Which rock weathers faster?',R('sandstone',15,1,'rain'),R('sandstone',15,1,'dry'),'a','Water drives both chemical and physical weathering, so wetter places weather faster.']
+];
+var FL={wind:'Wind speed',area:'Surface area',mat:'Rock type',clim:'Climate'};
+var LABEL={wind:'wind speed',area:'surface area',mat:'rock type',clim:'climate'};
+var $=function(i){return document.getElementById(i)};
+var rounds,idx,score,best=0,locked,res;
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function show(id){['intro','game','end'].forEach(function(s){$(s).classList.toggle('hidden',s!==id)});window.scrollTo(0,0)}
+function art(o){
+  var rk=ROCKS[o.r],s='<svg viewBox="0 0 200 130" role="img" aria-hidden="true"><rect width="200" height="130" fill="var(--sky)"/>';
+  s+='<rect y="104" width="200" height="26" fill="#7a6a4f" opacity=".55"/>';
+  var lines=Math.max(1,Math.round(o.w/10));
+  for(var i=0;i<lines;i++){var y=12+(i*92/Math.max(lines,5)),len=10+o.w*.9;s+='<line x1="'+(6+(i%2)*10)+'" y1="'+y+'" x2="'+(6+(i%2)*10+len*.5)+'" y2="'+y+'" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity=".8"/>'}
+  if(o.p===1){s+='<polygon points="78,104 84,52 120,42 150,60 154,104" fill="'+rk.c+'" stroke="#0004" stroke-width="2"/>'}
+  else{var n=o.p,cols=Math.min(n,5);for(var k=0;k<n;k++){var r=Math.floor(k/cols),c=k%cols,cx=82+c*18+(r%2)*8,cy=100-r*14;s+='<polygon points="'+(cx-8)+','+(cy+4)+' '+(cx-6)+','+(cy-8)+' '+(cx+4)+','+(cy-10)+' '+(cx+9)+','+(cy+4)+'" fill="'+rk.c+'" stroke="#0004" stroke-width="1.5"/>'}}
+  s+='<text x="170" y="26" font-size="22" text-anchor="middle">'+CL[o.c][1]+'</text></svg>';return s;
+}
+function info(o,f,tag){
+  var piece=o.p===1?'1 solid block':o.p+' small pieces';
+  function row(k,t){return '<span class="stat">'+(f===k?'<b style="display:inline;font-size:inherit;color:var(--ink)">'+t+'</b>':t)+'</span>'}
+  return '<div class="info"><b>'+tag+'</b>'+row('mat',ROCKS[o.r].n)+row('wind','Wind: '+o.w+' mph')+row('area',piece)+row('clim',CL[o.c][0])+'</div>';
+}
+function start(){
+  var pick=shuffle(POOL).slice(0,10);
+  rounds=pick.map(function(q){var sw=Math.random()<.5;return{f:q[0],t:q[1],a:sw?q[3]:q[2],b:sw?q[2]:q[3],ans:sw?(q[4]==='a'?'b':'a'):q[4],why:q[5]}});
+  idx=0;score=0;res=[];show('game');load();
+}
+function load(){
+  var q=rounds[idx];locked=false;
+  $('rd').textContent='Round '+(idx+1)+' of 10';$('sc').textContent='Correct: '+score;$('pb').style.width=(idx/10*100)+'%';
+  $('q').textContent=q.t+' (the difference is '+LABEL[q.f]+')';
+  var p=$('pair');p.innerHTML='';
+  ['a','b'].forEach(function(k){var b=document.createElement('button');b.className='opt';b.dataset.k=k;b.innerHTML=art(q[k])+info(q[k],q.f,'Rock '+k.toUpperCase());b.onclick=function(){pickAns(k)};p.appendChild(b)});
+  $('fb').className='fb';$('next').classList.add('hidden');
+}
+function pickAns(k){
+  if(locked)return;locked=true;var q=rounds[idx],ok=k===q.ans;
+  if(ok)score++;res.push(ok);
+  document.querySelectorAll('.opt').forEach(function(b){b.disabled=true;if(b.dataset.k===q.ans)b.classList.add('right');else if(b.dataset.k===k)b.classList.add('wrong')});
+  var fb=$('fb');fb.className='fb show';
+  fb.innerHTML='<b style="color:var('+(ok?'--good':'--bad')+')">'+(ok?'Correct!':'Not quite.')+'</b> Rock '+q.ans.toUpperCase()+' weathers faster. '+q.why;
+  $('sc').textContent='Correct: '+score;$('pb').style.width=((idx+1)/10*100)+'%';
+  var n=$('next');n.textContent=idx===9?'See my score':'Next round';n.classList.remove('hidden');n.focus();
+}
+$('next').onclick=function(){if(idx===9){finish()}else{idx++;load()}};
+function finish(){
+  var pc=Math.round(score/10*100),isBest=pc>best,prev=best;if(isBest)best=pc;
+  $('pct').textContent=pc+'%';
+  $('stars').textContent=pc>=90?'★★★':pc>=70?'★★☆':pc>=50?'★☆☆':'☆☆☆';
+  $('msg').textContent=score+' of 10 correct. '+(pc===100?'Perfect! You are a weathering expert.':pc>=80?'Great work. You know what speeds up weathering.':pc>=60?'Good job. Review the explanations and go for more.':'Nice start. Read the hints and try again.');
+  $('rows').innerHTML=res.map(function(r,i){return '<span class="'+(r?'y':'n')+'">'+FL[rounds[i].f]+(r?' ✓':' ✗')+'</span>'}).join('');
+  $('best').textContent=isBest&&prev>0?'New personal best! (was '+prev+'%)':'Best score this session: '+best+'%';
+  show('end');
+}
+$('start').onclick=start;$('again').onclick=start;
+</script>
+</body>
+</html>
