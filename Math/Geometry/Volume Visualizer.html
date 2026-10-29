@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Volume Visualizer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fff1f5;--panel:#fff;--ink:#14213d;--muted:#51607a;--line:#c9d3e0;--accent:#0a7fb8;--btn:#14213d;--btnink:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1726;--panel:#16233a;--ink:#e6edf7;--muted:#9db0cc;--line:#2a3b57;--accent:#4cc9f0;--btn:#e6edf7;--btnink:#0e1726;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1726;--panel:#16233a;--ink:#e6edf7;--muted:#9db0cc;--line:#2a3b57;--accent:#4cc9f0;--btn:#e6edf7;--btnink:#0e1726;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif}
+main{max-width:1150px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.15;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+button[aria-selected=true],button.on,button.go{background:var(--btn);color:var(--btnink);border-color:var(--btn)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+canvas{display:block;width:100%;border-radius:8px;background:#fff1f5;border:1px solid var(--line);touch-action:pan-y}
+#exC{height:420px;cursor:grab}
+#cmC{height:300px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chips button{padding:6px 12px;font-weight:400}
+.row{margin:0 0 12px}
+label{display:flex;justify-content:space-between;gap:8px;font-weight:700;margin-bottom:2px}
+output{font-weight:400;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.res{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.res p{margin:0 0 4px}.big{font-size:1.35rem;font-weight:700}.muted{color:var(--muted)}
+.ctl{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end;margin-bottom:12px}
+.ctl .row{margin:0;min-width:180px;flex:1}
+.scroll{overflow-x:auto}
+.inner{min-width:760px}
+.cards{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.card{border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:.85rem;display:grid;gap:2px}
+.card b{font-size:.95rem}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--accent)}
+.card.full{border-color:var(--accent)}
+.note{font-size:.9rem;color:var(--muted);margin:10px 0 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Volume Visualizer</h1>
+<p class="lede">Pick a shape, change its measurements and see its volume worked out. Then compare every shape side by side as water pours in.</p>
+<div class="tabs" role="tablist">
+  <button role="tab" id="tabE" aria-selected="true">Explore a shape</button>
+  <button role="tab" id="tabC" aria-selected="false">Compare and fill</button>
+</div>
+
+<section id="pE">
+ <div class="grid">
+  <div class="panel"><canvas id="exC" aria-label="3D view of the chosen shape with water inside"></canvas>
+   <p class="note">Drag sideways on the shape to turn it. The water level is a share of the shape’s volume.</p></div>
+  <div class="panel">
+   <div class="chips" id="chips"></div>
+   <div id="dims"></div>
+   <div class="row"><label for="fill">Water level <output id="ofill">0%</output></label>
+    <input type="range" id="fill" min="0" max="100" step="1" value="0"></div>
+   <div class="ctl"><button id="pour" class="go">Pour water</button><button id="drain">Empty</button></div>
+   <div class="res">
+    <p class="muted" id="exF"></p><p id="exS"></p><p class="big" id="exV"></p><p class="muted" id="exW"></p>
+   </div>
+  </div>
+ </div>
+</section>
+
+<section id="pC" hidden>
+ <div class="panel">
+  <div class="ctl">
+   <div class="row"><label for="cr">Radius r <output id="ocr"></output></label><input type="range" id="cr" min="0.5" max="2" step="0.1" value="1.5"></div>
+   <div class="row"><label for="ch">Height h <output id="och"></output></label><input type="range" id="ch" min="1" max="5" step="0.1" value="3"></div>
+   <div class="row"><label for="cs">Pour speed <output id="ocs"></output></label><input type="range" id="cs" min="0.5" max="3" step="0.25" value="1"></div>
+  </div>
+  <div class="ctl"><button id="cgo" class="go">Start filling</button><button id="crs">Reset water</button><button id="c2r">Set h = 2r</button></div>
+  <div class="scroll"><div class="inner" id="inner"><canvas id="cmC" aria-label="Seven shapes side by side filling with water"></canvas><div class="cards" id="cards"></div></div></div>
+  <p class="note">Every shape gets the same radius r and height h (the sphere and hemisphere use r only, and the box and pyramid have a base 2r wide). Water flows into all of them at the same rate, so a shape that holds less fills sooner. Press “Set h = 2r” to see the classic result: a cone holds 1/3 and a sphere holds 2/3 of a cylinder’s volume.</p>
+ </div>
+</section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+if(!window.THREE){document.getElementById("pE").innerHTML='<p class="panel">The 3D library could not load. Check your connection and reload the page.</p>';return}
+var $=function(i){return document.getElementById(i)},PI=Math.PI,f=function(n){return (+n).toLocaleString(undefined,{maximumFractionDigits:2})};
+var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var glassMat=new THREE.MeshPhongMaterial({color:0x8fbfe8,transparent:true,opacity:.5,shininess:80,side:THREE.DoubleSide,depthWrite:false});
+var lineMat=new THREE.LineBasicMaterial({color:0x2b4a6f});var wireMat=new THREE.LineBasicMaterial({color:0x5b86b3,transparent:true,opacity:.35});
+function cone(r,h,seg,rot){var g=new THREE.ConeGeometry(r,h,seg);if(rot)g.rotateY(rot);g.rotateX(PI);return g.translate(0,h/2,0)}
+function cap(d,h){return PI*h*h*(3*d.r-h)/3}
+var R=['r','Radius',.5,3,1.5],Hh=['h','Height',.5,5,3];
+var SH={
+ sphere:{n:'Sphere',sn:'Sphere',dims:[R],f:'V = 4/3 × π × r³',V:function(d){return 4/3*PI*Math.pow(d.r,3)},H:function(d){return 2*d.r},Vh:cap,sub:function(d){return '4/3 × π × '+f(d.r)+'³'},g:function(d){return new THREE.SphereGeometry(d.r,48,32).translate(0,d.r,0)}},
+ hemi:{n:'Hemisphere (bowl)',sn:'Hemisphere',dims:[R],f:'V = 2/3 × π × r³',V:function(d){return 2/3*PI*Math.pow(d.r,3)},H:function(d){return d.r},Vh:cap,sub:function(d){return '2/3 × π × '+f(d.r)+'³'},g:function(d){return new THREE.SphereGeometry(d.r,48,24,0,2*PI,PI/2,PI/2).translate(0,d.r,0)}},
+ cyl:{n:'Cylinder',sn:'Cylinder',dims:[R,Hh],f:'V = π × r² × h',V:function(d){return PI*d.r*d.r*d.h},H:function(d){return d.h},Vh:function(d,h){return PI*d.r*d.r*h},sub:function(d){return 'π × '+f(d.r)+'² × '+f(d.h)},g:function(d){return new THREE.CylinderGeometry(d.r,d.r,d.h,48).translate(0,d.h/2,0)}},
+ cone:{n:'Cone',sn:'Cone',dims:[R,Hh],f:'V = 1/3 × π × r² × h',V:function(d){return PI*d.r*d.r*d.h/3},H:function(d){return d.h},Vh:function(d,h){return PI*d.r*d.r*d.h/3*Math.pow(h/d.h,3)},sub:function(d){return '1/3 × π × '+f(d.r)+'² × '+f(d.h)},g:function(d){return cone(d.r,d.h,48,0)}},
+ prism:{n:'Rectangular prism',sn:'Rect. prism',dims:[['l','Length',.5,4,3],['w','Width',.5,4,2],Hh],f:'V = l × w × h',V:function(d){return d.l*d.w*d.h},H:function(d){return d.h},Vh:function(d,h){return d.l*d.w*h},sub:function(d){return f(d.l)+' × '+f(d.w)+' × '+f(d.h)},g:function(d){return new THREE.BoxGeometry(d.l,d.h,d.w).translate(0,d.h/2,0)}},
+ pyr:{n:'Square pyramid',sn:'Sq. pyramid',dims:[['b','Base side',.5,4,3],Hh],f:'V = 1/3 × b² × h',V:function(d){return d.b*d.b*d.h/3},H:function(d){return d.h},Vh:function(d,h){return d.b*d.b*d.h/3*Math.pow(h/d.h,3)},sub:function(d){return '1/3 × '+f(d.b)+'² × '+f(d.h)},g:function(d){return cone(d.b/Math.SQRT2,d.h,4,PI/4)}},
+ tri:{n:'Triangular prism',sn:'Tri. prism',dims:[['b','Triangle base',.5,4,3],['t','Triangle height',.5,5,3],['L','Length',.5,4,3]],f:'V = 1/2 × b × t × L',V:function(d){return d.b*d.t*d.L/2},H:function(d){return d.t},Vh:function(d,h){return d.L*(d.b*h-d.b*h*h/(2*d.t))},sub:function(d){return '1/2 × '+f(d.b)+' × '+f(d.t)+' × '+f(d.L)},g:function(d){var s=new THREE.Shape();s.moveTo(-d.b/2,0);s.lineTo(d.b/2,0);s.lineTo(0,d.t);s.closePath();return new THREE.ExtrudeGeometry(s,{depth:d.L,bevelEnabled:false}).translate(0,0,-d.L/2)}}
+};
+var KEYS=Object.keys(SH);
+function makeShape(k,d){var s=SH[k],g=s.g(d),grp=new THREE.Group(),pl=new THREE.Plane(new THREE.Vector3(0,-1,0),-0.01);
+ var water=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x2a9dff,transparent:true,opacity:.85,side:THREE.DoubleSide,clippingPlanes:[pl]}));
+ var glass=new THREE.Mesh(g,glassMat);glass.renderOrder=2;
+ grp.add(water,glass,new THREE.LineSegments(new THREE.EdgesGeometry(g,30),lineMat));if(k==="sphere"||k==="hemi"||k==="cyl"||k==="cone")grp.add(new THREE.LineSegments(new THREE.WireframeGeometry(g),wireMat));grp.userData={pl:pl,s:s,d:d};return grp}
+function setLevel(grp,frac){var u=grp.userData,s=u.s,d=u.d,V=s.V(d)*frac,lo=0,hi=s.H(d);
+ for(var i=0;i<30;i++){var m=(lo+hi)/2;if(s.Vh(d,m)<V)lo=m;else hi=m}
+ u.pl.constant=frac<=0?-0.01:(frac>=1?hi+0.01:(lo+hi)/2)}
+function disp(g){g.traverse(function(o){if(o.geometry)o.geometry.dispose()})}
+function mkView(c){var r=new THREE.WebGLRenderer({canvas:c,antialias:true});r.localClippingEnabled=true;r.setClearColor(0xfff1f5);r.setPixelRatio(window.devicePixelRatio||1);
+ var sc=new THREE.Scene();sc.add(new THREE.AmbientLight(0xffffff,1));var dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(5,10,7);sc.add(dl);var gr=new THREE.GridHelper(40,40,0xe0a9bd,0xf0cfda);gr.position.y=-0.01;sc.add(gr);return{r:r,sc:sc}}
+
+/* ---------- Explore ---------- */
+var exV=mkView($("exC")),exCam=new THREE.PerspectiveCamera(40,1,.1,200),exKey="cyl",exD={},exG=null,exFill=0,pouring=false,exRot=0.6,drag=false,lastX=0;
+function fitEx(){var w=$("exC").clientWidth||600,h=420;exV.r.setSize(w,h,false);exCam.aspect=w/h;exCam.updateProjectionMatrix()}
+function buildEx(){if(exG){exV.sc.remove(exG);disp(exG)}
+ exG=makeShape(exKey,exD);var bb=new THREE.Box3().setFromObject(exG),sz=bb.getSize(new THREE.Vector3()),D=Math.max(sz.x,sz.y,sz.z);
+ exCam.position.set(0,sz.y/2+D*.7,D*2.2);exCam.lookAt(0,sz.y/2,0);exG.rotation.y=exRot;exV.sc.add(exG);updEx()}
+function updEx(){var s=SH[exKey],V=s.V(exD);setLevel(exG,exFill);
+ $("exF").textContent=s.n+":  "+s.f;$("exS").textContent="V = "+s.sub(exD);$("exV").textContent="V ≈ "+f(V)+" cubic units";
+ $("exW").textContent="Water inside: "+f(V*exFill)+" of "+f(V)+" cubic units";$("ofill").textContent=Math.round(exFill*100)+"%"}
+function pickShape(k){exKey=k;exD={};var h="";
+ SH[k].dims.forEach(function(x){exD[x[0]]=x[4];h+='<div class="row"><label for="d_'+x[0]+'">'+x[1]+' <output id="o_'+x[0]+'">'+f(x[4])+'</output></label><input type="range" id="d_'+x[0]+'" min="'+x[2]+'" max="'+x[3]+'" step="0.1" value="'+x[4]+'"></div>'});
+ $("dims").innerHTML=h;
+ SH[k].dims.forEach(function(x){$("d_"+x[0]).addEventListener("input",function(e){exD[x[0]]=+e.target.value;$("o_"+x[0]).textContent=f(e.target.value);buildEx()})});
+ Array.prototype.forEach.call($("chips").children,function(b){b.classList.toggle("on",b.dataset.k===k);b.setAttribute("aria-pressed",b.dataset.k===k)});
+ buildEx()}
+KEYS.forEach(function(k){var b=document.createElement("button");b.textContent=SH[k].n;b.dataset.k=k;b.addEventListener("click",function(){pickShape(k)});$("chips").appendChild(b)});
+$("fill").addEventListener("input",function(e){pouring=false;$("pour").textContent="Pour water";exFill=e.target.value/100;updEx()});
+$("pour").addEventListener("click",function(){if(exFill>=1)exFill=0;pouring=!pouring;this.textContent=pouring?"Pause":"Pour water"});
+$("drain").addEventListener("click",function(){pouring=false;exFill=0;$("fill").value=0;$("pour").textContent="Pour water";updEx()});
+var ec=$("exC");
+ec.addEventListener("pointerdown",function(e){drag=true;lastX=e.clientX;ec.style.cursor="grabbing";ec.setPointerCapture(e.pointerId)});
+ec.addEventListener("pointermove",function(e){if(drag){exRot+=(e.clientX-lastX)*.012;lastX=e.clientX}});
+ec.addEventListener("pointerup",function(){drag=false;ec.style.cursor="grab"});
+
+/* ---------- Compare ---------- */
+var CELL=4.4,cmV=mkView($("cmC")),cmCam=new THREE.OrthographicCamera(-1,1,1,-1,.1,100),cmG=[],cmVol=[],cmMax=1,cmT=0,cmPlay=false;
+cmCam.position.set(0,7,25);cmCam.lookAt(0,2.5,0);
+var CMP=[["sphere",function(r,h){return{r:r}}],["hemi",function(r,h){return{r:r}}],["cyl",function(r,h){return{r:r,h:h}}],["cone",function(r,h){return{r:r,h:h}}],["prism",function(r,h){return{l:2*r,w:2*r,h:h}}],["pyr",function(r,h){return{b:2*r,h:h}}],["tri",function(r,h){return{b:2*r,t:h,L:2*r}}]];
+var cardEls=CMP.map(function(c){var d=document.createElement("div");d.className="card";d.innerHTML='<b>'+SH[c[0]].sn+'</b><div class="bar"><i></i></div><span class="v"></span><span class="x"></span><span class="p"></span>';$("cards").appendChild(d);return d});
+function fitCm(){var w=$("inner").clientWidth||760,h=300,half=CELL*3.5,a=w/h;cmV.r.setSize(w,h,false);
+ cmCam.left=-half;cmCam.right=half;cmCam.top=half/a;cmCam.bottom=-half/a;cmCam.updateProjectionMatrix()}
+function buildCm(){cmG.forEach(function(g){cmV.sc.remove(g);disp(g)});var r=+$("cr").value,h=+$("ch").value;
+ cmG=CMP.map(function(c,i){var g=makeShape(c[0],c[1](r,h));g.position.x=(i-3)*CELL;cmV.sc.add(g);return g});
+ cmVol=cmG.map(function(g){return g.userData.s.V(g.userData.d)});cmMax=Math.max.apply(null,cmVol);cmT=0;
+ $("ocr").textContent=f(r);$("och").textContent=f(h);$("ocs").textContent=f($("cs").value)+"×";
+ cardEls.forEach(function(el,i){el.querySelector(".bar i").style.width=(cmVol[i]/cmMax*100)+"%";el.querySelector(".v").textContent="V = "+f(cmVol[i]);el.querySelector(".x").textContent=f(cmVol[i]/cmVol[2])+"× cylinder"})}
+function updCm(){var q=cmMax*(+$("cs").value)/12;
+ cmG.forEach(function(g,i){var fr=Math.min(1,q*cmT/cmVol[i]);setLevel(g,fr);var el=cardEls[i];el.classList.toggle("full",fr>=1);
+  el.querySelector(".p").textContent=fr>=1?"Full":"Filled "+Math.round(fr*100)+"%"})}
+["cr","ch","cs"].forEach(function(i){$(i).addEventListener("input",buildCm)});
+$("cgo").addEventListener("click",function(){if(cmG.length&&cmT*cmMax*(+$("cs").value)/12>=cmMax)cmT=0;cmPlay=!cmPlay;this.textContent=cmPlay?"Pause":"Start filling"});
+$("crs").addEventListener("click",function(){cmT=0;cmPlay=false;$("cgo").textContent="Start filling"});
+$("c2r").addEventListener("click",function(){$("ch").value=Math.min(5,2*(+$("cr").value));buildCm()});
+
+/* ---------- Tabs & loop ---------- */
+var tab="E";
+function show(t){tab=t;$("pE").hidden=t!=="E";$("pC").hidden=t!=="C";$("tabE").setAttribute("aria-selected",t==="E");$("tabC").setAttribute("aria-selected",t==="C");resize()}
+function resize(){if(tab==="E")fitEx();else fitCm()}
+$("tabE").addEventListener("click",function(){show("E")});$("tabC").addEventListener("click",function(){show("C")});
+window.addEventListener("resize",resize);
+var last=performance.now();
+function loop(now){var dt=Math.min(.05,(now-last)/1000);last=now;
+ if(tab==="E"){if(!drag&&!reduce)exRot+=dt*.35;if(exG)exG.rotation.y=exRot;
+  if(pouring){exFill=Math.min(1,exFill+dt/6);$("fill").value=exFill*100;if(exFill>=1){pouring=false;$("pour").textContent="Pour water"}updEx()}
+  exV.r.render(exV.sc,exCam)}
+ else{if(cmPlay)cmT+=dt;updCm();cmV.r.render(cmV.sc,cmCam)}
+ requestAnimationFrame(loop)}
+pickShape("cyl");buildCm();fitEx();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
