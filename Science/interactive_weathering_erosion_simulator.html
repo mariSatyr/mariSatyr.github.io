@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Weathering & Erosion Simulator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Custom Slider Styling */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #334155;
+      border-radius: 3px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -6px;
+      transition: transform 0.1s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    /* Glassmorphism Panels */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header / Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+          <i class="fa-solid fa-mountain text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-100 flex items-center gap-2">
+            Weathering & Erosion Simulator
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">EduLab 3D</span>
+          </h1>
+          <p class="text-xs text-slate-400">Geological Weathering & Physical Erosion Dynamics Lab</p>
+        </div>
+      </div>
+
+      <!-- Quick Presets -->
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-xs text-slate-400 font-medium mr-1 hidden lg:inline"><i class="fa-solid fa-wand-magic-sparkles text-amber-400 mr-1"></i>Presets:</span>
+        <button onclick="applyPreset('industrial')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-industry text-purple-400"></i> Industrial City
+        </button>
+        <button onclick="applyPreset('alpine')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-snowflake text-cyan-400"></i> Alpine Summit
+        </button>
+        <button onclick="applyPreset('desert')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-sun text-amber-400"></i> Desert Canyon
+        </button>
+        <button onclick="applyPreset('river')" class="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all flex items-center gap-1.5">
+          <i class="fa-solid fa-water text-blue-400"></i> Riverbed
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- LEFT COLUMN: Rock Selection & Environmental Sliders (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-5">
+      
+      <!-- Rock Type Selector -->
+      <div class="glass-panel rounded-2xl p-4 shadow-xl">
+        <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-gem text-sky-400"></i> Select Target Rock Type
+        </h2>
+        
+        <div class="grid grid-cols-5 gap-2 mb-4" id="rockSelector">
+          <!-- Buttons generated via JS -->
+        </div>
+
+        <!-- Selected Rock Info Card -->
+        <div id="rockInfoCard" class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 text-xs space-y-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Environmental Controls -->
+      <div class="glass-panel rounded-2xl p-4 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-sky-400"></i> Environmental Factors
+          </h2>
+          <button onclick="resetSliders()" class="text-xs text-slate-400 hover:text-sky-400 transition-colors">
+            <i class="fa-solid fa-rotate-left mr-1"></i> Reset Factors
+          </button>
+        </div>
+
+        <!-- Acid Rain pH -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-vial text-pink-400"></i> Rain Acid Level (pH)
+            </span>
+            <span id="phVal" class="font-mono text-pink-400 font-bold">pH 5.6 (Normal)</span>
+          </div>
+          <input type="range" id="phSlider" min="3.0" max="7.0" step="0.1" value="5.6" class="w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>pH 3.0 (Acid Rain)</span>
+            <span>pH 7.0 (Neutral)</span>
+          </div>
+        </div>
+
+        <!-- Pollution % -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-smog text-purple-400"></i> Air Pollution & Soot
+            </span>
+            <span id="pollutionVal" class="font-mono text-purple-400 font-bold">15%</span>
+          </div>
+          <input type="range" id="pollutionSlider" min="0" max="100" step="1" value="15" class="w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0% (Pristine)</span>
+            <span>100% (Heavy Smog)</span>
+          </div>
+        </div>
+
+        <!-- Wind Speed -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-wind text-teal-400"></i> Wind Speed (Abrasion)
+            </span>
+            <span id="windVal" class="font-mono text-teal-400 font-bold">25 mph</span>
+          </div>
+          <input type="range" id="windSlider" min="0" max="100" step="1" value="25" class="w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0 mph (Calm)</span>
+            <span>100 mph (Gale)</span>
+          </div>
+        </div>
+
+        <!-- Freeze-Thaw Cycles -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-icicles text-cyan-400"></i> Frost & Freeze-Thaw Cycles
+            </span>
+            <span id="freezeVal" class="font-mono text-cyan-400 font-bold">20 cycles/yr</span>
+          </div>
+          <input type="range" id="freezeSlider" min="0" max="100" step="1" value="20" class="w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0 (Warm)</span>
+            <span>100 cycles/yr (Sub-Zero)</span>
+          </div>
+        </div>
+
+        <!-- Water Flow / Rainfall -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-xs font-medium">
+            <span class="text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-cloud-showers-heavy text-blue-400"></i> Water Flow / Rainfall
+            </span>
+            <span id="waterVal" class="font-mono text-blue-400 font-bold">40 in/yr</span>
+          </div>
+          <input type="range" id="waterSlider" min="0" max="100" step="1" value="40" class="w-full">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0 in/yr (Arid)</span>
+            <span>100 in/yr (Torrential)</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: Canvas Simulation & Real-time Charts (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-5">
+      
+      <!-- Simulation Viewport -->
+      <div class="glass-panel rounded-2xl p-4 shadow-xl flex flex-col gap-3 relative">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h2 class="text-sm font-semibold text-slate-200 uppercase tracking-wider">
+              Simulation Viewport
+            </h2>
+          </div>
+
+          <!-- Simulation Controls -->
+          <div class="flex items-center gap-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <button id="playBtn" onclick="togglePlay()" class="px-3 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1.5">
+              <i class="fa-solid fa-play"></i> Play
+            </button>
+            <button onclick="resetSimulation()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition-all">
+              <i class="fa-solid fa-arrow-rotate-left"></i>
+            </button>
+            <div class="h-4 w-px bg-slate-800 mx-1"></div>
+            <label class="flex items-center gap-1.5 text-[11px] text-slate-400 cursor-pointer select-none px-1">
+              <input type="checkbox" id="showOutlineToggle" checked onchange="toggleOverlay()" class="rounded bg-slate-800 border-slate-700 text-sky-500 focus:ring-0">
+              Original Outline
+            </label>
+          </div>
+        </div>
+
+        <!-- Canvas Frame -->
+        <div class="relative w-full aspect-[16/10] bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
+          <canvas id="simCanvas" class="w-full h-full block"></canvas>
+          
+          <!-- Live Telemetry Overlay -->
+          <div class="absolute top-3 left-3 bg-slate-900/85 backdrop-blur border border-slate-800/80 p-2.5 rounded-xl text-xs space-y-1 shadow-lg font-mono">
+            <div class="text-slate-400">Time Elapsed: <span id="timeElapsed" class="text-sky-400 font-bold">0 Years</span></div>
+            <div class="text-slate-400">Rock Volume: <span id="rockVolume" class="text-emerald-400 font-bold">100.0%</span></div>
+          </div>
+
+          <!-- Weathering Indicator Badges -->
+          <div class="absolute top-3 right-3 flex flex-col gap-1 items-end">
+            <span id="chemWeatheringBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-400 border border-pink-500/20 opacity-40 transition-opacity">
+              <i class="fa-solid fa-flask text-pink-400 mr-1"></i> Chemical Dissolution
+            </span>
+            <span id="physErosionBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 opacity-40 transition-opacity">
+              <i class="fa-solid fa-wind text-amber-400 mr-1"></i> Physical Abrasion
+            </span>
+            <span id="frostBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 opacity-40 transition-opacity">
+              <i class="fa-solid fa-icicles text-cyan-400 mr-1"></i> Frost Wedging
+            </span>
+          </div>
+        </div>
+
+        <!-- Simulation Progress / Time Speed Slider -->
+        <div class="flex items-center gap-3 pt-1">
+          <span class="text-xs font-semibold text-slate-400 whitespace-nowrap">Time Control:</span>
+          <input type="range" id="timeSlider" min="0" max="1000" value="0" step="1" class="w-full">
+          <span id="timeSliderVal" class="text-xs font-mono text-sky-400 w-16 text-right font-bold">0 yrs</span>
+        </div>
+      </div>
+
+      <!-- Live Analytics & Rates -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+        
+        <!-- Live Line Chart (7 cols) -->
+        <div class="md:col-span-7 glass-panel rounded-2xl p-3.5 shadow-xl flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-line text-sky-400"></i> Mass Remaining (%) Over Time
+            </h3>
+          </div>
+          <div class="w-full h-36">
+            <canvas id="massChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Rates Breakdown (5 cols) -->
+        <div class="md:col-span-5 glass-panel rounded-2xl p-3.5 shadow-xl flex flex-col justify-between space-y-2">
+          <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-gauge-high text-sky-400"></i> Degradation Rates
+          </h3>
+          
+          <div class="space-y-2 text-xs">
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span class="text-pink-300 font-medium"><i class="fa-solid fa-flask text-pink-400 mr-1"></i> Chemical Weathering</span>
+                <span id="chemRateText" class="font-mono text-pink-400">0.0 %/100yr</span>
+              </div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div id="chemRateBar" class="bg-pink-500 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span class="text-amber-300 font-medium"><i class="fa-solid fa-hammer text-amber-400 mr-1"></i> Physical Erosion</span>
+                <span id="physRateText" class="font-mono text-amber-400">0.0 %/100yr</span>
+              </div>
+              <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div id="physRateBar" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Educational Callout -->
+          <div id="eduExplanation" class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-[11px] text-slate-300 leading-relaxed">
+            <!-- Updated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Interactive Quiz & Explanation Footer Drawer -->
+  <footer class="mt-auto border-t border-slate-800 bg-slate-900/90 py-6">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- Core Concepts -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1.5">
+          <i class="fa-solid fa-book-open"></i> Key Weathering Principles
+        </h4>
+        <ul class="text-xs text-slate-400 space-y-1.5 list-disc pl-4 leading-relaxed">
+          <li><strong class="text-slate-300">Chemical Weathering:</strong> Breakdown through chemical reactions (e.g., acid precipitation reacting with Calcium Carbonate in limestone).</li>
+          <li><strong class="text-slate-300">Physical Erosion:</strong> Mechanical breakdown via frost wedging, wind sandblasting, and river sediment abrasion.</li>
+          <li><strong class="text-slate-300">Hardness Impact:</strong> Rocks higher on Mohs scale (like Quartz in Granite) withstand physical wear longer than softer rocks.</li>
+        </ul>
+      </div>
+
+      <!-- Quick Self-Check Quiz -->
+      <div class="md:col-span-2 bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-question"></i> Check Your Geology Understanding
+          </h4>
+          <span id="quizScore" class="text-xs font-mono text-slate-400">Score: 0/0</span>
+        </div>
+
+        <div id="quizContainer" class="text-xs text-slate-300 space-y-2">
+          <p id="quizQuestion" class="font-medium text-slate-200">Loading geological question...</p>
+          <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Quiz Options JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    /* ==========================================================================
+       ROCK DATA DEFINITIONS
+       ========================================================================== */
+    const ROCK_TYPES = {
+      limestone: {
+        id: 'limestone',
+        name: 'Limestone',
+        type: 'Sedimentary',
+        mohs: 3.0,
+        comp: 'Calcium Carbonate (CaCO₃)',
+        susceptibility: 'High Chemical / Low-Mod Physical',
+        color: '#d4d4d8', // Zinc 300
+        darkColor: '#71717a',
+        chemSensitivity: 3.8,  // Highly reactive to acid
+        physSensitivity: 1.2,
+        frostSensitivity: 1.5,
+        desc: 'Reacts rapidly with acid rain forming dissolved calcium bicarbonate. Easily pitted and cavernous over time.'
+      },
+      granite: {
+        id: 'granite',
+        name: 'Granite',
+        type: 'Igneous (Intrusive)',
+        mohs: 6.5,
+        comp: 'Quartz, Feldspar, Mica',
+        susceptibility: 'Low Chemical / Very Low Physical',
+        color: '#cbd5e1', // Slate 300
+        darkColor: '#475569',
+        chemSensitivity: 0.3,  // Extremely resistant
+        physSensitivity: 0.3,
+        frostSensitivity: 0.5,
+        desc: 'Dense crystalline structure containing hard quartz. Extremely durable against weather and acid rain.'
+      },
+      sandstone: {
+        id: 'sandstone',
+        name: 'Sandstone',
+        type: 'Sedimentary',
+        mohs: 4.5,
+        comp: 'Quartz Grains & Cement',
+        susceptibility: 'Moderate Chem / High Physical Wind/Water',
+        color: '#fde68a', // Amber 200
+        darkColor: '#b45309',
+        chemSensitivity: 0.8,
+        physSensitivity: 2.8,  // Highly vulnerable to wind abrasion
+        frostSensitivity: 1.8,
+        desc: 'Grains break away easily under wind sandblasting and water currents, leaving smoothed, carved arches.'
+      },
+      shale: {
+        id: 'shale',
+        name: 'Shale',
+        type: 'Sedimentary',
+        mohs: 2.5,
+        comp: 'Compacted Clay & Mud',
+        susceptibility: 'Mod Chem / Extreme Freeze-Thaw Flaking',
+        color: '#94a3b8', // Slate 400
+        darkColor: '#334155',
+        chemSensitivity: 1.1,
+        physSensitivity: 2.2,
+        frostSensitivity: 3.5,  // Frost wedging destroys layer sheets
+        desc: 'Fine-grained sheeted rock. Water penetrates along bedding planes, flaking heavily under frost wedging.'
+      },
+      marble: {
+        id: 'marble',
+        name: 'Marble',
+        type: 'Metamorphic',
+        mohs: 3.5,
+        comp: 'Recrystallized Calcite',
+        susceptibility: 'High Chemical / Moderate Physical',
+        color: '#f1f5f9', // Slate 100
+        darkColor: '#94a3b8',
+        chemSensitivity: 3.2,  // Calcite recrystallized, acid reactive
+        physSensitivity: 1.0,
+        frostSensitivity: 1.2,
+        desc: 'Metamorphosed calcite rock. Dissolves under acid precipitation, losing fine surface features rapidly.'
+      }
+    };
+
+    /* ==========================================================================
+       SIMULATION STATE
+       ========================================================================== */
+    let currentRock = ROCK_TYPES.limestone;
+    let isPlaying = false;
+    let timeYears = 0; // 0 to 1000
+    let animFrameId = null;
+
+    // Environmental Factor Values
+    let envState = {
+      ph: 5.6,
+      pollution: 15,
+      wind: 25,
+      freeze: 20,
+      water: 40
+    };
+
+    // Chart & Canvas Reference
+    let massChart = null;
+    const chartHistory = { labels: [], data: [] };
+
+    // Procedural Rock Particle FX & Mesh
+    let baseRockVertices = [];
+    let currentRockVertices = [];
+    let particles = [];
+
+    /* ==========================================================================
+       INITIALIZATION
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initRockSelector();
+      setupSliders();
+      initChart();
+      initCanvas();
+      selectRock('limestone');
+      initQuiz();
+      
+      // Window resize handling
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+        renderCanvas();
+      });
+    });
+
+    /* ==========================================================================
+       ROCK SELECTOR & CARDS
+       ========================================================================== */
+    function initRockSelector() {
+      const container = document.getElementById('rockSelector');
+      container.innerHTML = '';
+
+      Object.values(ROCK_TYPES).forEach(rock => {
+        const btn = document.createElement('button');
+        btn.id = `btn-${rock.id}`;
+        btn.onclick = () => selectRock(rock.id);
+        btn.className = `p-2 rounded-xl text-xs font-semibold border text-center transition-all flex flex-col items-center justify-center gap-1 bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700`;
+        btn.innerHTML = `
+          <div class="w-4 h-4 rounded-full border border-white/20" style="background-color:${rock.color}"></div>
+          <span class="truncate w-full text-[11px]">${rock.name}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectRock(rockId) {
+      currentRock = ROCK_TYPES[rockId];
+
+      // Update button active UI
+      Object.keys(ROCK_TYPES).forEach(id => {
+        const btn = document.getElementById(`btn-${id}`);
+        if (id === rockId) {
+          btn.className = `p-2 rounded-xl text-xs font-semibold border text-center transition-all flex flex-col items-center justify-center gap-1 bg-sky-500/10 border-sky-500 text-sky-300`;
+        } else {
+          btn.className = `p-2 rounded-xl text-xs font-semibold border text-center transition-all flex flex-col items-center justify-center gap-1 bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700`;
+        }
+      });
+
+      // Update Info Card
+      const card = document.getElementById('rockInfoCard');
+      card.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+          <span class="font-bold text-slate-100 text-sm flex items-center gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${currentRock.color}"></span>
+            ${currentRock.name}
+          </span>
+          <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 font-mono">${currentRock.type}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+          <div><span class="text-slate-500">Composition:</span> <span class="text-slate-300 font-medium">${currentRock.comp}</span></div>
+          <div><span class="text-slate-500">Mohs Hardness:</span> <span class="text-amber-400 font-bold">${currentRock.mohs} / 10</span></div>
+        </div>
+        <div class="text-[11px]"><span class="text-slate-500">Primary Susceptibility:</span> <span class="text-sky-300 font-medium">${currentRock.susceptibility}</span></div>
+        <p class="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800/60">${currentRock.desc}</p>
+      `;
+
+      resetSimulation();
+    }
+
+    /* ==========================================================================
+       ENVIRONMENTAL SLIDERS
+       ========================================================================== */
+    function setupSliders() {
+      const phS = document.getElementById('phSlider');
+      const pollS = document.getElementById('pollutionSlider');
+      const windS = document.getElementById('windSlider');
+      const freezeS = document.getElementById('freezeSlider');
+      const waterS = document.getElementById('waterSlider');
+      const timeS = document.getElementById('timeSlider');
+
+      phS.oninput = (e) => {
+        envState.ph = parseFloat(e.target.value);
+        let status = envState.ph < 4.5 ? '(Severe Acid Rain)' : (envState.ph < 5.6 ? '(Mild Acid)' : '(Normal)');
+        document.getElementById('phVal').innerText = `pH ${envState.ph.toFixed(1)} ${status}`;
+        updateRatesAndExplanation();
+      };
+
+      pollS.oninput = (e) => {
+        envState.pollution = parseInt(e.target.value);
+        document.getElementById('pollutionVal').innerText = `${envState.pollution}%`;
+        updateRatesAndExplanation();
+      };
+
+      windS.oninput = (e) => {
+        envState.wind = parseInt(e.target.value);
+        document.getElementById('windVal').innerText = `${envState.wind} mph`;
+        updateRatesAndExplanation();
+      };
+
+      freezeS.oninput = (e) => {
+        envState.freeze = parseInt(e.target.value);
+        document.getElementById('freezeVal').innerText = `${envState.freeze} cycles/yr`;
+        updateRatesAndExplanation();
+      };
+
+      waterS.oninput = (e) => {
+        envState.water = parseInt(e.target.value);
+        document.getElementById('waterVal').innerText = `${envState.water} in/yr`;
+        updateRatesAndExplanation();
+      };
+
+      timeS.oninput = (e) => {
+        timeYears = parseInt(e.target.value);
+        document.getElementById('timeSliderVal').innerText = `${timeYears} yrs`;
+        updateMeshForTime();
+        renderCanvas();
+        updateTelemetry();
+      };
+    }
+
+    function resetSliders() {
+      document.getElementById('phSlider').value = 5.6;
+      document.getElementById('pollutionSlider').value = 15;
+      document.getElementById('windSlider').value = 25;
+      document.getElementById('freezeSlider').value = 20;
+      document.getElementById('waterSlider').value = 40;
+
+      envState = { ph: 5.6, pollution: 15, wind: 25, freeze: 20, water: 40 };
+
+      document.getElementById('phVal').innerText = 'pH 5.6 (Normal)';
+      document.getElementById('pollutionVal').innerText = '15%';
+      document.getElementById('windVal').innerText = '25 mph';
+      document.getElementById('freezeVal').innerText = '20 cycles/yr';
+      document.getElementById('waterVal').innerText = '40 in/yr';
+
+      updateRatesAndExplanation();
+    }
+
+    function applyPreset(presetKey) {
+      resetSliders();
+      if (presetKey === 'industrial') {
+        document.getElementById('phSlider').value = 3.5;
+        document.getElementById('pollutionSlider').value = 85;
+        document.getElementById('phSlider').oninput({ target: { value: 3.5 } });
+        document.getElementById('pollutionSlider').oninput({ target: { value: 85 } });
+        selectRock('limestone');
+      } else if (presetKey === 'alpine') {
+        document.getElementById('freezeSlider').value = 90;
+        document.getElementById('windSlider').value = 75;
+        document.getElementById('freezeSlider').oninput({ target: { value: 90 } });
+        document.getElementById('windSlider').oninput({ target: { value: 75 } });
+        selectRock('shale');
+      } else if (presetKey === 'desert') {
+        document.getElementById('windSlider').value = 95;
+        document.getElementById('waterSlider').value = 5;
+        document.getElementById('windSlider').oninput({ target: { value: 95 } });
+        document.getElementById('waterSlider').oninput({ target: { value: 5 } });
+        selectRock('sandstone');
+      } else if (presetKey === 'river') {
+        document.getElementById('waterSlider').value = 100;
+        document.getElementById('waterSlider').oninput({ target: { value: 100 } });
+        selectRock('sandstone');
+      }
+    }
+
+    /* ==========================================================================
+       WEATHERING RATES CALCULATOR
+       ========================================================================== */
+    function computeRates() {
+      // Chemical Rate Factor
+      // pH scale is logarithmic: lower pH = exponentially higher H+ concentration
+      const acidFactor = Math.pow(10, (7.0 - envState.ph) * 0.75) - 1;
+      const pollutionFactor = (envState.pollution / 100) * 0.5;
+      const chemRate = (acidFactor * 0.8 + pollutionFactor) * currentRock.chemSensitivity;
+
+      // Physical Rate Factor
+      const windFactor = (envState.wind / 100) * 1.5;
+      const waterFactor = (envState.water / 100) * 1.2;
+      const freezeFactor = (envState.freeze / 100) * 2.0 * currentRock.frostSensitivity;
+      
+      const physRate = (windFactor + waterFactor + freezeFactor) * currentRock.physSensitivity;
+
+      return { chemRate, physRate };
+    }
+
+    function updateRatesAndExplanation() {
+      const { chemRate, physRate } = computeRates();
+
+      // Update UI Bars
+      const chemPercent = Math.min(100, chemRate * 12);
+      const physPercent = Math.min(100, physRate * 12);
+
+      document.getElementById('chemRateBar').style.width = `${chemPercent}%`;
+      document.getElementById('physRateBar').style.width = `${physPercent}%`;
+
+      document.getElementById('chemRateText').innerText = `${(chemRate * 3.5).toFixed(1)} %/100yr`;
+      document.getElementById('physRateText').innerText = `${(physRate * 3.5).toFixed(1)} %/100yr`;
+
+      // Update Badges Opacity
+      document.getElementById('chemWeatheringBadge').style.opacity = chemRate > 0.8 ? '1' : '0.3';
+      document.getElementById('physErosionBadge').style.opacity = (envState.wind > 40 || envState.water > 50) ? '1' : '0.3';
+      document.getElementById('frostBadge').style.opacity = envState.freeze > 40 ? '1' : '0.3';
+
+      // Update Dynamic Explanation text
+      const eduBox = document.getElementById('eduExplanation');
+      let explanation = "";
+
+      if (currentRock.id === 'limestone' || currentRock.id === 'marble') {
+        if (envState.ph < 5.0) {
+          explanation = `<strong class="text-pink-400">Chemical Acid Reaction Active:</strong> ${currentRock.name} is composed of Calcite (CaCO₃). Low pH acid rain reacts with carbonate ions to form soluble calcium bicarbonate, dissolving the surface rapidly.`;
+        } else {
+          explanation = `${currentRock.name} is vulnerable to chemical dissolution. Lower the pH slider below 5.0 to watch acid rain react with the carbonate minerals.`;
+        }
+      } else if (currentRock.id === 'granite') {
+        explanation = `<strong class="text-slate-200">High Resistance:</strong> Granite contains hard Quartz (Mohs 7). Its tight crystalline matrix resists both chemical acid attack and mechanical wind abrasion.`;
+      } else if (currentRock.id === 'sandstone') {
+        if (envState.wind > 50 || envState.water > 50) {
+          explanation = `<strong class="text-amber-400">Physical Abrasion Active:</strong> Sandstone consists of cemented quartz grains. High wind and rushing water dislodge individual grains, rapidly smoothing and carving the rock face.`;
+        } else {
+          explanation = `Sandstone is soft and granular. Increase Wind Speed or Water Flow to observe sandblasting and hydraulic erosion.`;
+        }
+      } else if (currentRock.id === 'shale') {
+        if (envState.freeze > 30) {
+          explanation = `<strong class="text-cyan-400">Frost Wedging Active:</strong> Water enters the thin clay layers of Shale. When freeze-thaw cycles occur, expanding ice wedges the layers apart, flaking the surface.`;
+        } else {
+          explanation = `Shale features delicate bedding planes. Increase Freeze-Thaw cycles to simulate frost wedging along clay layers.`;
+        }
+      }
+
+      eduBox.innerHTML = explanation;
+    }
+
+    /* ==========================================================================
+       CANVAS & PROCEDURAL ROCK SIMULATION
+       ========================================================================== */
+    let canvas, ctx;
+
+    function initCanvas() {
+      canvas = document.getElementById('simCanvas');
+      ctx = canvas.getContext('2d');
+      resizeCanvas();
+      generateBaseRockMesh();
+      initParticles();
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    // Generate procedural 2D polygon for rock face
+    function generateBaseRockMesh() {
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2 + 20;
+      const rx = rect.width * 0.28;
+      const ry = rect.height * 0.25;
+
+      const numPoints = 64;
+      baseRockVertices = [];
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = (i / numPoints) * Math.PI * 2;
+        
+        // Add natural roughness noise based on rock type
+        let noise = Math.sin(angle * 5) * 12 + Math.cos(angle * 11) * 6;
+        if (currentRock.id === 'shale') {
+          // Flat horizontal sheet bias
+          noise += Math.sin(angle * 2) * 15;
+        }
+
+        const x = cx + Math.cos(angle) * (rx + noise);
+        const y = cy + Math.sin(angle) * (ry + noise);
+
+        baseRockVertices.push({ x, y, angle, dist: Math.hypot(x - cx, y - cy) });
+      }
+
+      updateMeshForTime();
+    }
+
+    function updateMeshForTime() {
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2 + 20;
+
+      const { chemRate, physRate } = computeRates();
+      const totalDegradation = (chemRate + physRate) * (timeYears / 1000);
+
+      currentRockVertices = baseRockVertices.map((v, i) => {
+        // Directional weathering (top faces affected more by acid rain/water, sides by wind)
+        const topFactor = Math.sin(v.angle) < 0 ? 1.4 : 0.6; // upper half
+        const windSideFactor = Math.cos(v.angle) < 0 ? 1.3 : 0.8; // windward side
+
+        const chemErosion = chemRate * 0.12 * topFactor;
+        const physErosion = physRate * 0.10 * windSideFactor;
+        
+        // Pitting noise for chemical dissolution
+        const pitNoise = (currentRock.id === 'limestone' || currentRock.id === 'marble') 
+          ? Math.sin(i * 7 + timeYears * 0.05) * chemRate * 3.5 
+          : 0;
+
+        // Shrink distance towards center
+        const maxShrink = v.dist * 0.65;
+        const shrinkAmount = Math.min(maxShrink, (chemErosion + physErosion) * (timeYears / 100) * 4 + pitNoise);
+
+        const newDist = Math.max(10, v.dist - shrinkAmount);
+        
+        return {
+          x: cx + Math.cos(v.angle) * newDist,
+          y: cy + Math.sin(v.angle) * newDist
+        };
+      });
+    }
+
+    // Particle FX setup
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: Math.random() * 600,
+          y: Math.random() * 400,
+          vx: Math.random() * 2 + 1,
+          vy: Math.random() * 2 + 2,
+          size: Math.random() * 2 + 1,
+          type: 'rain'
+        });
+      }
+    }
+
+    function renderCanvas() {
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 1. Draw Sky & Ground Environment Background
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
+      const pollutionRatio = envState.pollution / 100;
+      skyGrad.addColorStop(0, pollutionRatio > 0.5 ? '#1e1b2e' : '#0f172a');
+      skyGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Ground Line
+      const groundY = h / 2 + 75;
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, groundY, w, h - groundY);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(w, groundY);
+      ctx.stroke();
+
+      // 2. Draw Original Shape Ghost Outline (If enabled)
+      if (document.getElementById('showOutlineToggle').checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        baseRockVertices.forEach((v, i) => {
+          if (i === 0) ctx.moveTo(v.x, v.y);
+          else ctx.lineTo(v.x, v.y);
+        });
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. Draw Current Weathered Rock Body (Clean solid & textured rendering without ambient rays or glowing auras)
+      if (currentRockVertices.length > 0) {
+        ctx.save();
+        ctx.beginPath();
+        currentRockVertices.forEach((v, i) => {
+          if (i === 0) ctx.moveTo(v.x, v.y);
+          else ctx.lineTo(v.x, v.y);
+        });
+        ctx.closePath();
+
+        // Flat/Subtle linear shading for crisp rock profile
+        const rockGrad = ctx.createLinearGradient(w/2 - 100, h/2 - 100, w/2 + 100, h/2 + 100);
+        rockGrad.addColorStop(0, currentRock.color);
+        rockGrad.addColorStop(1, currentRock.darkColor);
+        ctx.fillStyle = rockGrad;
+        ctx.fill();
+
+        // Crisp outer stroke
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Chemical Pitting & Pollution Discoloration Surface Overlay
+        if (envState.pollution > 30 || envState.ph < 5.0) {
+          ctx.fillStyle = `rgba(15, 23, 42, ${Math.min(0.65, (envState.pollution/100)*0.5 + (timeYears/1000)*0.3)})`;
+          ctx.fill();
+        }
+
+        // Frost / Ice Crust Visual Overlay
+        if (envState.freeze > 40) {
+          ctx.strokeStyle = 'rgba(186, 230, 253, 0.8)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // 4. Draw Dynamic Environmental Particle FX (Direct precipitation & dust particles only)
+      ctx.save();
+      
+      // Rain FX (Acid Rain hue tinted pink if low pH)
+      const isAcidic = envState.ph < 5.0;
+      ctx.strokeStyle = isAcidic ? 'rgba(244, 114, 182, 0.5)' : 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1;
+
+      particles.forEach(p => {
+        if (isPlaying) {
+          p.x += (envState.wind / 20);
+          p.y += (envState.water / 10) + 3;
+
+          if (p.y > h) p.y = 0;
+          if (p.x > w) p.x = 0;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p.x - (envState.wind / 15), p.y + 8);
+        ctx.stroke();
+      });
+
+      // Wind dust particles
+      if (envState.wind > 30) {
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+        for (let i = 0; i < envState.wind / 4; i++) {
+          const wx = (Math.sin(i * 99 + timeYears) * 0.5 + 0.5) * w;
+          const wy = (Math.cos(i * 33 + timeYears) * 0.3 + 0.5) * h;
+          ctx.fillRect(wx, wy, 2, 2);
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function toggleOverlay() {
+      renderCanvas();
+    }
+
+    /* ==========================================================================
+       SIMULATION LOOP & PLAYBACK CONTROLS
+       ========================================================================== */
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const btn = document.getElementById('playBtn');
+      if (isPlaying) {
+        btn.innerHTML = `<i class="fa-solid fa-pause"></i> Pause`;
+        btn.className = `px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1.5`;
+        loop();
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Play`;
+        btn.className = `px-3 py-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs rounded-lg transition-all flex items-center gap-1.5`;
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+      }
+    }
+
+    function loop() {
+      if (!isPlaying) return;
+
+      timeYears += 2; // Advance 2 years per frame
+      if (timeYears > 1000) {
+        timeYears = 1000;
+        togglePlay();
+      }
+
+      document.getElementById('timeSlider').value = timeYears;
+      document.getElementById('timeSliderVal').innerText = `${timeYears} yrs`;
+
+      updateMeshForTime();
+      renderCanvas();
+      updateTelemetry();
+
+      animFrameId = requestAnimationFrame(loop);
+    }
+
+    function resetSimulation() {
+      if (isPlaying) togglePlay();
+      timeYears = 0;
+      document.getElementById('timeSlider').value = 0;
+      document.getElementById('timeSliderVal').innerText = `0 yrs`;
+
+      generateBaseRockMesh();
+      renderCanvas();
+      resetChartData();
+      updateTelemetry();
+    }
+
+    function updateTelemetry() {
+      document.getElementById('timeElapsed').innerText = `${timeYears} Years`;
+
+      // Calculate approximate mass remaining (%)
+      const { chemRate, physRate } = computeRates();
+      const totalRate = (chemRate + physRate) * 0.08;
+      const massRemaining = Math.max(0, 100 - (totalRate * timeYears));
+
+      document.getElementById('rockVolume').innerText = `${massRemaining.toFixed(1)}%`;
+
+      // Update Chart
+      if (timeYears % 20 === 0) {
+        addChartPoint(timeYears, massRemaining);
+      }
+    }
+
+    /* ==========================================================================
+       CHART.JS LIVE GRAPH
+       ========================================================================== */
+    function initChart() {
+      const ctxChart = document.getElementById('massChart').getContext('2d');
+      massChart = new Chart(ctxChart, {
+        type: 'line',
+        data: {
+          labels: [0],
+          datasets: [{
+            label: 'Mass Remaining (%)',
+            data: [100],
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#64748b', font: { size: 9 } }
+            },
+            y: {
+              min: 0,
+              max: 100,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#64748b', font: { size: 9 } }
+            }
+          }
+        }
+      });
+    }
+
+    function addChartPoint(year, mass) {
+      if (!massChart) return;
+      
+      // Avoid duplicate x labels
+      if (massChart.data.labels.includes(year)) return;
+
+      massChart.data.labels.push(year);
+      massChart.data.datasets[0].data.push(mass);
+      massChart.update('none');
+    }
+
+    function resetChartData() {
+      if (!massChart) return;
+      massChart.data.labels = [0];
+      massChart.data.datasets[0].data = [100];
+      massChart.update();
+    }
+
+    /* ==========================================================================
+       INTERACTIVE GEOLOGY QUIZ
+       ========================================================================== */
+    const QUIZ_QUESTIONS = [
+      {
+        q: "Why does Limestone dissolve much faster than Granite under acid rain?",
+        options: [
+          "Limestone is composed of Calcium Carbonate which reacts chemically with acid",
+          "Granite is a softer rock on the Mohs scale",
+          "Limestone is an igneous rock formed deep underground",
+          "Acid rain only affects sedimentary rocks regardless of mineral composition"
+        ],
+        correct: 0,
+        explanation: "Correct! Limestone contains calcite (CaCO₃) which chemically reacts with acid precipitation to dissolve into solution."
+      },
+      {
+        q: "Which process causes physical 'Frost Wedging' in mountain rocks?",
+        options: [
+          "Acid rain neutralizing minerals in quartz",
+          "Water entering cracks, freezing, expanding, and forcing cracks open",
+          "Wind blowing sand particles against smooth granite faces",
+          "Soot and smog settling on the top face of rocks"
+        ],
+        correct: 1,
+        explanation: "Correct! Water expands by roughly 9% upon freezing, creating immense pressure that fractures rock along cracks."
+      },
+      {
+        q: "How does high wind speed erode Sandstone canyon arches?",
+        options: [
+          "Wind lowers the pH of surrounding moisture",
+          "Wind carries abrasive sand grains that dislodge cemented mineral grains",
+          "Wind causes chemical recrystallization of quartz",
+          "Wind creates heavy ice deposits during warm summers"
+        ],
+        correct: 1,
+        explanation: "Correct! Wind abrasion (sandblasting) physically strips loose surface grains from softer sedimentary rocks."
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    let score = 0;
+    let totalAnswered = 0;
+
+    function initQuiz() {
+      showQuestion(0);
+    }
+
+    function showQuestion(idx) {
+      currentQuestionIdx = idx;
+      const qObj = QUIZ_QUESTIONS[idx];
+      document.getElementById('quizQuestion').innerText = `${idx + 1}. ${qObj.q}`;
+      
+      const optsContainer = document.getElementById('quizOptions');
+      optsContainer.innerHTML = '';
+
+      qObj.options.forEach((opt, oIdx) => {
+        const btn = document.createElement('button');
+        btn.className = `p-2 text-left rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 hover:bg-slate-800 text-slate-300 transition-all text-[11px] leading-snug`;
+        btn.innerText = opt;
+        btn.onclick = () => answerQuiz(oIdx);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(selectedIdx) {
+      const qObj = QUIZ_QUESTIONS[currentQuestionIdx];
+      totalAnswered++;
+
+      if (selectedIdx === qObj.correct) {
+        score++;
+        alert(`✨ ${qObj.explanation}`);
+      } else {
+        alert(`❌ Incorrect. ${qObj.explanation}`);
+      }
+
+      document.getElementById('quizScore').innerText = `Score: ${score}/${totalAnswered}`;
+
+      // Move to next question
+      const nextIdx = (currentQuestionIdx + 1) % QUIZ_QUESTIONS.length;
+      showQuestion(nextIdx);
+    }
+  </script>
+</body>
+</html>
