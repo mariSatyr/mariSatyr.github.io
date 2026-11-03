@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kepler’s Laws Explorer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#e9eef5;--panel:#fff;--ink:#14213d;--muted:#51607a;--line:#c9d3e0;--sun:#c77700;--planet:#0a7fb8;--sweep:#c2255c;--btn:#14213d;--btnink:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1726;--panel:#16233a;--ink:#e6edf7;--muted:#9db0cc;--line:#2a3b57;--sun:#ffb627;--planet:#4cc9f0;--sweep:#ff7b9c;--btn:#e6edf7;--btnink:#0e1726;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1726;--panel:#16233a;--ink:#e6edf7;--muted:#9db0cc;--line:#2a3b57;--sun:#ffb627;--planet:#4cc9f0;--sweep:#ff7b9c;--btn:#e6edf7;--btnink:#0e1726;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Atkinson Hyperlegible",system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.15;margin:0 0 6px}
+.lede{color:var(--muted);margin:0 0 18px;max-width:65ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+canvas{display:block;width:100%;border-radius:8px;background:#0a1322}
+.row{margin:0 0 14px}
+label{display:flex;justify-content:space-between;gap:8px;font-weight:700;margin-bottom:2px}
+output{font-weight:400;color:var(--muted);text-align:right}
+input[type=range]{width:100%;accent-color:var(--planet)}
+.checks{display:grid;gap:6px;margin:4px 0 14px}
+.checks label{font-weight:400;justify-content:flex-start;align-items:center;gap:8px;margin:0}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;padding:8px 16px;border-radius:8px;border:1px solid var(--btn);background:var(--btn);color:var(--btnink);cursor:pointer}
+button.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+:focus-visible{outline:3px solid var(--planet);outline-offset:2px}
+.laws{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+@media (max-width:820px){.laws{grid-template-columns:1fr}}
+.laws h2{font-size:1.1rem;margin:0 0 4px}
+.laws p{margin:0 0 8px;color:var(--muted);font-size:.95rem}
+dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.95rem}
+dt{color:var(--muted)}dd{margin:0;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.try{margin-top:16px}.try h2{font-size:1.1rem;margin:0 0 6px}.try ol{margin:0;padding-left:20px;max-width:75ch}.try li{margin-bottom:4px}
+.vel{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}.vel h2{font-size:1.1rem;margin:0 0 6px}.gauge{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-bottom:8px}#vbar{height:100%;width:0;background:var(--planet)}
+.tabs{display:flex;gap:8px;margin:0 0 14px;flex-wrap:wrap}.tabs button[aria-selected=false]{background:transparent;color:var(--ink);border-color:var(--line)}
+.gmeter{position:relative;height:18px;border-radius:9px;background:var(--line);margin:12px 0 4px}.gmeter .band{position:absolute;top:0;bottom:0;min-width:8px;background:#2f9e5b;opacity:.6;border-radius:4px}.gmeter .mark{position:absolute;top:-4px;width:6px;height:26px;margin-left:-3px;border-radius:3px;background:var(--ink)}
+.gscale{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem}.gstat{font-weight:700;min-height:1.5em;margin:8px 0 0}.gstat.ok{color:#2f9e5b}.gtop{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:700;margin-bottom:6px}
+.note{font-size:.9rem;color:var(--muted);margin:8px 0 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Kepler’s Laws Explorer</h1>
+<p class="lede">Change the mass of the Sun and the planet, then watch how the orbit and its period respond. All three of Kepler’s laws update live as you move the sliders.</p>
+
+<div class='tabs' role='tablist'><button role='tab' id='tabX' aria-selected='true'>Explore the laws</button><button role='tab' id='tabG' aria-selected='false'>Orbit challenge</button></div>
+<section id='pExp'>
+<div class="grid">
+  <div class="panel">
+    <canvas id="cv" aria-label="Animated planet orbiting a star on an elliptical path"></canvas>
+    <p class="note" id="com"></p>
+    <div class="vel"><h2>Velocity</h2>
+      <div class="gauge" aria-hidden="true"><div id="vbar"></div></div>
+      <dl><dt>Speed now</dt><dd id="vnow"></dd><dt>Fastest (closest to Sun)</dt><dd id="vmax"></dd><dt>Slowest (farthest from Sun)</dt><dd id="vmin"></dd><dt>Direction of motion</dt><dd id="vdir"></dd></dl>
+      <p class="note">The green arrow shows which way the planet is moving. A longer arrow means a faster planet.</p></div>
+  </div>
+  <div class="panel">
+    <div class="row"><label for="M">Sun mass <output id="oM"></output></label>
+      <input type="range" id="M" min="0.2" max="5" step="0.05" value="1"></div>
+    <div class="row"><label for="s">Planet mass <output id="os"></output></label>
+      <input type="range" id="s" min="0" max="1" step="0.005" value="0"></div>
+    <div class="row"><label for="a">Average distance (semi-major axis) <output id="oa"></output></label>
+      <input type="range" id="a" min="0.5" max="5" step="0.05" value="1"></div>
+    <div class="row"><label for="e">Eccentricity (how stretched) <output id="oe"></output></label>
+      <input type="range" id="e" min="0" max="0.9" step="0.01" value="0.3"></div>
+    <div class="row"><label for="v">Animation speed <output id="ov"></output></label>
+      <input type="range" id="v" min="0.05" max="2" step="0.05" value="0.4"></div>
+    <div class="checks">
+      <label><input type="checkbox" id="sweep" checked> Show area swept in a fixed time</label>
+      <label><input type="checkbox" id="detail" checked> Show both foci and the two distances</label>
+      <label><input type="checkbox" id="vel" checked> Show velocity arrow</label>
+      <label><input type="checkbox" id="comv"> View from the center of mass (Sun wobbles)</label>
+      <label><input type="checkbox" id="auto" checked> Auto-zoom to fit the orbit</label>
+    </div>
+    <div class="btns">
+      <button id="play">Pause</button>
+      <button id="reset" class="alt">Reset sliders</button>
+    </div>
+    <p class="note">Distances are in AU (1 AU = Earth–Sun distance). Time is in Earth years.</p>
+  </div>
+</div>
+
+<div class="laws">
+  <section class="panel"><h2>Law 1: orbits are ellipses</h2>
+    <p>The Sun sits at one focus. The two distances from the planet to the foci always add up to the same total, 2a.</p>
+    <dl><dt>Distance to Sun</dt><dd id="d1"></dd><dt>Distance to empty focus</dt><dd id="d2"></dd><dt>Sum of the two</dt><dd id="d12"></dd><dt>Major axis 2a</dt><dd id="d2a"></dd></dl></section>
+  <section class="panel"><h2>Law 2: equal areas in equal times</h2>
+    <p>The pink wedge is what the planet sweeps in one-eighth of an orbit. Its area stays the same wherever it is, so the planet speeds up when close to the Sun.</p>
+    <dl><dt>Distance now</dt><dd id="r"></dd><dt>Speed now</dt><dd id="sp"></dd><dt>Area swept per year</dt><dd id="ar"></dd><dt>Area of the wedge</dt><dd id="wa"></dd></dl></section>
+  <section class="panel"><h2>Law 3: period and distance</h2>
+    <p>T² divided by a³ is the same for every planet around the same star. A heavier star makes the number smaller.</p>
+    <dl><dt>Period T</dt><dd id="T"></dd><dt>T² (years²)</dt><dd id="T2"></dd><dt>a³ (AU³)</dt><dd id="a3"></dd><dt>T² ÷ a³</dt><dd id="rat"></dd><dt>(Sun + planet mass) × T² ÷ a³</dt><dd id="rat2"></dd></dl></section>
+</div>
+
+<section class="panel try"><h2>Try this</h2>
+<ol>
+<li>Double the Sun’s mass and keep everything else the same. Does the planet take more or less time to orbit? Check T in Law 3.</li>
+<li>Slide the planet’s mass from Earth-size up to the maximum. What happens to the period? Turn on the center of mass view to see the Sun move.</li>
+<li>Raise the eccentricity to 0.8 and compare the speed at the closest and farthest points.</li>
+<li>Change the distance a. How does T² ÷ a³ change?</li>
+</ol></section>
+</section>
+<section id='pGame' hidden>
+<div class='grid'>
+<div class='panel'>
+<canvas id='gcv' aria-label='Orbit with the Sun at one focus'></canvas>
+<div class='gmeter' aria-hidden='true'><div class='band' id='gband'></div><div class='mark' id='gmark'></div></div>
+<div class='gscale'><span>0</span><span id='gmax'></span></div>
+<p class='gstat' id='gstat' aria-live='polite'></p>
+<p class='note'>The green zone is the target. The dark marker shows your orbit right now.</p>
+</div>
+<div class='panel'>
+<div class='gtop'><span id='glv'></span><span id='gsc'></span></div>
+<p id='gmis'></p>
+<div id='gplay'>
+<div class='row'><label for='gM'>Sun mass <output id='goM'></output></label><input type='range' id='gM' min='0.2' max='5' step='0.05' value='1'></div>
+<div class='row'><label for='gs'>Planet mass <output id='gos'></output></label><input type='range' id='gs' min='0' max='1' step='0.005' value='0'></div>
+<div class='row'><label for='ga'>Average distance <output id='goa'></output></label><input type='range' id='ga' min='0.5' max='5' step='0.05' value='1'></div>
+<div class='row'><label for='gc'>Focal distance c <output id='goc'></output></label><input type='range' id='gc' min='0' max='0.9' step='0.001' value='0'></div>
+<dl><dt id='gt0'></dt><dd id='gd0'></dd><dt id='gt1'>Orbit speed (circle)</dt><dd id='gd1'></dd><dt id='gt2'>Speed at closest point</dt><dd id='gd2'></dd><dt id='gt3'>Speed at farthest point</dt><dd id='gd3'></dd><dt id='gt4'>Difference (fastest − slowest)</dt><dd id='gd4'></dd></dl>
+<div class='btns' style='margin-top:12px'><button id='glock'>Lock it in</button><button id='ghint' class='alt'>Hint (−25 points)</button></div>
+<p class='note' id='ghinttxt'></p><p id='gfb' aria-live='polite'></p>
+</div>
+<div id='gend' hidden><p class='gtop' id='gendtxt'></p><button id='gagain'>Play again</button></div>
+</div>
+</div>
+</section>
+</main>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var DEF={M:1,s:0,a:1,e:0.3,v:0.4};
+var st={M:1,m:0,a:1,e:0.3,t:0,speed:0.4,play:!window.matchMedia("(prefers-reduced-motion: reduce)").matches,com:false,auto:true,sweep:true,detail:true,vel:true,scale:30};
+var cv=$("cv"),ctx=cv.getContext("2d"),W=600,H=600,dpr=1;
+var stars=[];for(var i=0;i<90;i++)stars.push([Math.random(),Math.random(),Math.random()*1.2+.3]);
+function mFromS(s){return Math.pow(10,-5.5+5.5*s)}
+function fmt(n,d){return n.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d})}
+function massText(m){var e=m*333000,j=m*1047.6;
+  if(m>=0.05)return fmt(m,2)+" solar masses";
+  if(e>=1000)return fmt(j,j<10?1:0)+" Jupiter masses";
+  return fmt(e,e<10?1:0)+" Earth masses"}
+function geom(){var mu=st.M+st.m;return{mu:mu,T:Math.sqrt(Math.pow(st.a,3)/mu),b:st.a*Math.sqrt(1-st.e*st.e)}}
+function relAt(time,g){var Ma=2*Math.PI*((time/g.T)%1);if(Ma<0)Ma+=2*Math.PI;var E=Ma;
+  for(var i=0;i<10;i++)E-=(E-st.e*Math.sin(E)-Ma)/(1-st.e*Math.cos(E));
+  return{x:st.a*(Math.cos(E)-st.e),y:g.b*Math.sin(E),r:st.a*(1-st.e*Math.cos(E))}}
+function fit(){var w=Math.min(cv.parentElement.clientWidth-32,640);W=H=Math.max(260,w);dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+"px";cv.style.height=H+"px";ctx.setTransform(dpr,0,0,dpr,0,0)}
+function readUI(){
+  st.M=+$("M").value;st.m=mFromS(+$("s").value);st.a=+$("a").value;st.e=+$("e").value;st.speed=+$("v").value;
+  st.sweep=$("sweep").checked;st.vel=$("vel").checked;st.detail=$("detail").checked;st.com=$("comv").checked;
+  var wasAuto=st.auto;st.auto=$("auto").checked;if(wasAuto&&!st.auto){/* keep current scale */}
+  $("oM").textContent=fmt(st.M,2)+" solar masses";$("os").textContent=massText(st.m);
+  $("oa").textContent=fmt(st.a,2)+" AU";$("oe").textContent=fmt(st.e,2);$("ov").textContent=fmt(st.speed,2)+" yr/s";
+  var mu=st.M+st.m,d=st.a*st.m/mu/0.00465;
+  $("com").textContent="Center of mass is about "+(d<0.01?"less than 0.01":fmt(d,2))+" solar radii from the Sun’s center. The Sun and planet both circle that point.";
+}
+function vAUnow(g,r){return 2*Math.PI*Math.sqrt(g.mu*(2/r-1/st.a))}
+function draw(){
+  var g=geom(),rel=relAt(st.t,g),k=st.m/g.mu,kp=st.M/g.mu;
+  var sun=st.com?{x:-rel.x*k,y:-rel.y*k}:{x:0,y:0},pl={x:sun.x+rel.x,y:sun.y+rel.y};
+  if(st.auto)st.scale=(W/2*0.86)/st.a;
+  var s=st.scale,ox=W/2+(st.auto?st.a*st.e*s:0),oy=H/2;
+  function P(p){return[ox+p.x*s,oy-p.y*s]}
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#0a1322";ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,.55)";stars.forEach(function(q){ctx.beginPath();ctx.arc(q[0]*W,q[1]*H,q[2],0,6.283);ctx.fill()});
+  // orbit paths
+  var N=160;ctx.lineWidth=1.5;
+  ctx.setLineDash([5,5]);ctx.strokeStyle="rgba(120,200,240,.7)";ctx.beginPath();
+  for(var i=0;i<=N;i++){var E=i/N*6.2832,x=st.a*(Math.cos(E)-st.e),y=g.b*Math.sin(E),f=st.com?kp:1,q=P({x:x*f,y:y*f});i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])}
+  ctx.stroke();
+  if(st.com){ctx.strokeStyle="rgba(255,190,70,.8)";ctx.beginPath();
+    for(var j=0;j<=N;j++){var E2=j/N*6.2832,x2=-st.a*(Math.cos(E2)-st.e)*k,y2=-g.b*Math.sin(E2)*k,q2=P({x:x2,y:y2});j?ctx.lineTo(q2[0],q2[1]):ctx.moveTo(q2[0],q2[1])}
+    ctx.stroke()}
+  ctx.setLineDash([]);
+  var sp=P(sun),pp=P(pl);
+  // sweep wedge (last 1/8 of an orbit)
+  var wedgeA=Math.PI*st.a*g.b/8;
+  if(st.sweep){ctx.beginPath();ctx.moveTo(sp[0],sp[1]);
+    for(var n=0;n<=30;n++){var r2=relAt(st.t-g.T/8*(1-n/30),g),q3=P({x:sun.x+r2.x,y:sun.y+r2.y});ctx.lineTo(q3[0],q3[1])}
+    ctx.closePath();ctx.fillStyle="rgba(255,100,150,.35)";ctx.fill();ctx.strokeStyle="rgba(255,123,156,.9)";ctx.lineWidth=1.2;ctx.stroke()}
+  // foci and distance lines
+  if(st.detail){var f2=P({x:sun.x-2*st.a*st.e,y:sun.y});
+    ctx.setLineDash([3,4]);ctx.strokeStyle="rgba(255,255,255,.55)";ctx.lineWidth=1;ctx.beginPath();
+    ctx.moveTo(sp[0],sp[1]);ctx.lineTo(pp[0],pp[1]);ctx.lineTo(f2[0],f2[1]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(f2[0],f2[1],4,0,6.283);ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle="rgba(255,255,255,.8)";ctx.font="12px sans-serif";ctx.fillText("empty focus",f2[0]-28,f2[1]+18)}
+  // sun
+  var sr=8+5*Math.cbrt(st.M),gr=ctx.createRadialGradient(sp[0],sp[1],sr*.3,sp[0],sp[1],sr*2.6);
+  gr.addColorStop(0,"rgba(255,200,70,.9)");gr.addColorStop(1,"rgba(255,170,40,0)");
+  ctx.fillStyle=gr;ctx.beginPath();ctx.arc(sp[0],sp[1],sr*2.6,0,6.283);ctx.fill();
+  ctx.fillStyle="#ffc233";ctx.beginPath();ctx.arc(sp[0],sp[1],sr,0,6.283);ctx.fill();
+  // barycenter
+  if(st.com){var b0=P({x:0,y:0});ctx.strokeStyle="#fff";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(b0[0]-5,b0[1]);ctx.lineTo(b0[0]+5,b0[1]);ctx.moveTo(b0[0],b0[1]-5);ctx.lineTo(b0[0],b0[1]+5);ctx.stroke()}
+  // planet
+  var pr=Math.min(13,4.6+1.1*Math.pow(st.m/3.16e-6,1/6));
+  ctx.fillStyle="#4cc9f0";ctx.beginPath();ctx.arc(pp[0],pp[1],pr,0,6.283);ctx.fill();
+  // velocity vector
+  var vh=g.T/2000,va=relAt(st.t+vh,g),vb=relAt(st.t-vh,g),vx=(va.x-vb.x)/(2*vh),vy=(va.y-vb.y)/(2*vh),vm=Math.hypot(vx,vy);
+  if(st.vel){var vmx=2*Math.PI*Math.sqrt(g.mu*(2/(st.a*(1-st.e))-1/st.a)),len=24+46*(vm/vmx),ux=vx/vm,uy=-vy/vm,x0=pp[0]+ux*pr,y0=pp[1]+uy*pr,x1=pp[0]+ux*(pr+len),y1=pp[1]+uy*(pr+len),ang=Math.atan2(uy,ux);
+    ctx.strokeStyle="#7cff9e";ctx.fillStyle="#7cff9e";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-10*Math.cos(ang-0.45),y1-10*Math.sin(ang-0.45));ctx.lineTo(x1-10*Math.cos(ang+0.45),y1-10*Math.sin(ang+0.45));ctx.closePath();ctx.fill();
+    ctx.font="12px sans-serif";ctx.fillText(fmt(vAUnow(g,rel.r)*4.74047,1)+" km/s",x1+6,y1-6)}
+  // scale bar
+  var us=[0.05,0.1,0.2,0.5,1,2,5],u=5;for(var z=0;z<us.length;z++){if(s*us[z]>=40){u=us[z];break}}
+  ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(14,H-18);ctx.lineTo(14+s*u,H-18);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="12px sans-serif";ctx.fillText(u+" AU",14,H-24);
+  // readouts
+  var d1=rel.r,d2=Math.hypot(rel.x+2*st.a*st.e,rel.y),vAU=2*Math.PI*Math.sqrt(g.mu*(2/d1-1/st.a)),T=g.T,T2=T*T,a3=Math.pow(st.a,3);
+  $("d1").textContent=fmt(d1,3)+" AU";$("d2").textContent=fmt(d2,3)+" AU";$("d12").textContent=fmt(d1+d2,3)+" AU";$("d2a").textContent=fmt(2*st.a,3)+" AU";
+  $("r").textContent=fmt(d1,3)+" AU";$("sp").textContent=fmt(vAU*4.74047,1)+" km/s";
+  var vk=vAU*4.74047,vmaxK=vAUnow(g,st.a*(1-st.e))*4.74047,vminK=vAUnow(g,st.a*(1+st.e))*4.74047,cosA=(rel.x*vx+rel.y*vy)/(rel.r*vm);
+  $("vnow").textContent=fmt(vk,1)+" km/s";$("vmax").textContent=fmt(vmaxK,1)+" km/s";$("vmin").textContent=fmt(vminK,1)+" km/s";
+  $("vbar").style.width=(vk/vmaxK*100)+"%";
+  $("vdir").textContent=Math.abs(cosA)<0.03?"sideways to the Sun":(cosA>0?"moving away":"moving closer");
+  $("ar").textContent=fmt(Math.PI*st.a*g.b/T,3)+" AU²";$("wa").textContent=fmt(wedgeA,3)+" AU²";
+  $("T").textContent=fmt(T,3)+" yr ("+fmt(T*365.25,0)+" days)";$("T2").textContent=fmt(T2,3);$("a3").textContent=fmt(a3,3);
+  $("rat").textContent=fmt(T2/a3,3);$("rat2").textContent=fmt(T2/a3*g.mu,3);
+}
+var last=performance.now();
+function loop(now){var dt=Math.min(.05,(now-last)/1000);last=now;if(st.play)st.t+=dt*st.speed;draw();requestAnimationFrame(loop)}
+["M","s","a","e","v","sweep","detail","vel","comv","auto"].forEach(function(id){$(id).addEventListener("input",readUI)});
+$("play").addEventListener("click",function(){st.play=!st.play;this.textContent=st.play?"Pause":"Play"});
+$("reset").addEventListener("click",function(){$("M").value=DEF.M;$("s").value=DEF.s;$("a").value=DEF.a;$("e").value=DEF.e;$("v").value=DEF.v;readUI()});
+window.addEventListener("resize",fit);
+$("play").textContent=st.play?"Pause":"Play";
+fit();readUI();requestAnimationFrame(loop);
+})();
+</script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},K=29.785,TOL=0.03;
+var LV=[{v:20,e:0.3},{v:45,e:0.5},{v:12,e:0.6},{v:70,e:0.4}];
+var G={lv:0,part:'A',score:0,tries:0,hint:false,A:null,over:false,Ma:0};
+var cv=$('gcv'),ctx=cv.getContext('2d'),W=500;
+function f(n,d){return (+n).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d})}
+function mOf(s){return Math.pow(10,-5.5+5.5*s)}
+function massTxt(m){var e=m*333000,j=m*1047.6;if(m>=0.05)return f(m,2)+' solar masses';if(e>=1000)return f(j,j<10?1:0)+' Jupiter masses';return f(e,e<10?1:0)+' Earth masses'}
+function vals(){var M=+$('gM').value,m=mOf(+$('gs').value),a=+$('ga').value,c=+$('gc').value,mu=M+m,vc=K*Math.sqrt(mu/a),e=Math.min(c/a,0.9),vp=vc*Math.sqrt((1+e)/(1-e)),va=vc*Math.sqrt((1-e)/(1+e));return{M:M,m:m,a:a,c:c,mu:mu,vc:vc,e:e,vp:vp,va:va,d:vp-va}}
+function target(){var L=LV[G.lv];return G.part==='A'?L.v:G.A.vc*2*L.e/Math.sqrt(1-L.e*L.e)}
+function upd(){if(G.over)return;var v=vals(),B=G.part==='B',cur=B?v.d:v.vc,tg=target(),mx=B?Math.max(tg*2,10):100,ok=Math.abs(cur-tg)<=tg*TOL;
+$('goM').textContent=f(v.M,2)+' solar masses';$('gos').textContent=massTxt(v.m);$('goa').textContent=f(v.a,2)+' AU';$('goc').textContent=f(v.c,3)+' AU (e = '+f(v.e,2)+')';
+['gt1','gd1'].forEach(function(i){$(i).style.display=B?'none':''});['gt2','gd2','gt3','gd3','gt4','gd4'].forEach(function(i){$(i).style.display=B?'':'none'});
+$('gt0').textContent=B?'Target difference':'Target speed';$('gd0').textContent=f(tg,1)+' km/s (within 3%)';
+$('gd1').textContent=f(v.vc,1)+' km/s';$('gd2').textContent=f(v.vp,1)+' km/s';$('gd3').textContent=f(v.va,1)+' km/s';$('gd4').textContent=f(v.d,1)+' km/s';
+$('gmark').style.left=Math.min(100,cur/mx*100)+'%';$('gband').style.left=(tg*(1-TOL)/mx*100)+'%';$('gband').style.width=(tg*2*TOL/mx*100)+'%';$('gmax').textContent=f(mx,0)+' km/s';
+var st=$('gstat');st.className='gstat'+(ok?' ok':'');st.textContent=ok?'On target! Press Lock it in.':(cur>tg?'Too high: ':'Too low: ')+f(cur,1)+' km/s now, target '+f(tg,1)+' km/s'}
+function setup(msg){var A=G.part==='A',L=LV[G.lv];
+if(G.over){$('gplay').hidden=true;$('gend').hidden=false;$('gendtxt').textContent='All levels complete! Score: '+G.score+' out of '+LV.length*200;$('glv').textContent='Finished';$('gsc').textContent='Score: '+G.score;$('gmis').textContent='You matched every target speed and every velocity difference.';$('gstat').textContent='';return}
+$('gplay').hidden=false;$('gend').hidden=true;$('glv').textContent='Level '+(G.lv+1)+' of '+LV.length+', Part '+G.part;$('gsc').textContent='Score: '+G.score;
+['gM','gs','ga'].forEach(function(i){$(i).disabled=!A});$('gc').disabled=A;
+if(A){$('gM').value=1;$('gs').value=0;$('ga').value=1;$('gc').value=0;$('gc').max=0.9;$('gmis').textContent='Make the planet’s orbit speed '+L.v+' km/s. The orbit is a circle for now. Change the Sun’s mass, the planet’s mass and the distance until the dark marker is in the green zone, then press Lock it in. You need to be within 3%.'}
+else{var a=+$('ga').value;$('gc').max=(0.9*a).toFixed(3);$('gc').value=0;$('gmis').textContent='Now stretch the orbit. The Sun sits at one focus, and each focus is a distance c from the center. Change the focal distance c so that the fastest speed minus the slowest speed is '+f(target(),1)+' km/s, within 3%. The mass and distance are locked from Part A.'}
+$('ghinttxt').textContent='';$('gfb').textContent=msg||'';upd()}
+function lock(){if(G.over)return;var v=vals(),B=G.part==='B',cur=B?v.d:v.vc,tg=target();
+if(Math.abs(cur-tg)<=tg*TOL){var pts=Math.max(10,100-20*G.tries-(G.hint?25:0));G.score+=pts;
+if(!B){G.A={vc:v.vc};G.part='B'}else{G.part='A';G.lv++;if(G.lv>=LV.length)G.over=true}
+G.tries=0;G.hint=false;setup('Locked in! +'+pts+' points.')}
+else{G.tries++;$('gfb').textContent='Not close enough yet. Check the meter and try again.'}}
+function fit(){var w=Math.min($('gcv').parentElement.clientWidth-32,560),d=window.devicePixelRatio||1;W=Math.max(260,w);cv.width=W*d;cv.height=W*d;cv.style.width=W+'px';cv.style.height=W+'px';ctx.setTransform(d,0,0,d,0,0)}
+function draw(dt){var v=vals(),a=v.a,e=v.e,b=a*Math.sqrt(1-e*e),T=Math.sqrt(a*a*a/v.mu),tv=Math.min(14,Math.max(2,T*3));
+G.Ma=(G.Ma+dt*2*Math.PI/tv)%(2*Math.PI);var E=G.Ma;for(var i=0;i<8;i++)E-=(E-e*Math.sin(E)-G.Ma)/(1-e*Math.cos(E));
+var s=(W/2*0.86)/a,ox=W/2+a*e*s,oy=W/2;function X(x){return ox+x*s}function Y(y){return oy-y*s}
+ctx.fillStyle='#0a1322';ctx.fillRect(0,0,W,W);ctx.strokeStyle='rgba(120,200,240,.8)';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);ctx.beginPath();
+for(var k=0;k<=120;k++){var q=k/120*6.2832,px=X(a*(Math.cos(q)-e)),py=Y(b*Math.sin(q));k?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.stroke();ctx.setLineDash([]);
+if(e>0.02){ctx.strokeStyle='#ffd166';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(-a*e),Y(0));ctx.lineTo(X(0),Y(0));ctx.stroke();ctx.fillStyle='#ffd166';ctx.font='13px sans-serif';ctx.fillText('c',(X(-a*e)+X(0))/2-3,Y(0)-8);
+ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(X(-2*a*e),Y(0),4,0,6.283);ctx.stroke();ctx.fillStyle='rgba(255,255,255,.85)';ctx.font='12px sans-serif';ctx.fillText('empty focus',X(-2*a*e)-26,Y(0)+18);
+if(G.part==='B'){ctx.fillText('fastest',X(a*(1-e))-18,Y(0)+22);ctx.fillText('slowest',X(-a*(1+e))-4,Y(0)+22)}}
+var sr=7+4*Math.cbrt(v.M),sx=X(0),sy=Y(0),gr=ctx.createRadialGradient(sx,sy,sr*0.3,sx,sy,sr*2.4);gr.addColorStop(0,'rgba(255,200,70,.9)');gr.addColorStop(1,'rgba(255,170,40,0)');
+ctx.fillStyle=gr;ctx.beginPath();ctx.arc(sx,sy,sr*2.4,0,6.283);ctx.fill();ctx.fillStyle='#ffc233';ctx.beginPath();ctx.arc(sx,sy,sr,0,6.283);ctx.fill();
+ctx.fillStyle='#4cc9f0';ctx.beginPath();ctx.arc(X(a*(Math.cos(E)-e)),Y(b*Math.sin(E)),6,0,6.283);ctx.fill()}
+$('glock').addEventListener('click',lock);
+$('ghint').addEventListener('click',function(){G.hint=true;$('ghinttxt').textContent=G.part==='A'?'Hint: speed is about 29.8 × √((Sun mass + planet mass) ÷ distance) km/s. A heavier Sun makes the planet faster, and a larger distance makes it slower. The planet only matters if it is nearly as heavy as the Sun.':'Hint: e = c ÷ a. The bigger c is, the faster the planet moves at its closest point and the slower at its farthest point, so the difference grows.'});
+$('gagain').addEventListener('click',function(){G={lv:0,part:'A',score:0,tries:0,hint:false,A:null,over:false,Ma:G.Ma};setup()});
+['gM','gs','ga','gc'].forEach(function(i){$(i).addEventListener('input',upd)});
+function tab(g){$('pExp').hidden=g;$('pGame').hidden=!g;$('tabX').setAttribute('aria-selected',String(!g));$('tabG').setAttribute('aria-selected',String(g));window.dispatchEvent(new Event('resize'))}
+$('tabX').addEventListener('click',function(){tab(false)});$('tabG').addEventListener('click',function(){tab(true)});
+window.addEventListener('resize',fit);
+var last=performance.now();function loop(now){var dt=Math.min(0.05,(now-last)/1000);last=now;if(!$('pGame').hidden)draw(dt);requestAnimationFrame(loop)}
+fit();setup();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
