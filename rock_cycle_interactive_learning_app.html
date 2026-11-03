@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Rock Cycle Explorer & Game</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            display: ['Fredoka', 'sans-serif'],
+          },
+          colors: {
+            magma: '#ff4d29',
+            igneous: '#33292a',
+            sediment: '#d97706',
+            sedimentary: '#ca8a04',
+            metamorphic: '#7c3aed',
+            earth: '#1e293b'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom SVG animations representing mini-videos/GIFs */
+    @keyframes pulseGlow {
+      0%, 100% { filter: drop-shadow(0 0 4px rgba(255,77,41,0.6)); }
+      50% { filter: drop-shadow(0 0 12px rgba(255,77,41,0.9)); }
+    }
+    .pulse-magma { animation: pulseGlow 2s infinite; }
+
+    @keyframes heatWaves {
+      0% { transform: translateY(0) scaleX(1); opacity: 0.8; }
+      50% { transform: translateY(-4px) scaleX(1.1); opacity: 0.4; }
+      100% { transform: translateY(-8px) scaleX(1); opacity: 0; }
+    }
+    .heat-wave-1 { animation: heatWaves 1.5s infinite linear; }
+    .heat-wave-2 { animation: heatWaves 1.5s infinite linear 0.5s; }
+
+    @keyframes rainRain {
+      0% { transform: translateY(-10px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(12px); opacity: 0; }
+    }
+    .rain-drop-1 { animation: rainRain 1s infinite linear; }
+    .rain-drop-2 { animation: rainRain 1s infinite linear 0.4s; }
+    .rain-drop-3 { animation: rainRain 1s infinite linear 0.7s; }
+
+    @keyframes crystalGrow {
+      0% { transform: scale(0.2); opacity: 0; }
+      80% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .crystal-1 { animation: crystalGrow 2s infinite ease-out 0.2s; transform-origin: center; }
+    .crystal-2 { animation: crystalGrow 2s infinite ease-out 0.6s; transform-origin: center; }
+    .crystal-3 { animation: crystalGrow 2s infinite ease-out 1.0s; transform-origin: center; }
+
+    @keyframes compactDown {
+      0% { transform: translateY(-8px); }
+      50% { transform: translateY(0px); }
+      100% { transform: translateY(-8px); }
+    }
+    .compact-arrow { animation: compactDown 1.5s infinite ease-in-out; }
+
+    @keyframes tensionPull {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(6px); }
+    }
+    .pull-right { animation: tensionPull 1.2s infinite ease-in-out; }
+    @keyframes tensionPullLeft {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-6px); }
+    }
+    .pull-left { animation: tensionPullLeft 1.2s infinite ease-in-out; }
+
+    @keyframes seismicWave {
+      0% { r: 2px; opacity: 1; stroke-width: 3; }
+      100% { r: 24px; opacity: 0; stroke-width: 1; }
+    }
+    .wave-1 { animation: seismicWave 1.8s infinite cubic-bezier(0.1, 0.8, 0.3, 1); }
+    .wave-2 { animation: seismicWave 1.8s infinite cubic-bezier(0.1, 0.8, 0.3, 1) 0.6s; }
+
+    /* Diagram node styling */
+    .node-btn {
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .node-btn:hover {
+      transform: scale(1.08);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
+
+  <!-- Header Nav -->
+  <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-red-500 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-amber-500/20">
+          <i class="fa-solid font-display fa-mountain"></i>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-xl tracking-wide bg-gradient-to-r from-amber-400 via-orange-300 to-red-400 bg-clip-text text-transparent">GeoLab: Rock Cycle</h1>
+          <p class="text-xs text-slate-400">Interactive Geology & Earth Science Studio</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/60 text-sm font-semibold">
+        <button id="nav-diagram" onclick="switchTab('diagram')" class="px-4 py-2 rounded-lg transition-all text-amber-400 bg-slate-800 shadow">
+          <i class="fa-solid fa-diagram-project mr-2"></i>Interactive Diagram
+        </button>
+        <button id="nav-gallery" onclick="switchTab('gallery')" class="px-4 py-2 rounded-lg transition-all text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-film mr-2"></i>Micro-Animations
+        </button>
+        <button id="nav-game" onclick="switchTab('game')" class="px-4 py-2 rounded-lg transition-all text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-gamepad mr-2"></i>Matching Game
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+    <!-- SECTION 1: INTERACTIVE DIAGRAM TAB -->
+    <section id="tab-diagram" class="block space-y-6">
+      <div class="bg-slate-800/50 rounded-2xl p-4 sm:p-6 border border-slate-700/80 shadow-xl">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-display font-bold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-circle-nodes text-amber-400"></i> The Dynamic Rock Cycle
+            </h2>
+            <p class="text-sm text-slate-400">Click on any rock type, magma, sediment, or transition arrow to examine details.</p>
+          </div>
+          <div class="flex gap-2 text-xs">
+            <span class="px-3 py-1.5 rounded-full bg-red-950/60 text-red-300 border border-red-800/40">Igneous / Magma</span>
+            <span class="px-3 py-1.5 rounded-full bg-amber-950/60 text-amber-300 border border-amber-800/40">Sedimentary / Sediment</span>
+            <span class="px-3 py-1.5 rounded-full bg-purple-950/60 text-purple-300 border border-purple-800/40">Metamorphic</span>
+          </div>
+        </div>
+
+        <!-- Diagram Canvas Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          
+          <!-- Visual Interactive Map -->
+          <div class="lg:col-span-7 bg-slate-950/80 rounded-xl p-4 border border-slate-800 relative min-h-[420px] flex items-center justify-center overflow-hidden">
+            
+            <svg class="w-full h-auto max-h-[460px] viewBox='0 0 600 500'" viewBox="0 0 600 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Connecting Arrows -->
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+                </marker>
+                <marker id="arrow-orange" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+                </marker>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+                </marker>
+                <marker id="arrow-purple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#a855f7"/>
+                </marker>
+              </defs>
+
+              <!-- Lines & Arrows -->
+              <!-- Magma -> Igneous (Cooling/Crystallization) -->
+              <path d="M 170 330 Q 140 220 220 130" stroke="#ef4444" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#arrow-red)"/>
+              <text x="135" y="220" fill="#f87171" font-size="11" font-weight="bold" class="cursor-pointer hover:underline" onclick="showProcess('crystallization')">Cooling & Crystallization</text>
+
+              <!-- Igneous -> Magma (Melting) -->
+              <path d="M 250 140 Q 210 240 190 330" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)"/>
+              <text x="225" y="240" fill="#f87171" font-size="11" class="cursor-pointer hover:underline" onclick="showProcess('melting')">Melting</text>
+
+              <!-- Igneous -> Sediment (Weathering & Erosion) -->
+              <path d="M 330 110 L 440 180" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-orange)"/>
+              <text x="360" y="130" fill="#fbbf24" font-size="11" font-weight="bold" class="cursor-pointer hover:underline" onclick="showProcess('weathering')">Weathering & Erosion</text>
+
+              <!-- Sediment -> Sedimentary (Compaction & Cementation) -->
+              <path d="M 480 230 L 480 320" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrow-orange)"/>
+              <text x="490" y="280" fill="#fbbf24" font-size="11" font-weight="bold" class="cursor-pointer hover:underline" onclick="showProcess('compaction')">Compaction & Cementation</text>
+
+              <!-- Sedimentary -> Sediment (Weathering & Erosion) -->
+              <path d="M 460 330 Q 430 280 460 230" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrow-orange)"/>
+
+              <!-- Sedimentary -> Metamorphic (Heat & Pressure) -->
+              <path d="M 420 380 L 330 420" stroke="#a855f7" stroke-width="3" marker-end="url(#arrow-purple)"/>
+              <text x="345" y="420" fill="#c084fc" font-size="11" font-weight="bold" class="cursor-pointer hover:underline" onclick="showProcess('heat_pressure')">Heat & Pressure</text>
+
+              <!-- Igneous -> Metamorphic (Heat & Pressure) -->
+              <path d="M 270 140 L 270 380" stroke="#a855f7" stroke-width="2" marker-end="url(#arrow-purple)"/>
+              <text x="275" y="290" fill="#c084fc" font-size="11" class="cursor-pointer hover:underline" onclick="showProcess('heat_pressure')">Heat & Pressure</text>
+
+              <!-- Metamorphic -> Magma (Melting) -->
+              <path d="M 220 420 L 170 380" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)"/>
+              <text x="170" y="425" fill="#f87171" font-size="11" class="cursor-pointer hover:underline" onclick="showProcess('melting')">Melting</text>
+
+              <!-- Metamorphic -> Sediment (Weathering) -->
+              <path d="M 300 400 L 450 230" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-orange)"/>
+              <text x="360" y="330" fill="#fbbf24" font-size="10" class="cursor-pointer hover:underline" onclick="showProcess('weathering')">Weathering & Erosion</text>
+
+            </svg>
+
+            <!-- NODES (Interactive HTML overlays over SVG coordinates) -->
+            <!-- Magma Node -->
+            <div onclick="showNode('magma')" class="absolute left-[18%] bottom-[20%] -translate-x-1/2 translate-y-1/2 node-btn cursor-pointer bg-red-950/90 border-2 border-red-500 hover:border-red-400 text-red-200 p-3 rounded-2xl shadow-lg flex flex-col items-center w-28 text-center group">
+              <div class="w-8 h-8 rounded-full bg-red-600/30 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-fire"></i>
+              </div>
+              <span class="font-display font-bold text-xs mt-1">Magma & Lava</span>
+              <span class="text-[10px] text-red-300/80">Molten Rock</span>
+            </div>
+
+            <!-- Igneous Rock Node -->
+            <div onclick="showNode('igneous')" class="absolute left-[45%] top-[20%] -translate-x-1/2 -translate-y-1/2 node-btn cursor-pointer bg-slate-900 border-2 border-slate-400 hover:border-slate-200 text-slate-100 p-3 rounded-2xl shadow-lg flex flex-col items-center w-32 text-center group">
+              <div class="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-200 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-volcano"></i>
+              </div>
+              <span class="font-display font-bold text-xs mt-1">Igneous Rock</span>
+              <span class="text-[10px] text-slate-400">Basalt, Granite</span>
+            </div>
+
+            <!-- Sediment Node -->
+            <div onclick="showNode('sediment')" class="absolute left-[80%] top-[38%] -translate-x-1/2 -translate-y-1/2 node-btn cursor-pointer bg-amber-950/90 border-2 border-amber-500 hover:border-amber-400 text-amber-200 p-3 rounded-2xl shadow-lg flex flex-col items-center w-28 text-center group">
+              <div class="w-8 h-8 rounded-full bg-amber-600/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-cubes-stacked"></i>
+              </div>
+              <span class="font-display font-bold text-xs mt-1">Sediments</span>
+              <span class="text-[10px] text-amber-300/80">Sand, Mud, Pebbles</span>
+            </div>
+
+            <!-- Sedimentary Rock Node -->
+            <div onclick="showNode('sedimentary')" class="absolute left-[80%] bottom-[20%] -translate-x-1/2 translate-y-1/2 node-btn cursor-pointer bg-amber-900/80 border-2 border-amber-400 hover:border-amber-300 text-amber-100 p-3 rounded-2xl shadow-lg flex flex-col items-center w-32 text-center group">
+              <div class="w-8 h-8 rounded-full bg-amber-700/40 flex items-center justify-center text-amber-300 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-layer-group"></i>
+              </div>
+              <span class="font-display font-bold text-xs mt-1">Sedimentary</span>
+              <span class="text-[10px] text-amber-300/80">Sandstone, Limestone</span>
+            </div>
+
+            <!-- Metamorphic Rock Node -->
+            <div onclick="showNode('metamorphic')" class="absolute left-[45%] bottom-[12%] -translate-x-1/2 translate-y-1/2 node-btn cursor-pointer bg-purple-950/90 border-2 border-purple-500 hover:border-purple-400 text-purple-200 p-3 rounded-2xl shadow-lg flex flex-col items-center w-32 text-center group">
+              <div class="w-8 h-8 rounded-full bg-purple-600/30 flex items-center justify-center text-purple-300 group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-gem"></i>
+              </div>
+              <span class="font-display font-bold text-xs mt-1">Metamorphic</span>
+              <span class="text-[10px] text-purple-300/80">Marble, Slate</span>
+            </div>
+
+          </div>
+
+          <!-- Dynamic Detail Inspector Card -->
+          <div class="lg:col-span-5 bg-slate-900 rounded-xl p-5 border border-slate-700 flex flex-col min-h-[420px] justify-between">
+            <div id="inspector-content">
+              <!-- Default Content -->
+              <div class="flex items-center gap-3 border-b border-slate-800 pb-3 mb-4">
+                <div class="p-3 bg-amber-500/20 text-amber-400 rounded-xl text-2xl">
+                  <i class="fa-solid fa-hand-pointer"></i>
+                </div>
+                <div>
+                  <h3 class="font-display font-bold text-lg text-slate-100">Interactive Rock Inspector</h3>
+                  <p class="text-xs text-slate-400">Select any element in the diagram to inspect its geology.</p>
+                </div>
+              </div>
+              <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                The rock cycle is Earth's continuous natural process where rocks constantly transform between three primary types: <strong class="text-slate-100">Igneous</strong>, <strong class="text-amber-400">Sedimentary</strong>, and <strong class="text-purple-400">Metamorphic</strong>.
+              </p>
+              <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2 text-xs text-slate-300">
+                <div class="flex items-center gap-2 text-amber-400 font-semibold">
+                  <i class="fa-solid fa-lightbulb"></i> Quick Geology Fact
+                </div>
+                <p>Rocks don't stay the same forever! Over millions of years, heat, pressure, weathering, and plate tectonics recycle every rock on Earth's crust.</p>
+              </div>
+            </div>
+
+            <!-- Mini Preview Box inside inspector -->
+            <div id="inspector-mini-anim" class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between bg-slate-950/60 p-3 rounded-xl">
+              <div class="text-xs text-slate-400">
+                <span class="block text-slate-200 font-semibold">Micro-Animation Preview</span>
+                Click elements to load live mini-simulations.
+              </div>
+              <div id="mini-anim-box" class="w-16 h-16 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500">
+                <i class="fa-solid fa-film text-xl"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: MICRO-ANIMATIONS GALLERY TAB -->
+    <section id="tab-gallery" class="hidden space-y-6">
+      <div class="bg-slate-800/50 rounded-2xl p-4 sm:p-6 border border-slate-700/80">
+        <div class="mb-6">
+          <h2 class="text-2xl font-display font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-film text-amber-400"></i> Micro-Animation Teaching Cards
+          </h2>
+          <p class="text-sm text-slate-400">Compact vector-animated mini videos illustrating exact physical mechanisms in the rock cycle and tectonic systems.</p>
+        </div>
+
+        <!-- Grid of Mini Videos/GIF Animations -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          <!-- Animation Card 1: Crystallization -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Crystallization / Cooling -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#18181b"/>
+                  <!-- Cooling Lava Base -->
+                  <path d="M 0 90 Q 50 85 100 95 T 200 90 L 200 120 L 0 120 Z" fill="#7f1d1d"/>
+                  <path d="M 0 95 Q 60 90 120 100 T 200 95 L 200 120 L 0 120 Z" fill="#991b1b" class="pulse-magma"/>
+                  <!-- Growing Crystals -->
+                  <polygon points="50,90 60,65 70,90" fill="#38bdf8" class="crystal-1"/>
+                  <polygon points="90,95 105,55 120,95" fill="#0284c7" class="crystal-2"/>
+                  <polygon points="135,90 145,70 155,90" fill="#7dd3fc" class="crystal-3"/>
+                  <!-- Heat Lines -->
+                  <path d="M 40 50 Q 45 40 40 30" stroke="#f87171" stroke-width="2" fill="none" class="heat-wave-1"/>
+                  <path d="M 110 45 Q 115 35 110 25" stroke="#f87171" stroke-width="2" fill="none" class="heat-wave-2"/>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-red-950/80 text-red-300 text-[10px] border border-red-800/50 font-mono">COOLING</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Crystallization & Cooling</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Occurs when magma or lava cools down. Mineral molecules organize into repeating geometric lattice structures forming igneous rock.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-amber-400 font-semibold flex items-center justify-between">
+              <span>Magma &rarr; Igneous Rock</span>
+              <i class="fa-solid fa-snowflake"></i>
+            </div>
+          </div>
+
+          <!-- Animation Card 2: Weathering & Erosion -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Weathering & Erosion -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#0f172a"/>
+                  <!-- Mountain Rock -->
+                  <polygon points="20,110 80,40 140,110" fill="#475569"/>
+                  <polygon points="70,52 80,40 95,58" fill="#cbd5e1"/>
+                  <!-- Rain/Wind Particles -->
+                  <line x1="60" y1="20" x2="55" y2="35" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" class="rain-drop-1"/>
+                  <line x1="90" y1="15" x2="85" y2="30" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" class="rain-drop-2"/>
+                  <line x1="120" y1="25" x2="115" y2="40" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" class="rain-drop-3"/>
+                  <!-- Breaking Sediments falling -->
+                  <circle cx="110" cy="85" r="3" fill="#d97706" class="rain-drop-1"/>
+                  <circle cx="125" cy="95" r="4" fill="#b45309" class="rain-drop-2"/>
+                  <circle cx="140" cy="105" r="3" fill="#d97706"/>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 text-[10px] border border-amber-800/50 font-mono">BREAKDOWN</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Weathering & Erosion</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Water, wind, and ice break rocks down into small pieces (weathering) and transport them away to new locations (erosion).
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-amber-400 font-semibold flex items-center justify-between">
+              <span>Rock &rarr; Sediments</span>
+              <i class="fa-solid fa-cloud-rain"></i>
+            </div>
+          </div>
+
+          <!-- Animation Card 3: Compaction & Cementation -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Compaction -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#180e02"/>
+                  <!-- Downward Force Arrows -->
+                  <g class="compact-arrow">
+                    <path d="M 100 15 L 100 40 M 93 32 L 100 40 L 107 32" stroke="#f59e0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+                  <!-- Sediment Layers being pressed -->
+                  <rect x="30" y="55" width="140" height="12" rx="3" fill="#ca8a04"/>
+                  <rect x="30" y="70" width="140" height="12" rx="3" fill="#a16207"/>
+                  <rect x="30" y="85" width="140" height="14" rx="3" fill="#854d0e"/>
+                  <rect x="30" y="102" width="140" height="15" rx="2" fill="#713f12"/>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 text-[10px] border border-amber-800/50 font-mono">PRESSURE</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Compaction & Cementation</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Layers of sediment build up over time. Deep weight squeezes out water (compaction) and minerals glue grains together (cementation).
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-amber-400 font-semibold flex items-center justify-between">
+              <span>Sediment &rarr; Sedimentary Rock</span>
+              <i class="fa-solid fa-compress"></i>
+            </div>
+          </div>
+
+          <!-- Animation Card 4: Heat & Pressure -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Metamorphic Heat & Pressure -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#1e112a"/>
+                  <!-- Foliated metamorphic bands -->
+                  <path d="M 20 40 C 60 25, 140 55, 180 40" stroke="#c084fc" stroke-width="8" fill="none"/>
+                  <path d="M 20 65 C 60 50, 140 80, 180 65" stroke="#9333ea" stroke-width="8" fill="none"/>
+                  <path d="M 20 90 C 60 75, 140 105, 180 90" stroke="#581c87" stroke-width="8" fill="none"/>
+                  <!-- Heat flames from below -->
+                  <path d="M 50 115 Q 55 100 50 90" stroke="#f43f5e" stroke-width="3" fill="none" class="heat-wave-1"/>
+                  <path d="M 100 115 Q 105 95 100 85" stroke="#f43f5e" stroke-width="3" fill="none" class="heat-wave-2"/>
+                  <path d="M 150 115 Q 155 100 150 90" stroke="#f43f5e" stroke-width="3" fill="none" class="heat-wave-1"/>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-purple-950/80 text-purple-300 text-[10px] border border-purple-800/50 font-mono">METAMORPHISM</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Heat & Sub-surface Pressure</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Intense underground thermal energy and tectonic squeezes alter mineral composition without completely melting the rock.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-purple-400 font-semibold flex items-center justify-between">
+              <span>Any Rock &rarr; Metamorphic Rock</span>
+              <i class="fa-solid fa-temperature-high"></i>
+            </div>
+          </div>
+
+          <!-- Animation Card 5: Tectonic Tension & Stress -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Tectonic Tension -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#09131d"/>
+                  <!-- Crust block stretching -->
+                  <rect x="50" y="45" width="45" height="35" fill="#334155" class="pull-left"/>
+                  <rect x="105" y="45" width="45" height="35" fill="#334155" class="pull-right"/>
+                  <!-- Pull arrows -->
+                  <path d="M 40 62 L 20 62 M 26 56 L 20 62 L 26 68" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M 160 62 L 180 62 M 174 56 L 180 62 L 174 68" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+                  <text x="75" y="105" fill="#94a3b8" font-size="10" font-weight="bold">Pulling Apart (Tension)</text>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 text-[10px] border border-sky-800/50 font-mono">TECTONICS</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Tectonic Tension & Stress</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Tension is the stress force that pulls Earth's crust in opposite directions at divergent tectonic boundaries, creating faults and rifts.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-sky-400 font-semibold flex items-center justify-between">
+              <span>Crustal Deformity</span>
+              <i class="fa-solid fa-arrows-left-right"></i>
+            </div>
+          </div>
+
+          <!-- Animation Card 6: Seismic Energy & Earthquakes -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition">
+            <div>
+              <div class="h-36 bg-slate-950 rounded-xl mb-3 border border-slate-800/80 flex items-center justify-center relative overflow-hidden">
+                <!-- SVG Animation: Seismic Waves -->
+                <svg class="w-full h-full" viewBox="0 0 200 120">
+                  <rect width="200" height="120" fill="#170c10"/>
+                  <!-- Fault line -->
+                  <line x1="20" y1="20" x2="180" y2="100" stroke="#475569" stroke-width="3" stroke-dasharray="4,4"/>
+                  <!-- Focus point -->
+                  <circle cx="100" cy="60" r="5" fill="#ef4444"/>
+                  <!-- Concentric seismic waves -->
+                  <circle cx="100" cy="60" fill="none" stroke="#f87171" class="wave-1"/>
+                  <circle cx="100" cy="60" fill="none" stroke="#f87171" class="wave-2"/>
+                </svg>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded bg-rose-950/80 text-rose-300 text-[10px] border border-rose-800/50 font-mono">ENERGY</span>
+              </div>
+              <h3 class="font-display font-bold text-base text-slate-100">Seismic Magnitude & Energy</h3>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                Earthquake magnitude directly measures the total amount of energy released when rocks break along tectonic faults.
+              </p>
+            </div>
+            <div class="mt-3 pt-2 border-t border-slate-800/80 text-[11px] text-rose-400 font-semibold flex items-center justify-between">
+              <span>Earthquake Energy</span>
+              <i class="fa-solid fa-wave-square"></i>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: MATCHING GAME TAB -->
+    <section id="tab-game" class="hidden space-y-6">
+      <div class="bg-slate-800/50 rounded-2xl p-4 sm:p-6 border border-slate-700/80 shadow-xl">
+        
+        <!-- Game Header / Dashboard -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 p-4 rounded-xl border border-slate-700/60 mb-6">
+          <div>
+            <h2 class="text-2xl font-display font-bold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-puzzle-piece text-amber-400"></i> Rock Cycle Matching Challenge
+            </h2>
+            <p class="text-xs text-slate-400">Match the geological process or term on the left with its correct definition on the right.</p>
+          </div>
+          
+          <div class="flex items-center gap-4 bg-slate-950 px-4 py-2 rounded-lg border border-slate-800 w-full md:w-auto justify-between md:justify-end">
+            <div class="text-center">
+              <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Score</span>
+              <span id="game-score" class="font-display text-xl font-bold text-amber-400">0</span>
+            </div>
+            <div class="h-8 w-px bg-slate-800"></div>
+            <div class="text-center">
+              <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Matches</span>
+              <span id="game-matches" class="font-display text-xl font-bold text-emerald-400">0 / 6</span>
+            </div>
+            <button onclick="resetGame()" class="ml-2 px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition">
+              <i class="fa-solid fa-rotate-right mr-1"></i>Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Drag/Click Matching Board -->
+        <div id="game-board" class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+          
+          <!-- Column 1: Terms/Concepts -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[10px]">1</span> Select Concept
+            </h3>
+            <div id="terms-list" class="space-y-2.5">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+          <!-- Column 2: Definitions/Descriptions -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-[10px]">2</span> Select Matching Definition
+            </h3>
+            <div id="definitions-list" class="space-y-2.5">
+              <!-- Dynamically populated by JS -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Victory Modal Banner -->
+        <div id="victory-modal" class="hidden mt-6 bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/50 p-6 rounded-2xl text-center space-y-3">
+          <div class="inline-flex p-3 bg-emerald-500/20 text-emerald-400 rounded-full text-3xl mb-1">
+            <i class="fa-solid fa-trophy"></i>
+          </div>
+          <h3 class="font-display font-bold text-2xl text-emerald-300">Geology Master!</h3>
+          <p class="text-sm text-slate-300 max-w-md mx-auto">You've successfully identified all rock cycle concepts and geological mechanisms!</p>
+          <button onclick="resetGame()" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/30 transition text-sm">
+            Play Again
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-950 border-t border-slate-800 text-center py-4 text-xs text-slate-500 mt-auto">
+    GeoLab Interactive Rock Cycle &bull; Interactive Science Learning Resource
+  </footer>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    // DATA: Node descriptions for Interactive Diagram Inspector
+    const diagramData = {
+      magma: {
+        title: "Magma & Lava",
+        badge: "Molten Material",
+        badgeColor: "bg-red-950 text-red-300 border-red-800",
+        desc: "Molten rock located underground is called magma; once it breaks through Earth's surface during a volcanic eruption, it is called lava. Magma cools to form Igneous rock.",
+        fact: "Lava temperatures can range from 700°C to over 1,200°C (1,300°F to 2,200°F)!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><circle cx="50" cy="50" r="35" fill="#ef4444" class="pulse-magma"/></svg>`
+      },
+      igneous: {
+        title: "Igneous Rock",
+        badge: "Fire-Formed",
+        badgeColor: "bg-slate-800 text-slate-200 border-slate-700",
+        desc: "Formed when magma or lava cools and crystallizes. Intrusive igneous rocks (like granite) cool slowly underground with large crystals. Extrusive rocks (like basalt or obsidian) cool rapidly on the surface.",
+        fact: "Granite makes up a major portion of Earth's continental crust!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><polygon points="50,15 85,80 15,80" fill="#475569"/><polygon points="50,15 65,50 15,80" fill="#64748b"/></svg>`
+      },
+      sediment: {
+        title: "Sediments",
+        badge: "Rock Particles",
+        badgeColor: "bg-amber-950 text-amber-300 border-amber-800",
+        desc: "Small loose fragments of rocks, minerals, or organic matter created through weathering and transported by water, ice, or wind (erosion).",
+        fact: "Sand grains on beaches are often tiny bits of quartz broken off ancient mountains!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><circle cx="30" cy="40" r="8" fill="#d97706"/><circle cx="65" cy="35" r="12" fill="#b45309"/><circle cx="50" cy="70" r="10" fill="#ca8a04"/></svg>`
+      },
+      sedimentary: {
+        title: "Sedimentary Rock",
+        badge: "Layered Rock",
+        badgeColor: "bg-amber-950 text-amber-300 border-amber-800",
+        desc: "Formed when sediment layers build up over long periods and are pressed together (compaction) and mineralized (cementation). Frequently contains fossils.",
+        fact: "The Grand Canyon's spectacular colorful stripes are layers of sedimentary rock!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><rect x="15" y="25" width="70" height="12" fill="#ca8a04" rx="2"/><rect x="15" y="42" width="70" height="12" fill="#a16207" rx="2"/><rect x="15" y="59" width="70" height="12" fill="#854d0e" rx="2"/></svg>`
+      },
+      metamorphic: {
+        title: "Metamorphic Rock",
+        badge: "Changed Form",
+        badgeColor: "bg-purple-950 text-purple-300 border-purple-800",
+        desc: "Formed when existing rocks are subjected to extreme heat and intense tectonic pressure deep underground without fully melting. Limestone transforms into Marble, and Shale becomes Slate.",
+        fact: "The word 'metamorphic' comes from Greek words meaning 'change of form'!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><path d="M 10 30 Q 50 10 90 30 T 10 70 Q 50 50 90 70" stroke="#a855f7" stroke-width="8" fill="none"/></svg>`
+      }
+    };
+
+    const processData = {
+      crystallization: {
+        title: "Crystallization / Cooling",
+        badge: "Magma &rarr; Igneous",
+        badgeColor: "bg-red-950 text-red-300 border-red-800",
+        desc: "As molten rock cools, mineral atoms arrange into orderly crystal structures. Fast cooling produces fine grains; slow underground cooling produces large crystal grains.",
+        fact: "Obsidian cools so fast that zero crystals have time to form, creating natural volcanic glass!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><polygon points="50,20 65,75 35,75" fill="#38bdf8"/></svg>`
+      },
+      weathering: {
+        title: "Weathering & Erosion",
+        badge: "Breakdown Process",
+        badgeColor: "bg-amber-950 text-amber-300 border-amber-800",
+        desc: "Weathering breaks down solid rock into smaller fragments via rain, ice expansion, or plant roots. Erosion sweeps these particles away via streams, rivers, and winds.",
+        fact: "Water is Earth's single most powerful weathering agent!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><path d="M 20 80 Q 50 20 80 80" stroke="#94a3b8" stroke-width="6" fill="none"/><line x1="50" y1="20" x2="45" y2="40" stroke="#38bdf8" stroke-width="3"/></svg>`
+      },
+      compaction: {
+        title: "Compaction & Cementation",
+        badge: "Sediment &rarr; Rock",
+        badgeColor: "bg-amber-950 text-amber-300 border-amber-800",
+        desc: "Compaction squeezes sediments tightly under heavy upper layers, forcing water out. Dissolved minerals precipitate out to act as natural glue (cementation).",
+        fact: "This process can take hundreds of thousands of years to create solid rock!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><path d="M 50 15 L 50 45 M 40 35 L 50 45 L 60 35" stroke="#f59e0b" stroke-width="5" stroke-linecap="round"/><rect x="20" y="60" width="60" height="20" fill="#a16207" rx="3"/></svg>`
+      },
+      heat_pressure: {
+        title: "Heat & Tectonic Pressure",
+        badge: "Metamorphic Transformation",
+        badgeColor: "bg-purple-950 text-purple-300 border-purple-800",
+        desc: "Underground temperatures near mantle magma chambers combined with crushing weight or colliding tectonic plates rearrange mineral patterns into banded or foliated rocks.",
+        fact: "Temperatures during metamorphism range between 200°C and 800°C!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><path d="M 15 50 Q 50 30 85 50" stroke="#c084fc" stroke-width="6" fill="none"/><path d="M 50 85 L 50 65" stroke="#f43f5e" stroke-width="4"/></svg>`
+      },
+      melting: {
+        title: "Melting into Magma",
+        badge: "Rock &rarr; Magma",
+        badgeColor: "bg-red-950 text-red-300 border-red-800",
+        desc: "When subducted rock is pushed deep into Earth's mantle or exposed to extreme radioactive core heating, it liquefies back into molten magma.",
+        fact: "Subduction zones at oceanic trenches are giant conveyor belts recycling rock back into magma!",
+        svg: `<svg class="w-12 h-12" viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#dc2626" class="pulse-magma"/></svg>`
+      }
+    };
+
+    // UI Tab Navigation
+    function switchTab(tabId) {
+      const tabs = ['diagram', 'gallery', 'game'];
+      tabs.forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`nav-${t}`);
+        btn.classList.remove('text-amber-400', 'bg-slate-800', 'shadow');
+        btn.classList.add('text-slate-400');
+      });
+
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      activeBtn.classList.add('text-amber-400', 'bg-slate-800', 'shadow');
+      activeBtn.classList.remove('text-slate-400');
+    }
+
+    // Interactive Diagram Functions
+    function showNode(nodeKey) {
+      const data = diagramData[nodeKey];
+      updateInspector(data);
+    }
+
+    function showProcess(processKey) {
+      const data = processData[processKey];
+      updateInspector(data);
+    }
+
+    function updateInspector(data) {
+      const container = document.getElementById('inspector-content');
+      container.innerHTML = `
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+          <div>
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded border ${data.badgeColor}">${data.badge}</span>
+            <h3 class="font-display font-bold text-xl text-slate-100 mt-1">${data.title}</h3>
+          </div>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed mb-4">${data.desc}</p>
+        <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700/80 space-y-1.5 text-xs text-slate-300">
+          <div class="flex items-center gap-2 text-amber-400 font-semibold">
+            <i class="fa-solid fa-lightbulb"></i> Did You Know?
+          </div>
+          <p>${data.fact}</p>
+        </div>
+      `;
+
+      document.getElementById('mini-anim-box').innerHTML = data.svg;
+    }
+
+    // MATCHING GAME LOGIC
+    const gamePairs = [
+      { id: 1, term: "Weathering", def: "The process breaking rock down into smaller sediments by rain, wind, or ice." },
+      { id: 2, term: "Crystallization", def: "The cooling of magma or lava to form organized mineral structures in igneous rock." },
+      { id: 3, term: "Deposition", def: "The laying down or settling of eroded sediment particles in water or land." },
+      { id: 4, term: "Tension Stress", def: "Tectonic force that pulls Earth's crust in opposite directions at divergent boundaries." },
+      { id: 5, term: "Seismic Magnitude", def: "A scientific measure of the total energy released during an earthquake." },
+      { id: 6, term: "Heat & Pressure", def: "Sub-surface underground conditions that transform rock into metamorphic rock." }
+    ];
+
+    let selectedTerm = null;
+    let selectedDef = null;
+    let score = 0;
+    let matchesCount = 0;
+
+    function initGame() {
+      score = 0;
+      matchesCount = 0;
+      selectedTerm = null;
+      selectedDef = null;
+      document.getElementById('game-score').textContent = score;
+      document.getElementById('game-matches').textContent = `${matchesCount} / ${gamePairs.length}`;
+      document.getElementById('victory-modal').classList.add('hidden');
+
+      // Shuffle terms and definitions separately
+      const shuffledTerms = [...gamePairs].sort(() => Math.random() - 0.5);
+      const shuffledDefs = [...gamePairs].sort(() => Math.random() - 0.5);
+
+      const termsContainer = document.getElementById('terms-list');
+      const defsContainer = document.getElementById('definitions-list');
+
+      termsContainer.innerHTML = '';
+      defsContainer.innerHTML = '';
+
+      shuffledTerms.forEach(item => {
+        const btn = document.createElement('button');
+        btn.id = `term-${item.id}`;
+        btn.className = 'w-full text-left p-3.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 text-slate-200 font-semibold text-sm transition flex items-center justify-between group';
+        btn.onclick = () => selectTerm(item.id);
+        btn.innerHTML = `
+          <span>${item.term}</span>
+          <i class="fa-regular fa-circle text-slate-600 group-hover:text-amber-400"></i>
+        `;
+        termsContainer.appendChild(btn);
+      });
+
+      shuffledDefs.forEach(item => {
+        const btn = document.createElement('button');
+        btn.id = `def-${item.id}`;
+        btn.className = 'w-full text-left p-3.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-sky-500/50 text-slate-300 text-xs sm:text-sm leading-relaxed transition flex items-center justify-between group';
+        btn.onclick = () => selectDef(item.id);
+        btn.innerHTML = `
+          <span>${item.def}</span>
+          <i class="fa-regular fa-circle text-slate-600 group-hover:text-sky-400 ml-2"></i>
+        `;
+        defsContainer.appendChild(btn);
+      });
+    }
+
+    function selectTerm(id) {
+      // Clear previous term selections if not matched
+      if (selectedTerm) {
+        const prevBtn = document.getElementById(`term-${selectedTerm}`);
+        if (prevBtn && !prevBtn.disabled) {
+          prevBtn.classList.remove('border-amber-500', 'bg-amber-950/30');
+        }
+      }
+
+      selectedTerm = id;
+      const currentBtn = document.getElementById(`term-${id}`);
+      currentBtn.classList.add('border-amber-500', 'bg-amber-950/30');
+
+      checkPairMatch();
+    }
+
+    function selectDef(id) {
+      if (selectedDef) {
+        const prevBtn = document.getElementById(`def-${selectedDef}`);
+        if (prevBtn && !prevBtn.disabled) {
+          prevBtn.classList.remove('border-sky-500', 'bg-sky-950/30');
+        }
+      }
+
+      selectedDef = id;
+      const currentBtn = document.getElementById(`def-${id}`);
+      currentBtn.classList.add('border-sky-500', 'bg-sky-950/30');
+
+      checkPairMatch();
+    }
+
+    function checkPairMatch() {
+      if (selectedTerm !== null && selectedDef !== null) {
+        const termBtn = document.getElementById(`term-${selectedTerm}`);
+        const defBtn = document.getElementById(`def-${selectedDef}`);
+
+        if (selectedTerm === selectedDef) {
+          // MATCH SUCCESS!
+          score += 100;
+          matchesCount += 1;
+
+          termBtn.disabled = true;
+          defBtn.disabled = true;
+
+          termBtn.className = 'w-full text-left p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/60 text-emerald-300 font-semibold text-sm flex items-center justify-between opacity-80';
+          defBtn.className = 'w-full text-left p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/60 text-emerald-300 text-xs sm:text-sm flex items-center justify-between opacity-80';
+
+          termBtn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400';
+          defBtn.querySelector('i').className = 'fa-solid fa-circle-check text-emerald-400';
+
+          selectedTerm = null;
+          selectedDef = null;
+
+          document.getElementById('game-score').textContent = score;
+          document.getElementById('game-matches').textContent = `${matchesCount} / ${gamePairs.length}`;
+
+          if (matchesCount === gamePairs.length) {
+            document.getElementById('victory-modal').classList.remove('hidden');
+          }
+        } else {
+          // MISMATCH
+          score = Math.max(0, score - 20);
+          document.getElementById('game-score').textContent = score;
+
+          termBtn.classList.add('border-red-500', 'bg-red-950/30');
+          defBtn.classList.add('border-red-500', 'bg-red-950/30');
+
+          setTimeout(() => {
+            if (termBtn && !termBtn.disabled) {
+              termBtn.classList.remove('border-red-500', 'bg-red-950/30', 'border-amber-500', 'bg-amber-950/30');
+            }
+            if (defBtn && !defBtn.disabled) {
+              defBtn.classList.remove('border-red-500', 'bg-red-950/30', 'border-sky-500', 'bg-sky-950/30');
+            }
+            selectedTerm = null;
+            selectedDef = null;
+          }, 600);
+        }
+      }
+    }
+
+    function resetGame() {
+      initGame();
+    }
+
+    // Start Game on Page Load
+    window.onload = function() {
+      initGame();
+    };
+  </script>
+</body>
+</html>
