@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geometry Horror: The Missing Watch & The Hamster Wife</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.5.1/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=VT323&display=swap');
+        
+        .font-creepster { font-family: 'Creepster', cursive; }
+        .font-typewriter { font-family: 'Special Elite', monospace; }
+        .font-arcade { font-family: 'VT323', monospace; }
+
+        .blood-drip {
+            background: linear-gradient(180deg, #8B0000 0%, #400000 100%);
+        }
+        
+        .pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 0.99; }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+        }
+        .flicker {
+            animation: flicker 4s infinite;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200 font-typewriter min-h-screen flex flex-col justify-between selection:bg-red-900 selection:text-white">
+
+    <!-- Header / Killer Progress Bar -->
+    <header class="bg-zinc-900 border-b border-red-900/50 p-4 shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 bg-red-950/10 pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 relative z-10">
+            <div>
+                <h1 class="font-creepster text-3xl md:text-4xl text-red-600 tracking-wider flicker">THE GEOMETRY OF TERROR</h1>
+                <p class="text-xs text-zinc-400 font-arcade text-lg tracking-widest">Unit 5 Formula Sheet Investigation</p>
+            </div>
+            
+            <!-- Killer Distance Meter -->
+            <div class="w-full md:w-72 bg-zinc-950 border border-red-900/80 p-2 rounded">
+                <div class="flex justify-between text-xs mb-1 font-arcade">
+                    <span class="text-red-500 font-bold">SERIAL KILLER DISTANCE:</span>
+                    <span id="distance-text" class="text-red-400">100 meters away</span>
+                </div>
+                <div class="w-full bg-zinc-900 h-4 rounded-sm overflow-hidden p-0.5 border border-zinc-800">
+                    <div id="killer-bar" class="bg-gradient-to-r from-green-600 via-amber-600 to-red-600 h-full transition-all duration-500 rounded-sm" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 my-auto">
+
+        <!-- Story / Mystery Log Box -->
+        <div id="story-container" class="bg-zinc-900/90 border border-zinc-800 rounded-lg p-5 mb-6 shadow-xl relative backdrop-blur">
+            <div class="absolute -top-3 left-4 bg-red-950 text-red-300 px-3 py-0.5 text-xs rounded border border-red-800 font-arcade uppercase tracking-wider">
+                Case Log #509
+            </div>
+            <p id="story-text" class="text-sm md:text-base leading-relaxed text-zinc-300 mt-2">
+                It's midnight. You wake up with a cold sweat. Your vintage silver watch is missing from your nightstand, and a chilling trail of fresh, dripping blood leads straight out of your front door into the dark, foggy street. You grab your geometry formula sheet for courage and step outside...
+            </p>
+        </div>
+
+        <!-- Flashcard Card Interface -->
+        <div id="game-card" class="bg-zinc-900 border-2 border-zinc-800 rounded-xl shadow-2xl p-6 md:p-8 relative transition-all duration-300">
+            
+            <!-- Progress Tracker -->
+            <div class="flex justify-between items-center text-xs text-zinc-400 mb-4 font-arcade text-base">
+                <span>STAGE <span id="current-stage" class="text-red-500 font-bold">1</span> / 10</span>
+                <span>SCORE: <span id="score-val" class="text-amber-500 font-bold">0</span></span>
+            </div>
+
+            <!-- Question Prompt -->
+            <div class="mb-6">
+                <span class="text-xs uppercase tracking-widest text-zinc-500 block mb-1 font-arcade">Formula / Concept Prompt:</span>
+                <h2 id="card-prompt" class="text-xl md:text-2xl font-bold text-zinc-100 min-h-[4rem] flex items-center">
+                    Loading prompt...
+                </h2>
+            </div>
+
+            <!-- Hint Section -->
+            <div class="mb-6 bg-zinc-950/60 p-3 rounded border border-zinc-800/80 text-xs text-zinc-400">
+                <span class="text-amber-500 font-bold uppercase font-arcade tracking-wider">Test Hint:</span> 
+                <span id="card-hint">Loading hint...</span>
+            </div>
+
+            <!-- Multiple Choice Options -->
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                <!-- Dynamically injected buttons -->
+            </div>
+
+            <!-- Feedback / Result Banner -->
+            <div id="feedback-box" class="hidden p-3 rounded text-sm text-center font-bold animate-pulse"></div>
+
+            <!-- Next Step Button -->
+            <div class="flex justify-end mt-4">
+                <button id="next-btn" onclick="nextCard()" class="hidden bg-red-900 hover:bg-red-800 text-white px-6 py-2 rounded text-sm font-arcade tracking-wider uppercase transition-colors shadow-lg">
+                    Advance Mystery &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Over / Victory Modal Overlay -->
+        <div id="modal-overlay" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+            <div id="modal-content" class="bg-zinc-900 border-2 border-red-900 p-8 rounded-xl max-w-lg w-full text-center shadow-2xl relative">
+                <h2 id="modal-title" class="font-creepster text-4xl text-red-600 mb-4">GAME OVER</h2>
+                <p id="modal-message" class="text-zinc-300 text-sm md:text-base leading-relaxed mb-6">
+                    The killer caught up to you in the fog...
+                </p>
+                <button onclick="restartGame()" class="bg-red-900 hover:bg-red-800 text-white px-8 py-3 rounded font-arcade tracking-widest text-lg uppercase shadow-xl transition-all">
+                    Try Again
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-zinc-600 border-t border-zinc-900 font-arcade">
+        Unit 5 Geometry Formula Review &bull; Interactive Narrative Edition
+    </div></footer>
+
+    <script>
+        // Flashcard Database based strictly on Unit 5 Geometry Review Sheet
+        const flashcardData = [
+            {
+                front: "Radius & Diameter Conversion",
+                hint: "Remember the basic relationship $d = 2r$.",
+                options: [
+                    "If diameter is $10\\text{ cm}$, radius is $5\\text{ cm}$",
+                    "If diameter is $10\\text{ cm}$, radius is $20\\text{ cm}$",
+                    "Radius is always equal to diameter",
+                    "Diameter is half of the radius"
+                ],
+                correct: 0,
+                story: "You follow the crimson footprints down Maple Street. They circle around a rusted park bench. You examine a carved geometry symbol on the wood..."
+            },
+            {
+                front: "Circumference Formula ($C = 2\\pi r$ or $C = \\pi d$)",
+                hint: "Distance around the outside edge of a circle.",
+                options: [
+                    "The distance around the boundary of a circle",
+                    "The space inside the circle squared",
+                    "The total surface area of a 3D sphere",
+                    "Half the diameter of a circle"
+                ],
+                correct: 0,
+                story: "The blood trail loops around a circular manhole cover. Embedded in the metal grate is your missing silver watch ticking loudly!"
+            },
+            {
+                front: "Area of a Circle ($A = \\pi r^2$)",
+                hint: "Always square this value first before multiplying by $\\pi$.",
+                options: [
+                    "Always square the radius first before multiplying by $\\pi$",
+                    "Always multiply the radius by two before squaring",
+                    "Use the diameter directly without dividing by two",
+                    "Add radius and diameter together"
+                ],
+                correct: 0,
+                story: "You pick up your watch, but the blood trail continues! It heads down the alley toward a flashing neon sign illuminating an abandoned ice cream van."
+            },
+            {
+                front: "Adjacent Angles",
+                hint: "Two angles that are side-by-side with no overlap, sharing a vertex and one side.",
+                options: [
+                    "Two angles that are side-by-side with no overlap",
+                    "Two angles that add up to exactly $180^\\circ$",
+                    "Two angles across from each other sharing vertical lines",
+                    "Angles located on opposite sides of a transversal"
+                ],
+                correct: 0,
+                story: "You reach the ice cream van. Strange music box tunes play in reverse. The side door creaks open, revealing a man standing over jars of glowing red liquid."
+            },
+            {
+                front: "Rectangular Prism Surface Area ($SA = 2(lw + lh + wh)$)",
+                hint: "The sum of all 6 rectangular faces (Top/Bottom, Front/Back, Left/Right).",
+                options: [
+                    "Sum of all 6 rectangular faces of the box",
+                    "Only the area of the top and bottom faces",
+                    "Volume multiplied by the height of the prism",
+                    "Perimeter of the base multiplied by height"
+                ],
+                correct: 0,
+                story: "'I sell fake theatrical blood!' the man shrieks defensively, holding up rubber guts. 'And besides... someone had to rescue your wife from this neighborhood!'"
+            },
+            {
+                front: "Triangular Prism Surface Area ($SA = 2(\\frac{1}{2}bh) + (s_1 + s_2 + s_3)H$)",
+                hint: "Add the areas of the 2 triangular bases plus the 3 rectangular sides.",
+                options: [
+                    "Areas of the 2 triangular bases plus the 3 rectangular sides",
+                    "Area of one triangle multiplied by six rectangular sides",
+                    "Perimeter of the triangle multiplied by its height",
+                    "Sum of all three triangle side lengths squared"
+                ],
+                correct: 0,
+                story: "You drop your jaw. 'My... my wife is inside this van?!' The fake blood seller nods gravely, pointing toward a tiny plastic cage in the corner."
+            },
+            {
+                front: "Room Walls Paint Area ($A_{Walls} = 2(l \\cdot h) + 2(w \\cdot h)$)",
+                hint: "Do not include this unless explicitly asked by the problem!",
+                options: [
+                    "Do not include floor or ceiling unless asked",
+                    "Always include the floor and ceiling area",
+                    "Multiply length by width and ignore height",
+                    "Divide total surface area by four"
+                ],
+                correct: 0,
+                story: "You peer inside the cage, expecting to see your beloved spouse. Instead, you stare face-to-face with a fluffy golden hamster chewing on a sunflower seed."
+            },
+            {
+                front: "General Prism Volume Rule ($V = B \\cdot h$)",
+                hint: "$B$ stands for the area of the base, and $h$ connects the two bases.",
+                options: [
+                    "Area of the base ($B$) multiplied by the height connecting the bases ($h$)",
+                    "Perimeter of the base multiplied by the total surface area",
+                    "Length times width times height divided by three",
+                    "Sum of all base areas plus the height"
+                ],
+                correct: 0,
+                story: "'Her name is Mrs. Whiskers,' the fake blood seller whispers. 'You legally married her in a hamster ceremony last Tuesday. Don't act like you forgot.'"
+            },
+            {
+                front: "Composite Solid Volume ($V_{total} = V_{box} + V_{pyramid}$)",
+                hint: "Calculate component volumes separately, then add them together.",
+                options: [
+                    "Calculate the volume of each component separately, then add them together",
+                    "Subtract the pyramid volume from the rectangular box volume",
+                    "Multiply the box volume by the pyramid volume",
+                    "Average the base areas of both shapes"
+                ],
+                correct: 0,
+                story: "You remember! It was a beautiful ceremony with tiny seeds and sunflower micro-greens. You gently pick up Mrs. Whiskers and tuck her into your pocket."
+            },
+            {
+                front: "Coverage & Quantity Needed (Cans Needed = Total Surface Area / Coverage)",
+                hint: "Always round UP to the next whole unit so you don't run out of paint!",
+                options: [
+                    "Always round UP to the next whole can so you don't run out",
+                    "Always round DOWN to save money on paint supplies",
+                    "Round to the nearest decimal place strictly",
+                    "Ignore fractions and subtract leftover amounts"
+                ],
+                correct: 0,
+                story: "Suddenly, heavy footsteps echo behind the ice cream van. The actual serial killer steps out of the fog, holding a giant paintbrush and looking furious!"
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let score = 0;
+        let killerDistance = 100; // in meters
+        let gameActive = true;
+
+        const cardPrompt = document.getElementById('card-prompt');
+        const cardHint = document.getElementById('card-hint');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackBox = document.getElementById('feedback-box');
+        const nextBtn = document.getElementById('next-btn');
+        const currentStage = document.getElementById('current-stage');
+        const scoreVal = document.getElementById('score-val');
+        const killerBar = document.getElementById('killer-bar');
+        const distanceText = document.getElementById('distance-text');
+        const storyText = document.getElementById('story-text');
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+
+        function loadCard() {
+            if (currentCardIndex >= flashcardData.length) {
+                triggerVictory();
+                return;
+            }
+
+            const card = flashcardData[currentCardIndex];
+            currentStage.textContent = currentCardIndex + 1;
+            scoreVal.textContent = score;
+            cardPrompt.innerHTML = card.front;
+            cardHint.textContent = card.hint;
+            
+            feedbackBox.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            optionsContainer.innerHTML = '';
+
+            // Shuffle options for interactivity
+            let optionIndices = [0, 1, 2, 3];
+            // Map original options with their correctness
+            let mappedOptions = card.options.map((opt, idx) => ({ text: opt, correct: idx === card.correct }));
+            // Shuffle
+            mappedOptions.sort(() => Math.random() - 0.5);
+
+            mappedOptions.forEach((optObj, idx) => {
+                const btn = document.createElement('button');
+                btn.innerHTML = optObj.text;
+                btn.className = "bg-zinc-950 hover:bg-zinc-800 border border-zinc-800 p-4 rounded text-left text-sm md:text-base text-zinc-300 transition-all duration-200 hover:border-zinc-600 active:scale-[0.99]";
+                btn.onclick = () => selectAnswer(optObj.correct, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(isCorrect, selectedBtn) {
+            if (!gameActive) return;
+
+            // Disable all option buttons
+            const buttons = optionsContainer.getElementsByTagName('button');
+            for (let b of buttons) {
+                b.disabled = true;
+                // Highlight the correct one
+                if (b.innerHTML === flashcardData[currentCardIndex].options[flashcardData[currentCardIndex].correct]) {
+                    b.classList.add('border-green-600', 'bg-green-950/30', 'text-green-300');
+                }
+            }
+
+            feedbackBox.classList.remove('hidden');
+
+            if (isCorrect) {
+                score += 100;
+                scoreVal.textContent = score;
+                // Push killer back
+                killerDistance = Math.min(100, killerDistance + 15);
+                updateKillerMeter();
+
+                feedbackBox.className = "p-3 rounded text-sm text-center font-bold bg-green-950 text-green-300 border border-green-800";
+                feedbackBox.innerHTML = "CORRECT! You outsmart the killer and advance the mystery!";
+                
+                // Update story line
+                storyText.innerHTML = flashcardData[currentCardIndex].story;
+
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+
+                nextBtn.classList.remove('hidden');
+            } else {
+                // Killer advances closer!
+                killerDistance = Math.max(0, killerDistance - 25);
+                updateKillerMeter();
+
+                feedbackBox.className = "p-3 rounded text-sm text-center font-bold bg-red-950 text-red-300 border border-red-800";
+                feedbackBox.innerHTML = "INCORRECT! The serial killer lunges closer through the fog!";
+
+                selectedBtn.classList.remove('border-zinc-800', 'bg-zinc-950');
+                selectedBtn.classList.add('border-red-600', 'bg-red-950/50', 'text-red-300');
+
+                if (killerDistance <= 0) {
+                    setTimeout(triggerGameOver, 1000);
+                } else {
+                    nextBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        function updateKillerMeter() {
+            killerBar.style.width = killerDistance + '%';
+            distanceText.textContent = killerDistance + ' meters away';
+            
+            if (killerDistance < 30) {
+                killerBar.className = "bg-red-600 h-full transition-all duration-500 rounded-sm animate-pulse";
+            } else if (killerDistance < 60) {
+                killerBar.className = "bg-amber-600 h-full transition-all duration-500 rounded-sm";
+            } else {
+                killerBar.className = "bg-green-600 h-full transition-all duration-500 rounded-sm";
+            }
+        }
+
+        function nextCard() {
+            currentCardIndex++;
+            loadCard();
+        }
+
+        function triggerGameOver() {
+            gameActive = false;
+            modalTitle.textContent = "CAUGHT BY THE KILLER";
+            modalTitle.className = "font-creepster text-4xl text-red-600 mb-4";
+            modalMessage.innerHTML = "Your geometry calculations failed you. The serial killer catches up with his giant paintbrush, trapping you and Mrs. Whiskers in an eternal nightmare.";
+            modalOverlay.classList.remove('hidden');
+        }
+
+        function triggerVictory() {
+            gameActive = false;
+            modalTitle.textContent = "MYSTERY SOLVED!";
+            modalTitle.className = "font-creepster text-4xl text-green-500 mb-4";
+            modalMessage.innerHTML = `You successfully survived with a score of ${score}! You, the fake blood seller, and Mrs. Whiskers the hamster escape into the sunrise, your vintage watch securely back on your wrist. Geometry saves the day!`;
+            modalOverlay.classList.remove('hidden');
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.5 }
+            });
+        }
+
+        function restartGame() {
+            currentCardIndex = 0;
+            score = 0;
+            killerDistance = 100;
+            gameActive = true;
+            modalOverlay.classList.add('hidden');
+            updateKillerMeter();
+            storyText.innerHTML = "It's midnight. You wake up with a cold sweat. Your vintage silver watch is missing from your nightstand, and a chilling trail of fresh, dripping blood leads straight out of your front door into the dark, foggy street. You grab your geometry formula sheet for courage and step outside...";
+            loadCard();
+        }
+
+        // Initialize game on load
+        loadCard();
+    </script>
+</body>
+</html>
+```eof
