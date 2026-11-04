@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caffeine Tracker & Bloodstream Pharmacokinetics</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            900: '#7c2d12',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <i class="fa-solid fa-mug-hot text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
+                        BrewPulse <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30">PK Model</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Bloodstream Caffeine Pharmacokinetics & Sleep Tracker</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="openSettingsModal()" class="px-3 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-orange-400"></i> Settings & Metabolism
+                </button>
+                <button onclick="exportData()" class="px-3 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-2">
+                    <i class="fa-solid fa-download text-amber-400"></i> Export
+                </button>
+                <button onclick="resetData()" class="p-2 text-xs font-medium rounded-lg bg-red-950/40 hover:bg-red-900/50 text-red-400 border border-red-900/50 transition" title="Clear all logs">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Stat Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Current Blood Caffeine -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-orange-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Current in Blood</span>
+                    <span class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center"><i class="fa-solid fa-droplet"></i></span>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-white tracking-tight" id="stat-current">0 <span class="text-lg font-medium text-slate-400">mg</span></div>
+                    <p class="text-xs text-slate-400 mt-1" id="stat-current-status">Safe / Low level</p>
+                </div>
+            </div>
+
+            <!-- Peak Today -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Peak Today</span>
+                    <span class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></span>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-white tracking-tight" id="stat-peak">0 <span class="text-lg font-medium text-slate-400">mg</span></div>
+                    <p class="text-xs text-slate-400 mt-1" id="stat-peak-time">Max level reached</p>
+                </div>
+            </div>
+
+            <!-- Sleep Safe Time -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Sleep Safe (&lt;<span id="stat-sleep-target-label">50</span>mg)</span>
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-moon"></i></span>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight" id="stat-sleeptime">Now</div>
+                    <p class="text-xs text-slate-400 mt-1" id="stat-sleeptime-sub">Caffeine is below threshold</p>
+                </div>
+            </div>
+
+            <!-- Total Daily Intake -->
+            <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium uppercase tracking-wider text-slate-400">Total Consumed</span>
+                    <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></span>
+                </div>
+                <div>
+                    <div class="text-3xl font-extrabold text-white tracking-tight" id="stat-total">0 <span class="text-lg font-medium text-slate-400">mg</span></div>
+                    <p class="text-xs text-slate-400 mt-1" id="stat-fda-percent">0% of FDA 400mg limit</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chart Section -->
+        <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 sm:p-6 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-wave-square text-orange-500"></i> 24-Hour Bloodstream Pharmacokinetics
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Exponential decay curve ($C(t) = C_0 \cdot 0.5^{t/h}$) across today and upcoming night.</p>
+                </div>
+                <div class="flex items-center gap-2 self-start sm:self-auto">
+                    <button onclick="setTimeWindow(12)" id="btn-tw-12" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">12h</button>
+                    <button onclick="setTimeWindow(24)" id="btn-tw-24" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white shadow-md shadow-orange-600/20 transition">24h</button>
+                    <button onclick="setTimeWindow(48)" id="btn-tw-48" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">48h</button>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="relative w-full h-[320px] sm:h-[400px]">
+                <canvas id="caffeineChart"></canvas>
+            </div>
+
+            <!-- Legend info -->
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-6 mt-4 pt-4 border-t border-slate-800/60 text-xs text-slate-400">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                    <span>Blood Caffeine Level (mg)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400/80 inline-block"></span>
+                    <span>Cumulative Intake</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-0.5 bg-red-400 inline-block border-t border-dashed border-red-400"></span>
+                    <span>Sleep Interference Threshold</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-0.5 bg-amber-500/60 inline-block border-t border-dashed border-amber-500"></span>
+                    <span>Jitter Risk Zone (&gt;200mg)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout: Quick Add & Log Table -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Left: Quick Add & Presets -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Beverage Presets Card -->
+                <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-sm font-bold text-white mb-3 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-orange-400"></i> Quick Add Beverage
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">Click any preset to log it instantly at the current time, or pick a custom time below.</p>
+                    
+                    <div class="grid grid-cols-2 gap-2.5 mb-4">
+                        <button onclick="quickAdd('Cup of Coffee (8 oz)', 95)" class="p-3 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-orange-400 transition">Cup of Coffee</div>
+                            <div class="text-xs text-orange-400/90 font-medium mt-0.5">95 mg <span class="text-slate-500 text-[10px]">/ 8 oz</span></div>
+                        </button>
+                        
+                        <button onclick="quickAdd('Can of Celsius', 200)" class="p-3 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-orange-400 transition">Can of Celsius</div>
+                            <div class="text-xs text-orange-400/90 font-medium mt-0.5">200 mg <span class="text-slate-500 text-[10px]">/ 12 oz</span></div>
+                        </button>
+
+                        <button onclick="quickAdd('Can of Diet Coke', 46)" class="p-3 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-orange-400 transition">Can of Diet Coke</div>
+                            <div class="text-xs text-orange-400/90 font-medium mt-0.5">46 mg <span class="text-slate-500 text-[10px]">/ 12 oz</span></div>
+                        </button>
+
+                        <button onclick="quickAdd('Espresso Shot', 64)" class="p-3 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-orange-400 transition">Espresso Shot</div>
+                            <div class="text-xs text-orange-400/90 font-medium mt-0.5">64 mg <span class="text-slate-500 text-[10px]">/ 1 oz</span></div>
+                        </button>
+
+                        <button onclick="quickAdd('Energy Drink - Monster', 160)" class="col-span-2 p-3 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 hover:border-orange-500/50 text-left transition group">
+                            <div class="text-xs font-semibold text-white group-hover:text-orange-400 transition">Energy Drink - Monster</div>
+                            <div class="text-xs text-orange-400/90 font-medium mt-0.5">160 mg <span class="text-slate-500 text-[10px]">/ 16 oz</span></div>
+                        </button>
+                    </div>
+
+                    <!-- Custom Log Form -->
+                    <form id="custom-log-form" onsubmit="handleCustomLog(event)" class="space-y-3 pt-3 border-t border-slate-800">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Custom Beverage Entry</h4>
+                        <div>
+                            <label class="block text-[11px] font-medium text-slate-400 mb-1">Beverage Name</label>
+                            <input type="text" id="custom-name" required placeholder="e.g., Cold Brew, Pre-workout" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 transition">
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-400 mb-1">Caffeine (mg)</label>
+                                <input type="number" id="custom-mg" required min="1" max="2000" placeholder="120" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-medium text-slate-400 mb-1">Time Today</label>
+                                <input type="time" id="custom-time" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 transition">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white font-semibold text-xs shadow-lg shadow-orange-600/20 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add to Timeline
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Daily Schedule Presets -->
+                <div class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 shadow-xl">
+                    <h3 class="text-sm font-bold text-white mb-2 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-day text-amber-400"></i> Schedule Templates
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-3">Load a sample routine to test how caffeine stacks throughout the day.</p>
+                    <div class="space-y-2">
+                        <button onclick="loadTemplate('morning')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-semibold text-white">Standard Morning Boost</div>
+                                <div class="text-[11px] text-slate-400">Coffee @ 8:00 AM, Espresso @ 1:00 PM</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+                        </button>
+                        <button onclick="loadTemplate('heavy')" class="w-full text-left p-2.5 rounded-xl bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 transition flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-semibold text-white">High Energy / Pre-workout</div>
+                                <div class="text-[11px] text-slate-400">Celsius @ 9 AM, Coffee @ 1 PM, Monster @ 4 PM</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Today's Logged Entries Table -->
+            <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-orange-400"></i> Today's Consumed Log
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="log-count-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">0 items</span>
+                            <button onclick="resetData()" class="px-3 py-1 text-xs font-semibold rounded-lg bg-red-950/60 hover:bg-red-900/70 text-red-400 border border-red-900/60 transition flex items-center gap-1.5 shadow-sm" title="Clear all logs">
+                                <i class="fa-solid fa-trash-can"></i> Clear All Entries
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-3 px-3">Time</th>
+                                    <th class="py-3 px-3">Beverage</th>
+                                    <th class="py-3 px-3">Caffeine</th>
+                                    <th class="py-3 px-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="log-table-body" class="divide-y divide-slate-800/50 text-xs">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div id="empty-state" class="text-center py-12 text-slate-500">
+                        <i class="fa-solid fa-mug-saucer text-3xl mb-2 text-slate-600"></i>
+                        <p class="text-sm font-medium text-slate-400">No caffeine logged for today yet.</p>
+                        <p class="text-xs text-slate-500 mt-1">Use the quick buttons on the left or add a custom beverage.</p>
+                    </div>
+                </div>
+
+                <!-- Scientific Half-Life explanation box -->
+                <div class="mt-6 p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-start gap-3">
+                    <i class="fa-solid fa-circle-info text-orange-400 mt-0.5"></i>
+                    <div class="text-xs text-slate-400 space-y-1">
+                        <span class="font-semibold text-slate-200">How the PK Elimination Model Works:</span>
+                        <p>Caffeine is metabolized with an average half-life of ~5.8 hours in healthy adults, though it can range from 3 to 9 hours based on genetics, liver enzymes (CYP1A2), and medications. The model sums the exponential decay of each dose over time ($C(t) = \sum C_{0,i} \cdot 0.5^{(t - t_i)/h}$).</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="font-bold text-base text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-orange-500"></i> Pharmacokinetic Settings
+                </h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white p-1.5"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1 flex justify-between">
+                        <span>Caffeine Half-Life ($h$)</span>
+                        <span id="val-halflife" class="font-bold text-orange-400">5.8 hrs</span>
+                    </label>
+                    <input type="range" id="input-halflife" min="3.0" max="12.0" step="0.1" value="5.8" oninput="updateHalfLifeDisplay(this.value)" class="w-full accent-orange-500 bg-slate-950 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                        <span>Fast Metabolizer (3h)</span>
+                        <span>Average (5.8h)</span>
+                        <span>Slow Metabolizer (12h)</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1 flex justify-between">
+                        <span>Sleep Interference Threshold</span>
+                        <span id="val-sleep-thresh" class="font-bold text-orange-400">50 mg</span>
+                    </label>
+                    <input type="range" id="input-sleep-thresh" min="20" max="150" step="5" value="50" oninput="updateSleepThreshDisplay(this.value)" class="w-full accent-orange-500 bg-slate-950 cursor-pointer">
+                    <p class="text-[11px] text-slate-500 mt-1">Caffeine levels below this value are generally considered safe for restorative sleep if bedtime is approaching.</p>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex justify-end gap-3">
+                <button onclick="closeSettingsModal()" class="px-4 py-2 text-xs font-medium rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancel</button>
+                <button onclick="saveSettings()" class="px-4 py-2 text-xs font-medium rounded-xl bg-orange-600 hover:bg-orange-500 text-white shadow-lg shadow-orange-600/20 transition">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Message Box -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-24 opacity-0 transition-all duration-300">
+        <div id="toast-icon" class="text-orange-400 text-base"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="text-xs" id="toast-message">Action completed successfully.</div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+        // State management
+        let logs = [];
+        let halfLife = 5.8; // hours
+        let sleepThreshold = 50; // mg
+        let timeWindowHours = 24; // 12, 24, or 48
+        let chartInstance = null;
+
+        // Initialize default time input for custom form to current time
+        document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('custom-time').value = `${hours}:${minutes}`;
+
+            loadFromLocalStorage();
+            initChart();
+            updateAll();
+
+            // Refresh calculations every minute
+            setInterval(() => {
+                updateStats();
+                updateChart();
+            }, 60000);
+        });
+
+        function loadFromLocalStorage() {
+            try {
+                const savedLogs = localStorage.getItem('brewpulse_logs');
+                const savedHL = localStorage.getItem('brewpulse_halflife');
+                const savedST = localStorage.getItem('brewpulse_sleep_thresh');
+
+                if (savedLogs) logs = JSON.parse(savedLogs);
+                if (savedHL) {
+                    halfLife = parseFloat(savedHL);
+                    document.getElementById('input-halflife').value = halfLife;
+                    document.getElementById('val-halflife').innerText = halfLife + ' hrs';
+                }
+                if (savedST) {
+                    sleepThreshold = parseInt(savedST);
+                    document.getElementById('input-sleep-thresh').value = sleepThreshold;
+                    document.getElementById('val-sleep-thresh').innerText = sleepThreshold + ' mg';
+                    document.getElementById('stat-sleep-target-label').innerText = sleepThreshold;
+                }
+            } catch (e) {
+                console.error("Error loading localStorage", e);
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('brewpulse_logs', JSON.stringify(logs));
+            localStorage.setItem('brewpulse_halflife', halfLife);
+            localStorage.setItem('brewpulse_sleep_thresh', sleepThreshold);
+        }
+
+        function quickAdd(name, mg) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}:${minutes}`;
+
+            logs.push({
+                id: Date.now().toString(),
+                name: name,
+                mg: mg,
+                time: timeStr
+            });
+
+            saveToLocalStorage();
+            updateAll();
+            showToast(`Added ${name} (${mg}mg) to log!`);
+        }
+
+        function handleCustomLog(e) {
+            e.preventDefault();
+            const name = document.getElementById('custom-name').value.trim();
+            const mg = parseInt(document.getElementById('custom-mg').value);
+            const time = document.getElementById('custom-time').value;
+
+            if (!name || isNaN(mg) || !time) return;
+
+            logs.push({
+                id: Date.now().toString(),
+                name: name,
+                mg: mg,
+                time: time
+            });
+
+            saveToLocalStorage();
+            updateAll();
+            showToast(`Logged custom item: ${name} (${mg}mg)`);
+            document.getElementById('custom-name').value = '';
+            document.getElementById('custom-mg').value = '';
+        }
+
+        function deleteLog(id) {
+            logs = logs.filter(item => item.id !== id);
+            saveToLocalStorage();
+            updateAll();
+            showToast("Log entry removed.");
+        }
+
+        function resetData() {
+            if (confirm("Are you sure you want to clear all caffeine logs for today?")) {
+                logs = [];
+                saveToLocalStorage();
+                updateAll();
+                showToast("All logs cleared.");
+            }
+        }
+
+        function loadTemplate(type) {
+            logs = [];
+            if (type === 'morning') {
+                logs.push({ id: '1', name: 'Cup of Coffee (8 oz)', mg: 95, time: '08:00' });
+                logs.push({ id: '2', name: 'Espresso Shot', mg: 64, time: '13:00' });
+            } else if (type === 'heavy') {
+                logs.push({ id: '1', name: 'Can of Celsius', mg: 200, time: '09:00' });
+                logs.push({ id: '2', name: 'Cup of Coffee (8 oz)', mg: 95, time: '13:30' });
+                logs.push({ id: '3', name: 'Energy Drink - Monster', mg: 160, time: '16:00' });
+            }
+            saveToLocalStorage();
+            updateAll();
+            showToast(`Loaded template routine!`);
+        }
+
+        // Pharmacokinetic calculation
+        function getBloodCaffeineAtHour(t, logList) {
+            let total = 0;
+            logList.forEach(entry => {
+                const [h, m] = entry.time.split(':').map(Number);
+                const doseTime = h + m / 60.0;
+                if (t >= doseTime) {
+                    const hoursElapsed = t - doseTime;
+                    const remaining = entry.mg * Math.pow(0.5, hoursElapsed / halfLife);
+                    total += remaining;
+                }
+            });
+            return total;
+        }
+
+        function getCumulativeAtHour(t, logList) {
+            let total = 0;
+            logList.forEach(entry => {
+                const [h, m] = entry.time.split(':').map(Number);
+                const doseTime = h + m / 60.0;
+                if (t >= doseTime) {
+                    total += entry.mg;
+                }
+            });
+            return total;
+        }
+
+        function updateAll() {
+            renderTable();
+            updateStats();
+            updateChart();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('log-table-body');
+            const emptyState = document.getElementById('empty-state');
+            const badge = document.getElementById('log-count-badge');
+            
+            tbody.innerHTML = '';
+            badge.innerText = `${logs.length} item${logs.length === 1 ? '' : 's'}`;
+
+            if (logs.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            const sorted = [...logs].sort((a,b) => a.time.localeCompare(b.time));
+
+            sorted.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/40 transition group';
+                tr.innerHTML = `
+                    <td class="py-3.5 px-3 font-medium text-slate-300">${formatTime12h(item.time)}</td>
+                    <td class="py-3.5 px-3 text-white font-semibold">${escapeHTML(item.name)}</td>
+                    <td class="py-3.5 px-3 text-orange-400 font-bold">${item.mg} mg</td>
+                    <td class="py-3.5 px-3 text-right">
+                        <button onclick="deleteLog('${item.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-900/40 hover:border-red-800 transition flex items-center gap-1.5 ml-auto text-[11px] font-medium" title="Delete entry">
+                            <i class="fa-solid fa-trash-can"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatTime12h(time24) {
+            const [h, m] = time24.split(':').map(Number);
+            const period = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 === 0 ? 12 : h % 12;
+            return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+        }
+
+        function updateStats() {
+            const now = new Date();
+            const currentHour = now.getHours() + now.getMinutes() / 60.0;
+
+            const currentActive = getBloodCaffeineAtHour(currentHour, logs);
+            
+            let maxActive = 0;
+            let peakTimeStr = 'No doses yet';
+            let totalIntake = logs.reduce((acc, item) => acc + item.mg, 0);
+
+            for (let t = 0; t <= 24; t += 0.0833) {
+                const level = getBloodCaffeineAtHour(t, logs);
+                if (level > maxActive) {
+                    maxActive = level;
+                    const h = Math.floor(t);
+                    const m = Math.round((t - h) * 60);
+                    peakTimeStr = `At ~${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                }
+            }
+
+            let timeToSleepSafe = "Already safe";
+            if (currentActive > sleepThreshold) {
+                let safeHour = null;
+                for (let t = currentHour; t <= currentHour + 36; t += 0.1) {
+                    if (getBloodCaffeineAtHour(t, logs) <= sleepThreshold) {
+                        safeHour = t;
+                        break;
+                    }
+                }
+                if (safeHour !== null) {
+                    const targetAbsoluteHour = safeHour % 24;
+                    const daysAhead = Math.floor(safeHour / 24);
+                    const h = Math.floor(targetAbsoluteHour);
+                    const m = Math.round((targetAbsoluteHour - h) * 60);
+                    const timeFormatted = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    timeToSleepSafe = daysAhead > 0 ? `Tomorrow @ ${timeFormatted}` : `Today @ ${timeFormatted}`;
+                } else {
+                    timeToSleepSafe = " > 36 hours";
+                }
+            }
+
+            document.getElementById('stat-current').innerHTML = `${Math.round(currentActive)} <span class="text-lg font-medium text-slate-400">mg</span>`;
+            
+            const currentStatusEl = document.getElementById('stat-current-status');
+            if (currentActive > 200) {
+                currentStatusEl.innerText = "⚠️ High Jitter Risk Zone";
+                currentStatusEl.className = "text-xs text-red-400 mt-1 font-medium";
+            } else if (currentActive > 100) {
+                currentStatusEl.innerText = "⚡ Elevated alertness level";
+                currentStatusEl.className = "text-xs text-amber-400 mt-1 font-medium";
+            } else {
+                currentStatusEl.innerText = "✓ Calm / Baseline level";
+                currentStatusEl.className = "text-xs text-emerald-400 mt-1 font-medium";
+            }
+
+            document.getElementById('stat-peak').innerHTML = `${Math.round(maxActive)} <span class="text-lg font-medium text-slate-400">mg</span>`;
+            document.getElementById('stat-peak-time').innerText = peakTimeStr;
+
+            document.getElementById('stat-sleeptime').innerText = timeToSleepSafe;
+            document.getElementById('stat-sleeptime-sub').innerText = currentActive <= sleepThreshold ? "Caffeine is below target" : `Drops under ${sleepThreshold}mg`;
+
+            document.getElementById('stat-total').innerHTML = `${totalIntake} <span class="text-lg font-medium text-slate-400">mg</span>`;
+            const fdaPercent = Math.round((totalIntake / 400) * 100);
+            document.getElementById('stat-fda-percent').innerText = `${fdaPercent}% of FDA 400mg safe limit`;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('caffeineChart').getContext('2d');
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Bloodstream Level (mg)',
+                            data: [],
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.12)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 0,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Cumulative Intake (mg)',
+                            data: [],
+                            borderColor: '#fbbf24',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            fill: false,
+                            tension: 0.1,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#f8fafc',
+                            bodyColor: '#cbd5e1',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        label += Math.round(context.parsed.y) + ' mg';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.2)' },
+                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            updateChart();
+        }
+
+        function updateChart() {
+            if (!chartInstance) return;
+
+            const labels = [];
+            const bloodData = [];
+            const cumulativeData = [];
+
+            const step = timeWindowHours <= 12 ? 0.25 : (timeWindowHours <= 24 ? 0.5 : 1.0);
+            
+            for (let t = 0; t <= timeWindowHours; t += step) {
+                const hourOfDay = t % 24;
+                const dayOffset = Math.floor(t / 24);
+                
+                let labelStr = '';
+                const hInt = Math.floor(hourOfDay);
+                const mInt = Math.round((hourOfDay - hInt) * 60);
+                const period = hInt >= 12 ? 'PM' : 'AM';
+                const h12 = hInt % 12 === 0 ? 12 : hInt % 12;
+                
+                if (mInt === 0) {
+                    labelStr = dayOffset > 0 ? `+${dayOffset}d ${h12}${period}` : `${h12} ${period}`;
+                } else {
+                    labelStr = `${h12}:${String(mInt).padStart(2,'0')} ${period}`;
+                }
+
+                labels.push(labelStr);
+                bloodData.push(Math.round(getBloodCaffeineAtHour(t, logs) * 10) / 10);
+                cumulativeData.push(Math.round(getCumulativeAtHour(t, logs)));
+            }
+
+            chartInstance.data.labels = labels;
+            chartInstance.data.datasets[0].data = bloodData;
+            chartInstance.data.datasets[1].data = cumulativeData;
+            chartInstance.update();
+        }
+
+        function setTimeWindow(hours) {
+            timeWindowHours = hours;
+            document.getElementById('btn-tw-12').className = hours === 12 ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white shadow-md shadow-orange-600/20 transition' : 'px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            document.getElementById('btn-tw-24').className = hours === 24 ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white shadow-md shadow-orange-600/20 transition' : 'px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            document.getElementById('btn-tw-48').className = hours === 48 ? 'px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-600 text-white shadow-md shadow-orange-600/20 transition' : 'px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+            updateChart();
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function updateHalfLifeDisplay(val) {
+            halfLife = parseFloat(val);
+            document.getElementById('val-halflife').innerText = halfLife + ' hrs';
+        }
+
+        function updateSleepThreshDisplay(val) {
+            sleepThreshold = parseInt(val);
+            document.getElementById('val-sleep-thresh').innerText = sleepThreshold + ' mg';
+            document.getElementById('stat-sleep-target-label').innerText = sleepThreshold;
+        }
+
+        function saveSettings() {
+            saveToLocalStorage();
+            closeSettingsModal();
+            updateAll();
+            showToast("Settings updated successfully!");
+        }
+
+        function exportData() {
+            const exportObj = {
+                exportedAt: new Date().toISOString(),
+                halfLifeHours: halfLife,
+                sleepThresholdMg: sleepThreshold,
+                logs: logs
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `caffeine_tracker_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast("Data exported as JSON!");
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3500);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
