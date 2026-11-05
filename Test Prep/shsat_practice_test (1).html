@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHSAT Practice Test - Form B</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-card { transition: all 0.2s ease; }
+        .option-card.selected {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+            box-shadow: 0 0 0 1px #0ea5e9;
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-brand-600"></i>
+                <h1 class="font-bold text-lg text-slate-900 tracking-tight">SHSAT Practice Exam</h1>
+            </div>
+            <div id="header-status" class="text-sm font-semibold text-slate-500">
+                <span id="question-counter">Question 1 of 4</span>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-1.5">
+            <div id="progress-bar" class="bg-brand-500 h-1.5 transition-all duration-300 w-0"></div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8 flex flex-col">
+        
+        <!-- Quiz Section -->
+        <div id="quiz-container" class="flex-1 flex flex-col lg:flex-row gap-6 items-start">
+            
+            <!-- Passage Container (Hidden by default) -->
+            <div id="passage-container" class="hidden w-full lg:w-1/2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 overflow-y-auto max-h-[calc(100vh-10rem)] fade-in text-slate-800 font-serif leading-relaxed text-sm sm:text-base sticky top-24">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Question Side -->
+            <div id="question-side" class="flex-1 w-full flex flex-col">
+                <!-- Question Content -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mb-6 fade-in" id="question-box">
+                    <div class="mb-4 inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-md" id="question-category">
+                        Category
+                    </div>
+                    <div id="question-text" class="text-base sm:text-lg text-slate-800 font-serif leading-relaxed space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div id="options-container" class="space-y-3 mb-8 fade-in">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Navigation -->
+                <div class="mt-auto flex justify-end">
+                    <button id="next-btn" disabled onclick="handleNext()" class="px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-sm hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center space-x-2">
+                        <span>Next Question</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (Hidden by Default) -->
+        <div id="results-container" class="hidden flex-1 flex-col fade-in space-y-6 max-w-3xl mx-auto w-full">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full mb-4">
+                    <i data-lucide="check-circle" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Test Completed</h2>
+                <p class="text-slate-500 mb-6">Here is your performance summary for this practice section.</p>
+                
+                <div class="flex justify-center items-end space-x-2 mb-2">
+                    <span id="score-percentage" class="text-5xl font-extrabold text-slate-900">0%</span>
+                </div>
+                <p class="text-sm font-medium text-slate-500">Raw Score: <span id="score-raw" class="text-slate-700">0</span> out of <span id="score-total">0</span></p>
+            </div>
+
+            <!-- Review Breakdown -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 mr-2 text-slate-400"></i>
+                    Question Review
+                </h3>
+                <div id="review-list" class="space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const passageMountains = `
+            <h3 class="font-bold font-sans text-xl mb-4">Moving through Mountains</h3>
+            <p class="mb-3"><strong>(1)</strong> An age-old proverb says that necessity is the mother of invention. <strong>(2)</strong> Centuries of human ingenuity in the face of obstacles prove this to be true. <strong>(3)</strong> For many years the Swiss Alps, a mountain range spanning southern Switzerland and northern Italy, were such an obstacle. <strong>(4)</strong> Roads and railways had to navigate around the mountains or through winding tunnels inside the mountains, making the transportation of people and goods difficult and time consuming. <strong>(5)</strong> In 2016 these burdens were eased with the completion of the Gotthard Base Tunnel.</p>
+            <p class="mb-3"><strong>(6)</strong> Construction of the high-speed railway tunnel began in 1996. <strong>(7)</strong> The tunnel was created through the use of tunnel-boring machines, which are giant drills with a flat rotating head called a cutter head. <strong>(8)</strong> Each of the tunnel-boring machines used during the construction of the tunnel was about the length of four football fields arranged end-to-end. <strong>(9)</strong> During the seventeen-year construction period, 28 million tons of rock were removed, enough to rebuild the Great Pyramid of Giza five times. <strong>(10)</strong> This massive construction project is reported to have cost $12 billion. <strong>(11)</strong> After that, 4 million cubic meters of concrete, or enough concrete to build eighty-four Empire State Buildings, were used to construct and support the tunnel.</p>
+            <p class="mb-3"><strong>(12)</strong> In a few years, the high-speed railway will carry more than 250 freight trains and 55 passenger trains a day, with most traveling at speeds of around 100 to 125 miles per hour. <strong>(13)</strong> It will be faster for people to travel between northern and southern Europe. <strong>(14)</strong> The travel time between the European cities of Zurich, Switzerland, and Milan, Italy, will be reduced by an hour. <strong>(15)</strong> Many European leaders compare the Gotthard Base Tunnel to the Channel Tunnel, a 33-mile underwater tunnel that connects the United Kingdom and France. <strong>(16)</strong> While there is no roadway in the Channel Tunnel, people can drive their cars onto special trains that will carry vehicles through to the other side.</p>
+            <p class="mb-3"><strong>(17)</strong> Just as traffic congestion in major cities led to the construction of underground local transportation, natural formations, such as mountain ranges, have also sent people underground for faster, easier, and cheaper methods of transportation across larger areas. <strong>(18)</strong> There is renewed interest in constructing innovative methods of transportation that will help eliminate problems associated with traveling to and from certain areas.</p>
+        `;
+
+        const passageEWaste = `
+            <h3 class="font-bold font-sans text-xl mb-4">The World Has an E-Waste Problem</h3>
+            <p class="mb-3"><strong>1</strong> As a tech-hungry nation gets ready to upgrade to the next generation of lightning-fast 5G devices, there is a surprising environmental cost to be reckoned with: a fresh mountain of obsolete gadgets. About 6 million pounds of discarded electronics are already processed monthly at recycling giant ERI's Fresno plant. Pallets of once beloved but now outdated devices arrive here daily. Workers with hammers hack at the bulkiest devices, while others remove dangerous components like lithium-ion batteries. The scene is like a twisted movie, with doomed gadgets riding an unrelenting conveyor belt into a machine that shreds them into piles of copper, aluminum and steel.</p>
+            <p class="mb-3"><strong>2</strong> "In our society, we always have to have the new, best product," said Aaron Blum, the co-founder and chief operating officer of ERI, on a tour of the facility. Americans spent $71 billion on telephone and communication equipment in 2017, nearly five times what they spent in 2010 even when adjusted for inflation, according to the Bureau of Economic Analysis.... When we buy something new, we get rid of what's old. That cycle of consumption has made electronics waste the world's fastest-growing solid-waste stream.</p>
+            <p class="mb-3"><strong>3</strong> That stream is expected to turn into a torrent as the world upgrades to 5G, the next big step in wireless technology. 5G promises faster speeds and other benefits. But experts say it will also result in a dramatic increase in e-waste, as millions of smartphones, modems and other gadgets incompatible with 5G networks are made obsolete.</p>
+            <p class="mb-3"><strong>4</strong> Less than a quarter of all U.S. electronic waste is recycled, according to a United Nations estimate. The rest is incinerated or ends up in landfills. That's bad news, as e-waste can contain harmful materials like mercury and beryllium that pose environmental risks.</p>
+            <p class="mb-3"><strong>5</strong> Part of the problem is regulatory. Only 19 states have laws banning electronics from the regular trash. In states without such rules, like Nevada, electronics often end up in garbage and recycling bins, said Jeremy Walters, a community-relations manager for waste collector Republic Services.</p>
+            <p class="mb-3"><strong>6</strong> Even when e-waste rules exist, it's left up to consumers to handle their old devices properly. But recycling them can be a pain. Rather than just drop a used phone in a bin outside their homes, lots of people have to take their electronics to a store, which may pay them for it but could also charge them to get rid of it.</p>
+            <p class="mb-3"><strong>7</strong> One solution is to make electronics last as long as they once did. At ERI's facility, Shegerian showed TIME [magazine] dozens of televisions from the 1970s and 1980s that stopped working only recently. Yet instead, technology companies are speeding the pace of obsolescence. Most smartphone batteries can't be easily replaced when they stop holding a charge, new laptops don't accept old cables, and software companies push upgrades that won't run on old devices...</p>
+            <p class="mb-3"><strong>8</strong> Some environmental groups say multibillion-dollar companies should pick up the cost of recycling the devices they sell. Lawmakers in parts of Europe and Canada and in some U.S. states have passed so-called Extended Producer Responsibility (EPR) laws, which require manufacturers to establish and fund systems to recycle or collect obsolete products....</p>
+            <p class="mb-3"><strong>9</strong> ... Some companies are increasing their recycling efforts on their own, whether for the economic benefit or the public relations boost.</p>
+        `;
+
+        const questions = [
+            // Revising / Editing (1-4)
+            {
+                category: "Revising/Editing",
+                text: `<p>Read the paragraph:</p>
+                       <p class="pl-4 border-l-2 border-slate-200 italic">(1) Both Italian gelato and American ice cream are delightful treats to have on a hot summer day, but many people wonder: what is the difference between the two? (2) To start with, the butterfat content is much higher in ice cream than it is in gelato, making the Italian treat a wiser decision for people looking to make healthier choices. (3) Additionally, the mixing process, which adds less air to the frozen treat, makes gelato denser than ice cream. (4) Finally, gelato is served 10 to 15 degrees warmer than ice cream, which enhances the texture and flavor of the gelato, and allow it to melt more quickly.</p>
+                       <p>Which pair of revisions needs to be made in this paragraph?</p>`,
+                options: [
+                    { label: "A", text: "Sentence 1: Delete the colon after wonder AND change is to are." },
+                    { label: "B", text: "Sentence 2: Delete the comma after with AND change it is to they are." },
+                    { label: "C", text: "Sentence 3: Delete the comma after process AND change makes to make." },
+                    { label: "D", text: "Sentence 4: Delete the comma after gelato AND change allow to allows." }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Revising/Editing",
+                text: `<p>What is the best way to combine the sentences?</p>
+                       <div class="pl-4 border-l-2 border-slate-200 italic space-y-1">
+                           <p>(1) Scientists now believe that Jupiter may have as many as seventy-nine moons.</p>
+                           <p>(2) One of Jupiter's moons is named Io.</p>
+                           <p>(3) Io has the greatest number of active volcanoes in the solar system.</p>
+                       </div>`,
+                options: [
+                    { label: "E", text: "Io, which is one of Jupiter's moons, has the greatest number of active volcanoes in the solar system, and scientists now believe that Jupiter may have as many as seventy-nine moons." },
+                    { label: "F", text: "Scientists now believe that Jupiter may have as many as seventy-nine moons, and one of them is named Io, which has the greatest number of active volcanoes in the solar system." },
+                    { label: "G", text: "Scientists now believe that Jupiter may have as many as seventy-nine moons, including one named Io, which has the greatest number of active volcanoes in the solar system." },
+                    { label: "H", text: "Io, a moon with the greatest number of active volcanoes in the solar system, is one of Jupiter's moons, and scientists now believe that Jupiter may have as many as seventy-nine moons." }
+                ],
+                correctLabel: "G"
+            },
+            {
+                category: "Revising/Editing",
+                text: `<p>Which sentence contains an error in its construction and should be revised?</p>
+                       <p class="pl-4 border-l-2 border-slate-200 italic">(1) The blobfish, a creature that certainly resembles its name, is an unusual fish whose body is mostly composed of pink, gelatinous flesh. (2) Because it has very few muscles and its density is close to that of water, the blobfish spends its life floating slightly above the ocean floor. (3) It must wait patiently for whatever edible matter might float by its mouth. (4) The blobfish's downturned mouth, slimy skin, and pale coloring caused them to be voted the World's Ugliest Animal in 2013.</p>`,
+                options: [
+                    { label: "A", text: "sentence 1" },
+                    { label: "B", text: "sentence 2" },
+                    { label: "C", text: "sentence 3" },
+                    { label: "D", text: "sentence 4" }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Revising/Editing",
+                text: `<p>Which sentence contains an error in its construction and should be revised?</p>
+                       <p class="pl-4 border-l-2 border-slate-200 italic">(1) In 1976, the National Basketball Association (NBA) absorbed several teams of the American Basketball Association (ABA), including the New York Nets, who played in the Long Island area at the time. (2) The owner of the Nets decided to take the team to New Jersey after the team had financial troubles, where the team played for thirty-five seasons. (3) The New Jersey Nets had sixteen playoff appearances, including two appearances in the NBA finals. (4) In 2012, the team changed ownership and returned to New York, where the team now plays under the name the Brooklyn Nets.</p>`,
+                options: [
+                    { label: "E", text: "sentence 1" },
+                    { label: "F", text: "sentence 2" },
+                    { label: "G", text: "sentence 3" },
+                    { label: "H", text: "sentence 4" }
+                ],
+                correctLabel: "F"
+            },
+            // Revising / Editing Part B (5-10)
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Which sentence should be added after sentence 5 to introduce the main topic of the passage?</p>`,
+                options: [
+                    { label: "A", text: "The construction of the Gotthard Base Tunnel was approved by Swiss voters in 1992 and was funded by tolls, fuel taxes, and government loans." },
+                    { label: "B", text: "Leaders from several European countries attended the opening ceremonies for the Gotthard Base Tunnel, a Swiss tunnel." },
+                    { label: "C", text: "The Gotthard Base Tunnel is the world's longest and deepest railway tunnel, stretching 35.5 miles straight through the base of the Swiss Alps." },
+                    { label: "D", text: "The Gotthard Base Tunnel continues to help reduce the number of freight trucks on the roadways in the Swiss Alps." }
+                ],
+                correctLabel: "C"
+            },
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Which sentence should be added to follow and support sentence 7?</p>`,
+                options: [
+                    { label: "E", text: "The tunnel-boring machine is helpful to tunnel builders in the modern era and has been an improvement over dynamite." },
+                    { label: "F", text: "These enormous tunnel-boring machines function somewhat like a cheese grater, with the cutter head grinding slowly through rock and stone." },
+                    { label: "G", text: "Engineers had considered making a tunnel under the mountains for many years, but it was impossible to do without modern tunnel-boring machines." },
+                    { label: "H", text: "Different types of cutter heads are used with tunnel-boring machines depending on the geology of the area where the tunnel is being created." }
+                ],
+                correctLabel: "F"
+            },
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Where should sentence 11 be moved in order to improve the organization of the second paragraph (sentences 6-11)?</p>`,
+                options: [
+                    { label: "A", text: "to the beginning of the paragraph (before sentence 6)" },
+                    { label: "B", text: "between sentences 6 and 7" },
+                    { label: "C", text: "between sentences 8 and 9" },
+                    { label: "D", text: "between sentences 9 and 10" }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Which sentence presents information that shifts away from the main topic of the third paragraph (sentences 12-16) and should be removed?</p>`,
+                options: [
+                    { label: "E", text: "sentence 13" },
+                    { label: "F", text: "sentence 14" },
+                    { label: "G", text: "sentence 15" },
+                    { label: "H", text: "sentence 16" }
+                ],
+                correctLabel: "H"
+            },
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Which transition phrase should be added to the beginning of sentence 18?</p>`,
+                options: [
+                    { label: "A", text: "Although the Gotthard Base Tunnel is mainly for freight trains," },
+                    { label: "B", text: "With the Gotthard Base Tunnel taking ten years to complete," },
+                    { label: "C", text: "Because of the successful completion of the Gotthard Base Tunnel," },
+                    { label: "D", text: "As the number of trains using the Gotthard Base Tunnel increases," }
+                ],
+                correctLabel: "A" // Actually correct is C based on typical SAT context, but leaving based on prompt 'Answer: A'
+            },
+            {
+                category: "Revising/Editing Part B",
+                passage: passageMountains,
+                text: `<p>Which concluding sentence should be added after sentence 18 to support the topic presented in the passage?</p>`,
+                options: [
+                    { label: "E", text: "There is proof that underground tunnels such as the Gotthard Base Tunnel are beneficial to the economy of the surrounding area." },
+                    { label: "F", text: "The Gotthard Base Tunnel is an extraordinary example of how human ingenuity and persistence can overcome great obstacles." },
+                    { label: "G", text: "The completion of the Gotthard Base Tunnel shows that people can work together to achieve important goals." },
+                    { label: "H", text: "The Swiss government is confident that the economic impact of the Gotthard Base Tunnel will be worth its construction cost." }
+                ],
+                correctLabel: "F"
+            },
+            // Reading Comprehension (11-17)
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>The words "twisted," "doomed," and "unrelenting" most affect the sentence by...</p>`,
+                options: [
+                    { label: "A", text: "emphasizing that discarded devices are condemned to an unfortunate fate." },
+                    { label: "B", text: "expressing a sense of desperation about the amount of waste from discarded devices." },
+                    { label: "C", text: "implying that discarded devices are often disposed of in an inappropriate manner." },
+                    { label: "D", text: "suggesting a feeling of doubt about solving the problem of discarded devices." }
+                ],
+                correctLabel: "A"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>How does paragraph 2 build on what the reader learns in paragraph 1?</p>`,
+                options: [
+                    { label: "E", text: "Paragraph 2 explains the underlying cause of the massive amounts of recycling that are described in paragraph 1." },
+                    { label: "F", text: "Paragraph 2 discusses the past trends that have led to the technological innovation mentioned in paragraph 1." },
+                    { label: "G", text: "Paragraph 2 cites statistics that support the claim about technology that is stated at the beginning of paragraph 1." },
+                    { label: "H", text: "Paragraph 2 expresses disapproval of the consumers who throw away the products that are discussed in paragraph 1." }
+                ],
+                correctLabel: "E"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>Which sentence from the excerpt suggests that electronic devices are purposely designed to be disposed of after a short time?</p>`,
+                options: [
+                    { label: "A", text: "'In our society, we always have to have the new, best product,' said Aaron Blum... (paragraph 2)" },
+                    { label: "B", text: "Even when e-waste rules exist, it's left up to consumers to handle their old devices properly. (paragraph 6)" },
+                    { label: "C", text: "Most smartphone batteries can't be easily replaced when they stop holding a charge, new laptops don't accept old cables... (paragraph 7)" },
+                    { label: "D", text: "Some environmental groups say multibillion-dollar companies... should pick up the cost of recycling... (paragraph 8)" }
+                ],
+                correctLabel: "C"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>The details in paragraphs 4-5 develop a central idea of the excerpt mainly by suggesting that...</p>`,
+                options: [
+                    { label: "E", text: "the toxic components of e-waste make waste collectors reluctant to process electronic devices." },
+                    { label: "F", text: "communities across the nation have taken different approaches to the management of e-waste." },
+                    { label: "G", text: "increased amounts of e-waste will further intensify a problem that is already inadequately addressed." },
+                    { label: "H", text: "the methods that are used for disposing of non-electronic waste are inefficient for e-waste." }
+                ],
+                correctLabel: "G"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>What is the role of paragraphs 7-9 in the organization of the excerpt?</p>`,
+                options: [
+                    { label: "A", text: "They emphasize the contrast between successful and unsuccessful efforts to regulate electronic waste." },
+                    { label: "B", text: "They suggest that the electronic devices that were manufactured in the past created less pollution." },
+                    { label: "C", text: "They imply that manufacturers are willing to comply with regulations that protect the environment." },
+                    { label: "D", text: "They shift the focus from a discussion of individual behavior to a discussion of corporate responsibility." }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>The idea that e-waste regulations can be ineffective is conveyed in the excerpt through...</p>`,
+                options: [
+                    { label: "E", text: "a statistic indicating that only a few states have chosen to adopt e-waste regulations." },
+                    { label: "F", text: "an observation about typical consumer behavior in response to e-waste regulations." },
+                    { label: "G", text: "an acknowledgment that electronics stores sometimes profit from e-waste regulations." },
+                    { label: "H", text: "a comment that manufacturers are making an effort to recycle even without e-waste regulations." }
+                ],
+                correctLabel: "F"
+            },
+            {
+                category: "Reading Comprehension",
+                passage: passageEWaste,
+                text: `<p>How does the diagram after paragraph 9 most support the claim made in paragraph 4?</p>
+                       <p class="text-sm italic text-slate-500">(Reference diagram showing toxic chemicals in e-waste spreading from landfills.)</p>`,
+                options: [
+                    { label: "A", text: "The diagram suggests that people send large amounts of recyclable e-waste to landfills." },
+                    { label: "B", text: "The diagram emphasizes that toxic chemicals in e-waste can easily spread from landfills." },
+                    { label: "C", text: "The diagram implies that most landfills are poorly designed to accommodate e-waste." },
+                    { label: "D", text: "The diagram shows that water sources near landfills are endangered by e-waste." }
+                ],
+                correctLabel: "B"
+            },
+            // Mathematics (63-70)
+            {
+                category: "Mathematics",
+                text: `<p>What is the prime factorization of 3,575?</p>`,
+                options: [
+                    { label: "A", text: "5 &times; 11 &times; 13" },
+                    { label: "B", text: "5<sup>2</sup> &times; 11 &times; 13" },
+                    { label: "C", text: "5 &times; 715" },
+                    { label: "D", text: "5<sup>2</sup> &times; 143" }
+                ],
+                correctLabel: "B"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>If (x + 2y) / 5 = 3y, what is the value of x in terms of y?</p>`,
+                options: [
+                    { label: "E", text: "7y / 5" },
+                    { label: "F", text: "13y / 5" },
+                    { label: "G", text: "13" },
+                    { label: "H", text: "13y" }
+                ],
+                correctLabel: "H"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>What is the value of z in x/10 + (y-x)/5 = z/10?</p>`,
+                options: [
+                    { label: "A", text: "1" },
+                    { label: "B", text: "5" },
+                    { label: "C", text: "y" },
+                    { label: "D", text: "2y - x" }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>Two sets, R and S, are described below. The sum of the elements in set R equals the sum of the elements in set S.</p>
+                       <p>R = {5, x, 3, 8}<br>S = {6, y, 4, 1}</p>
+                       <p>What is the value of x - y?</p>`,
+                options: [
+                    { label: "E", text: "-7" },
+                    { label: "F", text: "-5" },
+                    { label: "G", text: "5" },
+                    { label: "H", text: "7" }
+                ],
+                correctLabel: "F"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>If x = 1/4, what is the value of 2 / (2 - x)?</p>`,
+                options: [
+                    { label: "A", text: "3/4" },
+                    { label: "B", text: "8/9" },
+                    { label: "C", text: "1 1/7" },
+                    { label: "D", text: "3 1/2" }
+                ],
+                correctLabel: "C"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>The cost of shipping a package is $12, plus $2 for each additional pound over 3 pounds. Which expression represents the total cost, in dollars, of shipping a package that weighs p pounds? Assume that p &ge; 3.</p>`,
+                options: [
+                    { label: "E", text: "12 + 2(p + 3)" },
+                    { label: "F", text: "12 + 2(p - 3)" },
+                    { label: "G", text: "14p + 3" },
+                    { label: "H", text: "14p - 3" }
+                ],
+                correctLabel: "F"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>Julie is at a clothing store. She wants to buy a bag for $18.75 and some T-shirts for $9.25 each. She can spend no more than $50.00. Which inequality can be used to find the number of T-shirts, x, Julie can purchase?</p>`,
+                options: [
+                    { label: "A", text: "9.25x + 18.75 &le; 50.00" },
+                    { label: "B", text: "9.25x + 18.75 &ge; 50.00" },
+                    { label: "C", text: "18.75x + 9.25 &le; 50.00" },
+                    { label: "D", text: "18.75x + 9.25 &ge; 50.00" }
+                ],
+                correctLabel: "A"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>2x + 11 &gt; 3x + 9</p>
+                       <p>For what values of x is the above inequality true?</p>`,
+                options: [
+                    { label: "E", text: "x < 2" },
+                    { label: "F", text: "x > 2" },
+                    { label: "G", text: "x < 20" },
+                    { label: "H", text: "x > 20" }
+                ],
+                correctLabel: "E"
+            }
+        ];
+
+        let currentIndex = 0;
+        let userAnswers = []; // Store selected labels
+
+        // DOM Elements
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const questionCategory = document.getElementById('question-category');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const passageContainer = document.getElementById('passage-container');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+
+        function init() {
+            lucide.createIcons();
+            loadQuestion(currentIndex);
+        }
+
+        function loadQuestion(index) {
+            const q = questions[index];
+            
+            // Update Progress UI
+            questionCounter.innerText = `Question ${index + 1} of ${questions.length}`;
+            progressBar.style.width = `${((index) / questions.length) * 100}%`;
+
+            // Reset and fade in new content
+            const qBox = document.getElementById('question-box');
+            qBox.classList.remove('fade-in');
+            optionsContainer.classList.remove('fade-in');
+            void qBox.offsetWidth; // Trigger reflow for animation
+            qBox.classList.add('fade-in');
+            optionsContainer.classList.add('fade-in');
+
+            // Handle Passage Layout
+            if (q.passage) {
+                passageContainer.innerHTML = q.passage;
+                passageContainer.classList.remove('hidden');
+                passageContainer.classList.add('block');
+            } else {
+                passageContainer.classList.add('hidden');
+                passageContainer.classList.remove('block');
+            }
+
+            // Populate Content
+            questionCategory.innerText = q.category;
+            questionText.innerHTML = q.text;
+            
+            optionsContainer.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-card w-full text-left bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-4 hover:border-brand-300 hover:bg-slate-50 focus:outline-none";
+                btn.onclick = () => selectOption(btn, opt.label);
+                
+                btn.innerHTML = `
+                    <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm">
+                        ${opt.label}
+                    </span>
+                    <span class="text-slate-700 leading-relaxed pt-1.5">
+                        ${opt.text}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Reset Next Button
+            nextBtn.disabled = true;
+            
+            // Change button text on last question
+            if (index === questions.length - 1) {
+                nextBtn.innerHTML = `<span>Submit Test</span><i data-lucide="check" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+            }
+        }
+
+        let currentSelectedLabel = null;
+
+        function selectOption(btnElement, label) {
+            // Remove selected class from all options
+            const allOptions = optionsContainer.children;
+            for (let i = 0; i < allOptions.length; i++) {
+                allOptions[i].classList.remove('selected');
+                // Reset inner span styles
+                const span = allOptions[i].querySelector('span:first-child');
+                span.classList.remove('bg-brand-600', 'text-white', 'border-brand-600');
+                span.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-200');
+            }
+
+            // Add selected class to clicked option
+            btnElement.classList.add('selected');
+            const selectedSpan = btnElement.querySelector('span:first-child');
+            selectedSpan.classList.remove('bg-slate-100', 'text-slate-700', 'border-slate-200');
+            selectedSpan.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
+
+            currentSelectedLabel = label;
+            nextBtn.disabled = false;
+        }
+
+        function handleNext() {
+            // Save answer
+            userAnswers.push(currentSelectedLabel);
+            currentSelectedLabel = null;
+
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.classList.add('flex');
+            
+            // Finalize progress bar
+            progressBar.style.width = '100%';
+            document.getElementById('header-status').innerText = "Test Complete";
+
+            let correctCount = 0;
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
+            questions.forEach((q, i) => {
+                const userAnswer = userAnswers[i];
+                const isCorrect = userAnswer === q.correctLabel;
+                if (isCorrect) correctCount++;
+
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `p-5 rounded-xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50/50 border-rose-100'}`;
+                
+                const userOptText = q.options.find(o => o.label === userAnswer)?.text || "None";
+                const correctOptText = q.options.find(o => o.label === q.correctLabel)?.text || "None";
+
+                reviewItem.innerHTML = `
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="mt-1 flex-shrink-0">
+                            ${isCorrect 
+                                ? '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>' 
+                                : '<i data-lucide="x-circle" class="w-5 h-5 text-rose-600"></i>'}
+                        </div>
+                        <div class="flex-1 text-sm">
+                            <p class="font-bold text-slate-800 mb-1">Question ${i + 1} <span class="font-normal text-slate-500 ml-2">(${q.category})</span></p>
+                            <div class="text-slate-600 mb-3 line-clamp-3">${q.text}</div>
+                            
+                            <div class="space-y-2 mt-2">
+                                <div class="flex gap-2">
+                                    <span class="text-slate-500 min-w-[80px]">Your Answer:</span>
+                                    <span class="${isCorrect ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold'}">${userAnswer}. ${userOptText}</span>
+                                </div>
+                                ${!isCorrect ? `
+                                <div class="flex gap-2">
+                                    <span class="text-slate-500 min-w-[80px]">Correct:</span>
+                                    <span class="text-slate-800 font-medium">${q.correctLabel}. ${correctOptText}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewList.appendChild(reviewItem);
+            });
+
+            // Update Score Header
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            document.getElementById('score-percentage').innerText = `${percentage}%`;
+            document.getElementById('score-raw').innerText = correctCount;
+            document.getElementById('score-total').innerText = questions.length;
+
+            lucide.createIcons();
+            window.scrollTo(0, 0);
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
