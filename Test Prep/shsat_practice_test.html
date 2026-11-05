@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHSAT Practice Test - Form B</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-card { transition: all 0.2s ease; }
+        .option-card.selected {
+            border-color: #0ea5e9;
+            background-color: #f0f9ff;
+            box-shadow: 0 0 0 1px #0ea5e9;
+        }
+    </style>
+</head>
+<body class="text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i data-lucide="graduation-cap" class="w-6 h-6 text-brand-600"></i>
+                <h1 class="font-bold text-lg text-slate-900 tracking-tight">SHSAT Practice Exam</h1>
+            </div>
+            <div id="header-status" class="text-sm font-semibold text-slate-500">
+                <span id="question-counter">Question 1 of 4</span>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-100 h-1.5">
+            <div id="progress-bar" class="bg-brand-500 h-1.5 transition-all duration-300 w-0"></div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 flex flex-col">
+        
+        <!-- Quiz Section -->
+        <div id="quiz-container" class="flex-1 flex flex-col">
+            <!-- Question Content -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 mb-6 fade-in" id="question-box">
+                <div class="mb-4 inline-block px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-md" id="question-category">
+                    Category
+                </div>
+                <div id="question-text" class="text-base sm:text-lg text-slate-800 font-serif leading-relaxed space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div id="options-container" class="space-y-3 mb-8 fade-in">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Navigation -->
+            <div class="mt-auto flex justify-end">
+                <button id="next-btn" disabled onclick="handleNext()" class="px-6 py-3 bg-brand-600 text-white font-semibold rounded-xl shadow-sm hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center space-x-2">
+                    <span>Next Question</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section (Hidden by Default) -->
+        <div id="results-container" class="hidden flex-1 flex-col fade-in space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-brand-100 text-brand-600 rounded-full mb-4">
+                    <i data-lucide="check-circle" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Test Completed</h2>
+                <p class="text-slate-500 mb-6">Here is your performance summary for this practice section.</p>
+                
+                <div class="flex justify-center items-end space-x-2 mb-2">
+                    <span id="score-percentage" class="text-5xl font-extrabold text-slate-900">0%</span>
+                </div>
+                <p class="text-sm font-medium text-slate-500">Raw Score: <span id="score-raw" class="text-slate-700">0</span> out of 4</p>
+            </div>
+
+            <!-- Review Breakdown -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <h3 class="text-lg font-bold text-slate-900 mb-6 flex items-center">
+                    <i data-lucide="clipboard-list" class="w-5 h-5 mr-2 text-slate-400"></i>
+                    Question Review
+                </h3>
+                <div id="review-list" class="space-y-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const questions = [
+            {
+                category: "Revising/Editing",
+                text: `<p>Read the paragraph:</p>
+                       <p class="pl-4 border-l-2 border-slate-200 italic">(1) Both Italian gelato and American ice cream are delightful treats to have on a hot summer day, but many people wonder: what is the difference between the two? (2) To start with, the butterfat content is much higher in ice cream than it is in gelato, making the Italian treat a wiser decision for people looking to make healthier choices. (3) Additionally, the mixing process, which adds less air to the frozen treat, makes gelato denser than ice cream. (4) Finally, gelato is served 10 to 15 degrees warmer than ice cream, which enhances the texture and flavor of the gelato, and allow it to melt more quickly.</p>
+                       <p>Which pair of revisions needs to be made in this paragraph?</p>`,
+                options: [
+                    { label: "A", text: "Sentence 1: Delete the colon after wonder AND change is to are." },
+                    { label: "B", text: "Sentence 2: Delete the comma after with AND change it is to they are." },
+                    { label: "C", text: "Sentence 3: Delete the comma after process AND change makes to make." },
+                    { label: "D", text: "Sentence 4: Delete the comma after gelato AND change allow to allows." }
+                ],
+                correctLabel: "D"
+            },
+            {
+                category: "Revising/Editing",
+                text: `<p>What is the best way to combine the sentences?</p>
+                       <div class="pl-4 border-l-2 border-slate-200 italic space-y-1">
+                           <p>(1) Scientists now believe that Jupiter may have as many as seventy-nine moons.</p>
+                           <p>(2) One of Jupiter's moons is named Io.</p>
+                           <p>(3) Io has the greatest number of active volcanoes in the solar system.</p>
+                       </div>`,
+                options: [
+                    { label: "E", text: "Io, which is one of Jupiter's moons, has the greatest number of active volcanoes in the solar system, and scientists now believe that Jupiter may have as many as seventy-nine moons." },
+                    { label: "F", text: "Scientists now believe that Jupiter may have as many as seventy-nine moons, and one of them is named Io, which has the greatest number of active volcanoes in the solar system." },
+                    { label: "G", text: "Scientists now believe that Jupiter may have as many as seventy-nine moons, including one named Io, which has the greatest number of active volcanoes in the solar system." },
+                    { label: "H", text: "Io, a moon with the greatest number of active volcanoes in the solar system, is one of Jupiter's moons, and scientists now believe that Jupiter may have as many as seventy-nine moons." }
+                ],
+                correctLabel: "G"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>What is the prime factorization of 3,575?</p>`,
+                options: [
+                    { label: "A", text: "5 &times; 11 &times; 13" },
+                    { label: "B", text: "5<sup>2</sup> &times; 11 &times; 13" },
+                    { label: "C", text: "5 &times; 715" },
+                    { label: "D", text: "5<sup>2</sup> &times; 143" }
+                ],
+                correctLabel: "B"
+            },
+            {
+                category: "Mathematics",
+                text: `<p>If <span class="whitespace-nowrap">(x + 2y) / 5 = 3y</span>, what is the value of x in terms of y?</p>`,
+                options: [
+                    { label: "E", text: "7y / 5" },
+                    { label: "F", text: "13y / 5" },
+                    { label: "G", text: "13" },
+                    { label: "H", text: "13y" }
+                ],
+                correctLabel: "H"
+            }
+        ];
+
+        let currentIndex = 0;
+        let userAnswers = []; // Store selected labels
+
+        // DOM Elements
+        const quizContainer = document.getElementById('quiz-container');
+        const resultsContainer = document.getElementById('results-container');
+        const questionCategory = document.getElementById('question-category');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const questionCounter = document.getElementById('question-counter');
+
+        function init() {
+            lucide.createIcons();
+            loadQuestion(currentIndex);
+        }
+
+        function loadQuestion(index) {
+            const q = questions[index];
+            
+            // Update Progress UI
+            questionCounter.innerText = `Question ${index + 1} of ${questions.length}`;
+            progressBar.style.width = `${((index) / questions.length) * 100}%`;
+
+            // Reset and fade in new content
+            const qBox = document.getElementById('question-box');
+            qBox.classList.remove('fade-in');
+            optionsContainer.classList.remove('fade-in');
+            void qBox.offsetWidth; // Trigger reflow for animation
+            qBox.classList.add('fade-in');
+            optionsContainer.classList.add('fade-in');
+
+            // Populate Content
+            questionCategory.innerText = q.category;
+            questionText.innerHTML = q.text;
+            
+            optionsContainer.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-card w-full text-left bg-white border border-slate-200 rounded-xl p-4 flex items-start gap-4 hover:border-brand-300 hover:bg-slate-50 focus:outline-none";
+                btn.onclick = () => selectOption(btn, opt.label);
+                
+                btn.innerHTML = `
+                    <span class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-slate-700 font-bold text-sm">
+                        ${opt.label}
+                    </span>
+                    <span class="text-slate-700 leading-relaxed pt-1.5">
+                        ${opt.text}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Reset Next Button
+            nextBtn.disabled = true;
+            
+            // Change button text on last question
+            if (index === questions.length - 1) {
+                nextBtn.innerHTML = `<span>Submit Test</span><i data-lucide="check" class="w-4 h-4"></i>`;
+                lucide.createIcons();
+            }
+        }
+
+        let currentSelectedLabel = null;
+
+        function selectOption(btnElement, label) {
+            // Remove selected class from all options
+            const allOptions = optionsContainer.children;
+            for (let i = 0; i < allOptions.length; i++) {
+                allOptions[i].classList.remove('selected');
+                // Reset inner span styles
+                const span = allOptions[i].querySelector('span:first-child');
+                span.classList.remove('bg-brand-600', 'text-white', 'border-brand-600');
+                span.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-200');
+            }
+
+            // Add selected class to clicked option
+            btnElement.classList.add('selected');
+            const selectedSpan = btnElement.querySelector('span:first-child');
+            selectedSpan.classList.remove('bg-slate-100', 'text-slate-700', 'border-slate-200');
+            selectedSpan.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
+
+            currentSelectedLabel = label;
+            nextBtn.disabled = false;
+        }
+
+        function handleNext() {
+            // Save answer
+            userAnswers.push(currentSelectedLabel);
+            currentSelectedLabel = null;
+
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.classList.add('flex');
+            
+            // Finalize progress bar
+            progressBar.style.width = '100%';
+            document.getElementById('header-status').innerText = "Test Complete";
+
+            let correctCount = 0;
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+
+            questions.forEach((q, i) => {
+                const userAnswer = userAnswers[i];
+                const isCorrect = userAnswer === q.correctLabel;
+                if (isCorrect) correctCount++;
+
+                const reviewItem = document.createElement('div');
+                reviewItem.className = `p-5 rounded-xl border ${isCorrect ? 'bg-emerald-50/50 border-emerald-100' : 'bg-rose-50/50 border-rose-100'}`;
+                
+                const userOptText = q.options.find(o => o.label === userAnswer)?.text || "None";
+                const correctOptText = q.options.find(o => o.label === q.correctLabel)?.text || "None";
+
+                reviewItem.innerHTML = `
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="mt-1 flex-shrink-0">
+                            ${isCorrect 
+                                ? '<i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>' 
+                                : '<i data-lucide="x-circle" class="w-5 h-5 text-rose-600"></i>'}
+                        </div>
+                        <div class="flex-1 text-sm">
+                            <p class="font-bold text-slate-800 mb-1">Question ${i + 1} <span class="font-normal text-slate-500 ml-2">(${q.category})</span></p>
+                            <div class="text-slate-600 mb-3 line-clamp-3">${q.text}</div>
+                            
+                            <div class="space-y-2 mt-2">
+                                <div class="flex gap-2">
+                                    <span class="text-slate-500 min-w-[80px]">Your Answer:</span>
+                                    <span class="${isCorrect ? 'text-emerald-700 font-semibold' : 'text-rose-700 font-semibold'}">${userAnswer}. ${userOptText}</span>
+                                </div>
+                                ${!isCorrect ? `
+                                <div class="flex gap-2">
+                                    <span class="text-slate-500 min-w-[80px]">Correct:</span>
+                                    <span class="text-slate-800 font-medium">${q.correctLabel}. ${correctOptText}</span>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewList.appendChild(reviewItem);
+            });
+
+            // Update Score Header
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            document.getElementById('score-percentage').innerText = `${percentage}%`;
+            document.getElementById('score-raw').innerText = correctCount;
+
+            lucide.createIcons();
+            window.scrollTo(0, 0);
+        }
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
