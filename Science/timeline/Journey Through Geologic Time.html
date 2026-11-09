@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Journey Through Geologic Time</title>
+<style>
+:root{--bg:#fbf8f1;--fg:#1d2430;--mut:#5d6675;--card:#fff;--line:#d9d3c4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--fg:#eef0f4;--mut:#a3abba;--card:#1f242d;--line:#343b49}}
+:root[data-theme="dark"]{--bg:#14171d;--fg:#eef0f4;--mut:#a3abba;--card:#1f242d;--line:#343b49}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{padding:14px 20px 8px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}
+h1{font-size:clamp(20px,3vw,30px);margin:0}
+header p{margin:0;color:var(--mut);font-size:14px}
+#bar{display:flex;align-items:center;gap:10px;padding:0 20px 8px}
+#bar button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer}
+#track{flex:1;height:14px;border-radius:7px;position:relative;display:flex;overflow:hidden;cursor:pointer;border:1px solid var(--line)}
+#track div{height:100%}
+#thumb{position:absolute;top:-2px;bottom:-2px;border:3px solid var(--fg);border-radius:6px;pointer-events:none}
+#now{font-size:13px;color:var(--mut);min-width:150px;text-align:right;font-variant-numeric:tabular-nums}
+#scroller{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;scroll-behavior:smooth;border-top:1px solid var(--line)}
+.col{flex:0 0 min(86vw,400px);display:flex;flex-direction:column;border-right:1px solid var(--line);position:relative}
+.head{padding:14px 16px 12px}
+.head .tag{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+.head h2{margin:2px 0 2px;font-size:28px}
+.head .age{font-size:14px;font-weight:600}
+.head .d{font-size:13px;margin-top:6px;line-height:1.4}
+.items{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+.card{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover,.card:focus{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.18);outline:none}
+.pic{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:32px;flex:none}
+.card b{font-size:15px}
+.card small{display:block;color:var(--mut);font-size:12px}
+#tip{position:fixed;z-index:50;width:290px;background:var(--card);border:2px solid var(--fg);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .12s}
+#tip.on{opacity:1}
+#tip .big{height:130px;border-radius:10px;display:grid;place-items:center;font-size:84px;margin-bottom:10px}
+#tip h3{margin:0 0 4px;font-size:18px}
+#tip .w{font-size:12px;color:var(--mut);margin-bottom:6px}
+#tip p{margin:0;font-size:14px;line-height:1.45}
+</style>
+</head>
+<body>
+<header>
+<h1>Journey Through Geologic Time</h1>
+<p>Scroll or drag sideways from Earth’s birth to today. Hover over (or tap) a creature to meet it.</p>
+</header>
+<div id="bar">
+<button id="L" aria-label="Scroll back in time">◀</button>
+<div id="track"><div id="thumb"></div></div>
+<button id="R" aria-label="Scroll forward in time">▶</button>
+<div id="now"></div>
+</div>
+<div id="scroller" tabindex="0"></div>
+<div id="tip" role="tooltip"><div class="big" id="tb"></div><h3 id="tn"></h3><div class="w" id="tw"></div><p id="tf"></p></div>
+<script>
+// [period, startMa, endMa, eon, era, color, description, [[emoji, name, fact], ...]]
+var D=[
+["Hadean",4600,4000,"Hadean Eon","Precambrian","#ae027e","Earth forms as a ball of molten rock. A giant impact makes the Moon.",[
+["🌋","Molten Earth","The surface was covered in magma oceans and constant volcanic eruptions. No fossils survive from this time."],
+["☄️","Moon-forming impact","A Mars-sized planet is thought to have struck the young Earth, throwing out debris that became the Moon."]]],
+["Archean",4000,2500,"Archean Eon","Precambrian","#f0047f","Oceans form and the first life appears, all of it microscopic.",[
+["🦠","First microbes","Single-celled life appeared in the oceans, and the oldest fossil evidence is more than 3.4 billion years old."],
+["🪨","Stromatolites","Layered mounds built by mats of bacteria. They are some of the oldest fossils ever found."]]],
+["Proterozoic",2500,538.8,"Proterozoic Eon","Precambrian","#f73563","Oxygen builds up in the air, and the first complex, many-celled life appears.",[
+["🫧","Oxygen makers","Cyanobacteria released oxygen for hundreds of millions of years and changed the atmosphere."],
+["🪼","Dickinsonia","A flat, ribbed, oval animal from the Ediacaran Period at the very end of this eon. Scientists still debate what it was."],
+["🪱","Ediacaran biota","Soft-bodied fronds, discs and tubes were Earth’s first large, complex organisms.",]]],
+["Cambrian",538.8,486.85,"Phanerozoic Eon","Paleozoic","#7fa056","The “Cambrian explosion”: most major animal groups show up in the fossil record.",[
+["🦐","Trilobites","Armored, many-legged sea animals. Thousands of species lived through the Paleozoic."],
+["🦞","Anomalocaris","One of the largest predators of its day, up to about a meter long, with grasping appendages."],
+["🐛","Hallucigenia","A tiny, spiny worm-like animal that walked on pairs of legs. Early scientists even drew it upside down."]]],
+["Ordovician",486.85,443.1,"Phanerozoic Eon","Paleozoic","#009270","Seas teem with life, and a major ice age ends the period with a mass extinction.",[
+["🐚","Giant nautiloids","Shelled relatives of squid, some with shells several meters long, hunted in the seas."],
+["🪸","Brachiopods and corals","Lampshell animals and early corals covered shallow sea floors."],
+["🐟","Jawless fish","Early fish with no jaws sucked up food from the sea floor."]]],
+["Silurian",443.1,419.62,"Phanerozoic Eon","Paleozoic","#b3e1b6","Life begins to creep onto land, and reefs spread through warm seas.",[
+["🦂","Sea scorpions","Eurypterids were giant aquatic predators, and some grew longer than a person."],
+["🌿","First land plants","Tiny vascular plants stood only a few centimeters tall."],
+["🦈","First jawed fish","Jaws evolved, which changed how animals hunt and defend themselves."]]],
+["Devonian",419.62,358.86,"Phanerozoic Eon","Paleozoic","#cb8c37","The “Age of Fishes.” Fish with limb-like fins begin to crawl toward land.",[
+["🦈","Dunkleosteus","A 6-meter armored fish with bony, blade-like plates in place of teeth."],
+["🐊","Tiktaalik","A fish with a flat head, neck and sturdy fins that could prop up its body in the shallows."],
+["🌳","First forests","Trees such as Archaeopteris spread across the land."]]],
+["Carboniferous",358.86,298.9,"Phanerozoic Eon","Paleozoic","#67a599","Vast swampy forests grow, and they later turn into coal.",[
+["🦟","Meganeura","A giant dragonfly relative with a wingspan of about 70 centimeters."],
+["🌴","Coal forests","Giant club mosses and tree ferns grew in warm swamps."],
+["🐸","Early amphibians","Large, salamander-like animals ruled the swamps."]]],
+["Permian",298.9,251.9,"Phanerozoic Eon","Paleozoic","#f04028","All land joins into one supercontinent. The period ends with the worst mass extinction ever.",[
+["🦎","Dimetrodon","A sail-backed animal that is actually more closely related to mammals than to dinosaurs."],
+["🏜️","Pangea","One giant supercontinent with a very dry interior."],
+["💀","The Great Dying","Roughly 90% of ocean species vanished, and trilobites were among them."]]],
+["Triassic",251.9,201.4,"Phanerozoic Eon","Mesozoic","#812b92","Life recovers. The first dinosaurs, mammals and sea reptiles appear.",[
+["🦖","Coelophysis","A slim, fast early dinosaur that hunted in the Triassic scrub."],
+["🐬","Ichthyosaurs","Dolphin-shaped marine reptiles that breathed air."],
+["🐭","First mammals","Small, shrew-like animals scurried beneath the feet of the dinosaurs."]]],
+["Jurassic",201.4,143.1,"Phanerozoic Eon","Mesozoic","#34b2c9","Giant plant-eating dinosaurs roam, and the first birds take to the air.",[
+["🦕","Brachiosaurus","A towering long-necked giant that stood about 12 meters tall."],
+["🦖","Stegosaurus","A plated plant eater with spikes on its tail."],
+["🐦","Archaeopteryx","A feathered, winged animal with teeth and a long bony tail, and an early link between dinosaurs and birds."]]],
+["Cretaceous",143.1,66,"Phanerozoic Eon","Mesozoic","#7fc64e","The age of Tyrannosaurus and Triceratops. An asteroid ends the dinosaurs.",[
+["🦖","Tyrannosaurus rex","A top predator up to about 12 meters long, with one of the strongest bites of any land animal."],
+["🦏","Triceratops","A three-horned plant eater with a huge bony frill."],
+["🌸","Flowering plants","Flowers evolved and began to spread across the world."],
+["☄️","Asteroid impact","A huge asteroid struck what is now Mexico about 66 million years ago, and non-bird dinosaurs went extinct."]]],
+["Paleogene",66,23.04,"Phanerozoic Eon","Cenozoic","#fd9a52","Mammals spread into the empty niches and quickly grow bigger.",[
+["🐋","Basilosaurus","An early whale up to about 18 meters long, with a long, snake-like body."],
+["🐍","Titanoboa","A giant snake that lived in hot swamps, perhaps more than 12 meters long."],
+["🐴","Early horses","Small, forest-dwelling animals about the size of a dog."]]],
+["Neogene",23.04,2.58,"Phanerozoic Eon","Cenozoic","#ffe619","Grasslands spread, and our early human relatives stand up on two legs.",[
+["🦈","Megalodon","A giant shark, perhaps 15 meters long, with teeth bigger than a human hand."],
+["🐒","Australopithecus","Early human relatives who walked upright. The famous skeleton “Lucy” belongs to this group."],
+["🐎","Grazing horses","Horses grew bigger and developed teeth for chewing tough grass."]]],
+["Quaternary",2.58,0,"Phanerozoic Eon","Cenozoic","#f9f97f","Ice ages come and go, and modern humans appear.",[
+["🦣","Woolly mammoth","A furry, tusked relative of elephants that lived in the cold steppes."],
+["🐆","Saber-toothed cat","Smilodon had huge canine teeth and hunted large prey."],
+["🧑","Homo sapiens","Modern humans appeared in Africa about 300,000 years ago."],
+["❄️","Ice ages","Huge sheets of ice repeatedly spread across North America and Europe."]]]
+];
+var S=document.getElementById("scroller"),T=document.getElementById("track"),TH=document.getElementById("thumb"),N=document.getElementById("now");
+function lum(h){var r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3,2),16),b=parseInt(h.substr(5,2),16);return(0.299*r+0.587*g+0.114*b)/255}
+function ink(c){return lum(c)>0.6?"#1d2430":"#ffffff"}
+function fmt(a){return a>=1000?(a/1000).toFixed(2).replace(/\.?0+$/,"")+" billion":a+" million"}
+D.forEach(function(p,i){
+ var c=document.createElement("div");c.className="col";c.dataset.i=i;
+ var ic=ink(p[5]);
+ var h='<div class="head" style="background:'+p[5]+';color:'+ic+'"><div class="tag">'+p[3]+' · '+p[4]+'</div><h2>'+p[0]+'</h2><div class="age">'+fmt(p[1])+' → '+(p[2]===0?"today":fmt(p[2]))+' years ago</div><div class="d">'+p[6]+'</div></div><div class="items">';
+ p[7].forEach(function(it,j){
+  h+='<div class="card" tabindex="0" data-p="'+i+'" data-j="'+j+'"><div class="pic" style="background:'+p[5]+'">'+it[0]+'</div><div><b>'+it[1]+'</b><small>'+p[0]+'</small></div></div>';
+ });
+ c.innerHTML=h+'</div>';S.appendChild(c);
+ var t=document.createElement("div");t.style.flex="1";t.style.background=p[5];T.insertBefore(t,TH);
+});
+var tip=document.getElementById("tip");
+function show(card){
+ var p=D[card.dataset.p],it=p[7][card.dataset.j];
+ var b=document.getElementById("tb");b.textContent=it[0];b.style.background=p[5];
+ document.getElementById("tn").textContent=it[1];
+ document.getElementById("tw").textContent=p[0]+" Period · "+p[3];
+ document.getElementById("tf").textContent=it[2];
+ var r=card.getBoundingClientRect(),w=290,x=r.right+12;
+ if(x+w>innerWidth-8)x=r.left-w-12;
+ if(x<8)x=Math.max(8,(innerWidth-w)/2);
+ var y=Math.min(Math.max(8,r.top-60),innerHeight-tip.offsetHeight-8);
+ tip.style.left=x+"px";tip.style.top=Math.max(8,y)+"px";tip.classList.add("on");
+}
+function hide(){tip.classList.remove("on")}
+S.addEventListener("mouseover",function(e){var c=e.target.closest(".card");if(c)show(c)});
+S.addEventListener("mouseout",function(e){if(e.target.closest(".card"))hide()});
+S.addEventListener("focusin",function(e){var c=e.target.closest(".card");if(c)show(c)});
+S.addEventListener("focusout",hide);
+S.addEventListener("click",function(e){var c=e.target.closest(".card");if(c){show(c);setTimeout(hide,3500)}});
+S.addEventListener("scroll",function(){
+ hide();
+ var f=S.scrollLeft/(S.scrollWidth-S.clientWidth||1);
+ TH.style.left=(f*(100-100*S.clientWidth/S.scrollWidth))+"%";TH.style.width=(100*S.clientWidth/S.scrollWidth)+"%";
+ var cw=S.scrollWidth/D.length,idx=Math.min(D.length-1,Math.round((S.scrollLeft+S.clientWidth/2)/cw-0.5));
+ var p=D[idx];N.textContent=p[0]+" · "+(p[2]===0?"today":fmt(p[2])+" yrs ago");
+});
+S.addEventListener("wheel",function(e){
+ if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();S.style.scrollBehavior="auto";S.scrollLeft+=e.deltaY*1.5;S.style.scrollBehavior=""}
+},{passive:false});
+var drag=null;
+S.addEventListener("pointerdown",function(e){if(e.pointerType==="mouse"&&!e.target.closest(".card")&&!e.target.closest(".items")){drag={x:e.clientX,l:S.scrollLeft};S.style.scrollBehavior="auto"}});
+window.addEventListener("pointermove",function(e){if(drag)S.scrollLeft=drag.l-(e.clientX-drag.x)});
+window.addEventListener("pointerup",function(){drag=null;S.style.scrollBehavior=""});
+T.addEventListener("click",function(e){var r=T.getBoundingClientRect();S.scrollLeft=((e.clientX-r.left)/r.width)*S.scrollWidth-S.clientWidth/2});
+document.getElementById("L").onclick=function(){S.scrollLeft-=S.clientWidth*0.7};
+document.getElementById("R").onclick=function(){S.scrollLeft+=S.clientWidth*0.7};
+S.dispatchEvent(new Event("scroll"));
+</script>
+</body>
+</html>
