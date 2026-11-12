@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHSAT ELA Interactive Practice Test — For Tim</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Merriweather for Reading Passages -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+              900: '#0f172a',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Merriweather', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for visual polish */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Reading pane typography sizing classes */
+    .read-font-sm { font-size: 0.925rem; line-height: 1.65; }
+    .read-font-md { font-size: 1.05rem; line-height: 1.75; }
+    .read-font-lg { font-size: 1.2rem; line-height: 1.85; }
+
+    /* Answer Elimination Strike-through */
+    .eliminated {
+      text-decoration: line-through;
+      opacity: 0.45;
+      background-color: #f8fafc !important;
+    }
+
+    /* Standardized Test Highlighting */
+    ::selection {
+      background: #fef08a;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col selection:bg-yellow-200">
+
+  <!-- ================= APP CONTAINER ================= -->
+  <div id="app" class="flex flex-col h-screen overflow-hidden">
+    
+    <!-- HEADER BAR -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-md">
+      <!-- Title & Target Info -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-blue-600 text-white p-1.5 rounded-lg flex items-center justify-center font-bold text-sm tracking-wider">
+          SHSAT
+        </div>
+        <div>
+          <h1 class="text-base font-bold leading-tight tracking-tight text-white flex items-center gap-2">
+            <span>SHSAT ELA Interactive Practice Test</span>
+            <span class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full border border-blue-700 font-medium">For Tim</span>
+          </h1>
+          <p class="text-xs text-slate-400">36 Questions • 7 Comprehensive ELA Sections</p>
+        </div>
+      </div>
+
+      <!-- Controls: Mode, Timer, Navigator Toggle -->
+      <div class="flex items-center space-x-4">
+        <!-- Mode Switcher -->
+        <div class="bg-slate-800 p-1 rounded-lg flex items-center border border-slate-700 text-xs">
+          <button id="mode-practice-btn" onclick="setMode('practice')" class="px-2.5 py-1 rounded font-medium transition-all text-slate-300 hover:text-white">
+            💡 Practice Mode
+          </button>
+          <button id="mode-exam-btn" onclick="setMode('exam')" class="px-2.5 py-1 rounded font-medium transition-all bg-blue-600 text-white shadow-sm">
+            ⏱️ Exam Mode
+          </button>
+        </div>
+
+        <!-- Timer Widget -->
+        <div class="flex items-center bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700 space-x-2 text-xs">
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span id="timer-display" class="font-mono text-sm font-semibold text-emerald-400">00:00</span>
+          <button id="timer-toggle-btn" onclick="toggleTimer()" title="Pause/Start Timer" class="text-slate-400 hover:text-white p-0.5">
+            <svg id="timer-icon-pause" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </button>
+        </div>
+
+        <!-- Progress Counter -->
+        <div class="hidden sm:flex items-center text-xs text-slate-300 bg-slate-800/60 px-2.5 py-1 rounded border border-slate-700">
+          <span id="progress-text">0 / 36 Answered</span>
+        </div>
+
+        <!-- Navigator Drawer Button -->
+        <button onclick="toggleNavDrawer()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          <span>Grid & Navigator</span>
+        </button>
+
+        <!-- Submit Test Button -->
+        <button id="finish-test-btn" onclick="confirmSubmitTest()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1">
+          <span>Finish & Score</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- SUB-HEADER BAR: Section Tabs & Shortcut Info -->
+    <div class="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between text-xs shrink-0 shadow-sm">
+      <div class="flex items-center space-x-1 overflow-x-auto py-0.5 no-scrollbar" id="section-tabs">
+        <!-- Dynamically rendered section tabs -->
+      </div>
+      <div class="hidden md:flex items-center space-x-3 text-slate-500 text-[11px]">
+        <span><kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">1-4</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">A-D</kbd> Select</span>
+        <span><kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">← / →</kbd> Next/Prev</span>
+        <span><kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono">F</kbd> Flag</span>
+      </div>
+    </div>
+
+    <!-- MAIN MAIN TEST WORKSPACE (SPLIT PANE) -->
+    <main id="main-workspace" class="flex-1 flex flex-col md:flex-row overflow-hidden relative">
+      
+      <!-- LEFT PANE: READING PASSAGE / CONTEXT -->
+      <section id="reading-pane" class="w-full md:w-1/2 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden transition-all duration-150">
+        <!-- Reading Header Bar -->
+        <div class="bg-slate-100/90 border-b border-slate-200 px-4 py-2 flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-semibold text-slate-600 uppercase tracking-wider flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              Reading Context
+            </span>
+            <span id="passage-badge" class="bg-blue-100 text-blue-800 text-[11px] font-semibold px-2 py-0.5 rounded-full">Section Passage</span>
+          </div>
+
+          <!-- Font Size Adjuster -->
+          <div class="flex items-center space-x-1 bg-white border border-slate-300 rounded-md px-1.5 py-0.5 text-xs shadow-xs">
+            <span class="text-slate-400 font-medium text-[10px] mr-1">FONT:</span>
+            <button onclick="setFontSize('sm')" id="font-btn-sm" class="px-1.5 py-0.5 rounded text-slate-600 font-bold hover:bg-slate-100">S</button>
+            <button onclick="setFontSize('md')" id="font-btn-md" class="px-1.5 py-0.5 rounded text-blue-600 font-bold bg-blue-50">M</button>
+            <button onclick="setFontSize('lg')" id="font-btn-lg" class="px-1.5 py-0.5 rounded text-slate-600 font-bold hover:bg-slate-100">L</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Passage Body -->
+        <div id="passage-content-container" class="flex-1 overflow-y-auto p-6 md:p-8 font-serif text-slate-800 leading-relaxed read-font-md select-text">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- RESIZER BAR (Visual Divider) -->
+      <div class="hidden md:block w-1 bg-slate-200 hover:bg-blue-500 cursor-col-resize transition-colors shrink-0"></div>
+
+      <!-- RIGHT PANE: QUESTION DISPLAY -->
+      <section id="question-pane" class="w-full md:w-1/2 bg-slate-50 flex flex-col h-full overflow-hidden">
+        
+        <!-- Question Top Bar -->
+        <div class="bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between shrink-0 shadow-xs">
+          <div class="flex items-center space-x-3">
+            <span id="q-number-badge" class="bg-slate-900 text-white font-bold text-sm px-2.5 py-1 rounded-md shadow-xs">
+              Q1
+            </span>
+            <span id="q-section-title" class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              Editing Set A
+            </span>
+          </div>
+
+          <!-- Bookmark / Flag Button -->
+          <button id="flag-btn" onclick="toggleFlagCurrent()" class="flex items-center space-x-1.5 px-3 py-1 rounded-md border text-xs font-semibold transition border-slate-300 text-slate-600 hover:bg-slate-100">
+            <svg id="flag-icon" class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span id="flag-text">Flag Question</span>
+          </button>
+        </div>
+
+        <!-- Question Content Body -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+          
+          <!-- Question Prompt Card -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="text-xs font-bold text-blue-600 uppercase tracking-wider">Question Stem</div>
+            <div id="q-stem-text" class="text-slate-900 font-medium text-base leading-snug">
+              <!-- Question stem here -->
+            </div>
+          </div>
+
+          <!-- Options Container -->
+          <div id="options-container" class="space-y-3">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Practice Mode Feedback Box (Hidden by default in Exam mode) -->
+          <div id="practice-feedback-box" class="hidden rounded-xl p-5 border shadow-sm transition-all">
+            <div class="flex items-center space-x-2 font-bold text-sm mb-2" id="feedback-header">
+              <!-- Icon & Correct/Incorrect text -->
+            </div>
+            <div id="feedback-explanation" class="text-sm leading-relaxed text-slate-700">
+              <!-- Explanation text -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Question Bottom Footer Controls -->
+        <div class="bg-white border-t border-slate-200 px-6 py-3.5 flex items-center justify-between shrink-0 shadow-lg">
+          <button id="prev-btn" onclick="navigateQuestion(-1)" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            <span>Previous</span>
+          </button>
+
+          <div class="text-xs text-slate-500 font-medium hidden sm:block">
+            Question <span id="current-q-index-text" class="font-bold text-slate-800">1</span> of 36
+          </div>
+
+          <button id="next-btn" onclick="navigateQuestion(1)" class="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 shadow-sm flex items-center gap-1.5 transition">
+            <span>Next</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ================= NAVIGATOR DRAWER / GRID OVERLAY ================= -->
+    <div id="nav-drawer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex justify-end">
+      <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+        <!-- Drawer Header -->
+        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800">
+          <div>
+            <h2 class="font-bold text-base">Question Navigator</h2>
+            <p class="text-xs text-slate-400">Click any question to jump immediately</p>
+          </div>
+          <button onclick="toggleNavDrawer()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="bg-slate-100 border-b border-slate-200 px-5 py-2.5 flex items-center justify-around text-xs font-medium">
+          <div class="flex items-center space-x-1.5">
+            <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+            <span>Answered</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span>Flagged</span>
+          </div>
+          <div class="flex items-center space-x-1.5">
+            <span class="w-3 h-3 rounded-full border border-slate-400 bg-white inline-block"></span>
+            <span>Unanswered</span>
+          </div>
+        </div>
+
+        <!-- Question Grid Grouped by Section -->
+        <div id="nav-grid-container" class="flex-1 overflow-y-auto p-5 space-y-6">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Drawer Footer Action -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+          <button onclick="toggleNavDrawer()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs py-2.5 rounded-lg transition">
+            Close Navigator
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCORE REPORT VIEW / MODAL ================= -->
+    <div id="score-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <!-- Score Header -->
+        <div class="bg-slate-900 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between border-b border-slate-800 gap-4">
+          <div>
+            <span class="bg-blue-600 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider text-blue-100">Performance Report</span>
+            <h2 class="text-2xl font-black mt-1">SHSAT ELA Practice Test Score</h2>
+            <p class="text-slate-400 text-xs mt-0.5">Designed specifically for Tim's SHSAT Preparation</p>
+          </div>
+
+          <div class="flex items-center space-x-6 bg-slate-800 px-6 py-3 rounded-xl border border-slate-700">
+            <div class="text-center">
+              <div class="text-xs text-slate-400 font-semibold uppercase">Total Score</div>
+              <div id="final-score-text" class="text-3xl font-black text-emerald-400">36 / 36</div>
+            </div>
+            <div class="w-px h-8 bg-slate-700"></div>
+            <div class="text-center">
+              <div class="text-xs text-slate-400 font-semibold uppercase">Percentage</div>
+              <div id="final-pct-text" class="text-3xl font-black text-blue-400">100%</div>
+            </div>
+            <div class="w-px h-8 bg-slate-700"></div>
+            <div class="text-center">
+              <div class="text-xs text-slate-400 font-semibold uppercase">Time Taken</div>
+              <div id="final-time-text" class="text-xl font-bold text-slate-200">24m 12s</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tabs & Section Summary Body -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+          
+          <!-- Section Breakdown Bars -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Section Accuracy Breakdown</h3>
+            <div id="section-breakdown-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Breakdown bars rendered dynamically -->
+            </div>
+          </div>
+
+          <hr class="border-slate-200">
+
+          <!-- Review Questions Header & Tabs -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="text-base font-bold text-slate-900">Detailed Question Review & Explanations</h3>
+            
+            <div class="flex space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+              <button onclick="filterReview('all')" id="filter-all-btn" class="px-3 py-1 rounded bg-white text-slate-900 shadow-xs">All (36)</button>
+              <button onclick="filterReview('incorrect')" id="filter-incorrect-btn" class="px-3 py-1 rounded text-slate-600 hover:text-slate-900">Incorrect</button>
+              <button onclick="filterReview('flagged')" id="filter-flagged-btn" class="px-3 py-1 rounded text-slate-600 hover:text-slate-900">Flagged</button>
+            </div>
+          </div>
+
+          <!-- Review List Cards -->
+          <div id="review-cards-container" class="space-y-4">
+            <!-- Cards rendered dynamically -->
+          </div>
+
+        </div>
+
+        <!-- Score Modal Footer -->
+        <div class="bg-slate-50 border-t border-slate-200 p-4 px-6 flex justify-between items-center shrink-0">
+          <button onclick="retakeTest()" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-lg text-xs font-bold text-slate-700 transition">
+            🔄 Retake Test
+          </button>
+          <button onclick="closeScoreModal()" class="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition">
+            Close & Review Workspace
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    /* ----------------------------------------------------
+       DATA STRUCTURE: 7 SECTIONS & 36 VERIFIED QUESTIONS
+    ---------------------------------------------------- */
+    const testData = {
+      title: "SHSAT ELA Interactive Practice Test — For Tim",
+      sections: [
+        { id: 1, title: "Section 1: Editing Set A", range: [1, 4] },
+        { id: 2, title: "Section 2: Gardens Between Buildings", range: [5, 9] },
+        { id: 3, title: "Section 3: The Library's Invisible Traffic", range: [10, 15] },
+        { id: 4, title: "Section 4: The Last Item in the Cabinet", range: [16, 20] },
+        { id: 5, title: "Section 5: Reading the Marks in Paper", range: [21, 26] },
+        { id: 6, title: "Section 6: After Closing at the Laundromat", range: [27, 32] },
+        { id: 7, title: "Section 7: Editing Set B", range: [33, 36] }
+      ],
+      passages: {
+        1: {
+          title: "Editing Set A (Standalone Items)",
+          type: "standalone",
+          text: `<div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 italic text-sm">
+                  This section consists of standalone revision and editing questions. Refer to the question prompt on the right to choose the best revision for grammar, punctuation, or sentence structure.
+                </div>`
+        },
+        2: {
+          title: "Gardens Between Buildings: Riverside Ward",
+          type: "prose",
+          text: `
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[1]</span> For three years, city planners in the Riverside Ward relied on a simple index to measure community involvement in urban agriculture: the total square footage of soil set aside for food plants. On paper, the index suggested steady growth. Between 2018 and 2021, available garden space increased by twenty-four percent, leading officials to declare the neighborhood's greening initiative an unqualified success.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[2]</span> However, when a team of researchers from the Urban Ecology Institute began conducting field visits in the spring of 2022, they noticed a striking discrepancy. While total assigned acreage had grown, regular participation had fallen in four of the six surveyed garden blocks. Heavy soil degradation, poor water access, and shading from new high-rise construction had forced plot holders to abandon nearly one-third of the newly designated plots within months of their allocation.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[3]</span> Recognizing that the initial measurement hid key environmental obstacles, the researchers devised a revised evaluation framework. Instead of tracking allocated area alone, they recorded active cultivation hours, soil moisture levels, and seasonal crop yields across eighteen microclimates<sup>1</sup> within the ward.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[4]</span> The second round of data collection produced findings that closely mirrored the preliminary field observations: garden health depended far more on localized sun exposure and water infrastructure than on sheer acreage. Crucially, because these findings were consistent across diverse blocks, researchers concluded that equipment errors or temporary weather anomalies could not account for the lower participation numbers.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[5]</span> Based on these insights, the research team submitted a qualified recommendation to the city council. Rather than expanding total garden acreage further, the city should invest in restoring soil quality and constructing reliable rainwater collection systems in existing locations. The report noted that this recommendation was limited in scope, as it reflected conditions observed over only two growing seasons.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[6]</span> Response to the report was split among municipal leaders. One faction urged an immediate halt to all new land allocations, while another argued for maintaining current expansion goals while testing infrastructure upgrades in select locations. Despite their disagreement over timing, both groups agreed that empirical evidence—rather than initial optimistic assumptions—should guide future budget decisions.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[7]</span> Ultimately, the researchers framed their report not as a final judgment on Riverside Ward's urban farming project, but as an evolving tool. In the words of lead investigator Dr. Aris Thorne, the document served "less a verdict than a map," charting specific environmental conditions to help planners make informed adjustments as the neighborhood continued to develop.</p>
+            
+            <hr class="my-6 border-slate-200">
+            <div class="text-xs text-slate-500 italic">
+              <sup>1</sup> <strong>microclimates:</strong> local atmospheric conditions (such as light, wind, or moisture) that differ from the surrounding area.
+            </div>
+          `
+        },
+        3: {
+          title: "The Library's Invisible Traffic: Juniper Square",
+          type: "prose",
+          text: `
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[1]</span> When the public library in Juniper Square installed automated circulation gates, administrators expected a straightforward increase in borrowing figures. The initial data appeared to confirm their optimism: total item scans rose by fifteen percent during the first month. Encouraged by these figures, the library board planned to expand the system to all branch locations.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[2]</span> Before authorizing the expansion, however, a team of library analysts decided to look closer at daily usage patterns. Before reviewing the detailed digital logs, the analysts carefully recorded their own predictions about patron movement. They hypothesized that the higher scan totals reflected increased borrowing by visitors attending weekend community programs.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[3]</span> When the analysts examined the actual data, they uncovered a surprising pattern. The surge in scans was concentrated almost entirely during brief weekday morning windows, coinciding with transit delays on the adjacent subway line. Commuters were entering the building not to check out books, but to use the free public Wi-Fi while waiting for trains to resume service. The strongest evidence showed that actual book circulation had remained virtually flat.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[4]</span> The team was careful not to draw sweeping conclusions from this finding. In their preliminary report, they noted that the trial had lasted only one academic semester—a timeframe too short to determine whether patron habits might shift as people grew more familiar with the new digital catalog system.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[5]</span> To balance the desire for modernization with responsible resource management, the analysts recommended a two-location pilot trial. This compromise allowed the board to test automated services under controlled conditions while preserving funds for traditional library programs.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[6]</span> In discussing their approach, the analysts emphasized the importance of curated<sup>1</sup> data analysis—carefully filtering out superficial activity spikes to reveal underlying community needs. Rather than treating gate numbers as proof of success, they treated them as clues requiring careful interpretation.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[7]</span> As branch manager Elena Rostova remarked, the team's initial assessment was never intended to be a permanent policy statement. Instead, it served as a practical blueprint, guiding future collection decisions without overcommitting library resources before complete data could be gathered.</p>
+            
+            <hr class="my-6 border-slate-200">
+            <div class="text-xs text-slate-500 italic">
+              <sup>1</sup> <strong>curate:</strong> to select, organize, and present information or items deliberately for a specific purpose.
+            </div>
+          `
+        },
+        4: {
+          title: "The Last Item in the Cabinet",
+          type: "prose",
+          text: `
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[1]</span> Priya adjusted her magnifying visor and leaned over the mahogany catalog table in the basement of the Historical Society. For two weeks, her task had been strictly routine: cross-referencing ledger entries from the late nineteenth century with physical items retrieved from brass-handled storage drawers. Most boxes contained expected relics—silver pocket watches, faded land deeds, and brass compasses with tarnished casing.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[2]</span> Box 47-B, tucked into the lowest shelf of the corner cabinet, appeared no different at first glance. Inside lay a heavily oxidized brass nautical telescope, its draw-tubes stiff with age. Attached to the barrel was a brittle paper tag marked with a simple handwritten number and a price estimate from an appraisal conducted decades earlier. To a casual observer, it was merely another standard navigational instrument from a forgotten vessel.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[3]</span> As Priya examined the telescope under focused light, however, she noticed small details that contradicted the ledger's brief entry. Near the objective lens, the metal bore subtle soldering marks where the outer ring had been re-attached by hand. Further down the tube, tiny scratched initials were visible alongside dates spanning three decades, suggesting the instrument had passed through multiple hands and undergone repeated repairs to remain functional.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[4]</span> Turning to the archival logbooks, Priya searched for records connected to the serial number stamped near the eyepiece. She discovered that the telescope had not belonged to a wealthy sea captain, as the original catalog card assumed, but had been shared among a crew of local harbor pilots who monitored river currents during severe winter storms. Each repair represented an effort to keep an essential community tool in service.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[5]</span> Priya realized how completely her perspective had shifted. When she began the inventory project, she had viewed her job as a mechanical record-keeping exercise—confirming descriptions and stamping verified codes. Now, looking at the worn brass instrument, she saw her work as an investigation, a way to recover forgotten human histories concealed behind dry numerical tags.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[6]</span> That afternoon, Priya presented her findings to Senior Curator Dr. Vance. She showed him the soldering marks, the scratched dates, and the cross-referenced pilot logs. Dr. Vance reviewed the evidence carefully before updating the catalog system. In the margin of the ledger entry, he wrote: <em>"Value is not the same as price."</em></p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[7]</span> By the time Priya closed Box 47-B, her understanding of the archive had transformed. The items in the cabinet were no longer static artifacts frozen in time; they were ongoing questions waiting for someone to pay close enough attention to read their stories.</p>
+          `
+        },
+        5: {
+          title: "Reading the Marks in Paper: Harbor Point",
+          type: "prose",
+          text: `
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[1]</span> For years, conservators at the Harbor Point Maritime Archive evaluated document preservation using a single standardized metric: relative humidity within storage vaults. According to official guidelines, keeping humidity below fifty percent was sufficient to prevent paper deterioration. On paper, the climate logs showed ideal conditions across all three storage floors.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[2]</span> During a routine inspection in 2021, however, conservation specialists noticed troubling signs of degradation in rare harbor logbooks. Despite stable humidity readings, paper fibers in several nineteenth-century volumes were becoming brittle and discolored. The single humidity measurement was failing to capture micro-environmental shifts occurring inside closed storage boxes.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[3]</span> To address the discrepancy, the team implemented a multi-factor preservation index that tracked cellulose stability, ambient airflow, and airborne particulates alongside humidity levels. This revised framework allowed conservators to discern<sup>1</sup> subtle chemical changes that traditional humidity sensors missed.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[4]</span> A follow-up study confirmed that environmental modifications—specifically micro-filtered ventilation and custom alkaline storage boxes—significantly improved paper preservation. The data showed that paper stability scores rose sharply during the trial period and remained well above the initial baseline during follow-up testing. Because these results were replicated across multiple document formats, researchers ruled out sensor error or temporary seasonal changes as explanations.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[5]</span> Based on these findings, the conservation team recommended a phased rollout of upgraded storage enclosures across the archive. They noted, however, that the long-term effectiveness of the new enclosures under extreme seasonal temperature fluctuations required continued monitoring over several years.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[6]</span> Archival administrators debated the speed of implementation. One group favored an immediate overhaul of all vault spaces, while another advocated for a gradual rollout paired with ongoing testing. Nevertheless, both factions agreed that scientific evidence should dictate preservation protocols moving forward.</p>
+            
+            <p class="mb-4"><span class="font-bold text-slate-400 mr-1 text-xs">[7]</span> Lead conservator Dr. Maya Lin emphasized that the new evaluation framework provided "less a verdict than a map," offering a flexible model for tailored preservation decisions across diverse historic collections.</p>
+
+            <!-- CUSTOM SVG CHART FOR Q26 -->
+            <div class="my-6 bg-slate-50 border border-slate-300 rounded-xl p-5 shadow-sm">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wide text-center mb-1">Figure 1: Harbor Point Conservation Trial</h4>
+              <p class="text-xs text-slate-500 text-center mb-4">Trial Measurement Over Time (Cellulose Preservation Index)</p>
+              
+              <div class="w-full max-w-md mx-auto">
+                <svg viewBox="0 0 400 220" class="w-full h-auto">
+                  <!-- Grid lines -->
+                  <line x1="50" y1="30" x2="370" y2="30" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+                  <line x1="50" y1="80" x2="370" y2="80" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+                  <line x1="50" y1="130" x2="370" y2="130" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+                  <line x1="50" y1="180" x2="370" y2="180" stroke="#cbd5e1" stroke-width="1.5"/>
+
+                  <!-- Y-Axis Labels -->
+                  <text x="40" y="184" font-size="10" text-anchor="end" fill="#64748b">0</text>
+                  <text x="40" y="134" font-size="10" text-anchor="end" fill="#64748b">30</text>
+                  <text x="40" y="84" font-size="10" text-anchor="end" fill="#64748b">60</text>
+                  <text x="40" y="34" font-size="10" text-anchor="end" fill="#64748b">90</text>
+
+                  <!-- Data Line -->
+                  <!-- Stage 1 (46): y = 180 - (46/90)*150 = 180 - 76.6 = 103.3 -->
+                  <!-- Stage 2 (64): y = 180 - (64/90)*150 = 180 - 106.6 = 73.3 -->
+                  <!-- Stage 3 (59): y = 180 - (59/90)*150 = 180 - 98.3 = 81.7 -->
+                  <polyline fill="none" stroke="#2563eb" stroke-width="3" points="100,103.3 210,73.3 320,81.7"/>
+
+                  <!-- Data Points & Labels -->
+                  <circle cx="100" cy="103.3" r="5" fill="#1e40af"/>
+                  <text x="100" y="93" font-size="11" font-weight="bold" text-anchor="middle" fill="#1e40af">46</text>
+                  <text x="100" y="200" font-size="11" font-weight="medium" text-anchor="middle" fill="#334155">Stage 1: Baseline</text>
+
+                  <circle cx="210" cy="73.3" r="5" fill="#1e40af"/>
+                  <text x="210" y="63" font-size="11" font-weight="bold" text-anchor="middle" fill="#1e40af">64</text>
+                  <text x="210" y="200" font-size="11" font-weight="medium" text-anchor="middle" fill="#334155">Stage 2: Trial</text>
+
+                  <circle cx="320" cy="81.7" r="5" fill="#1e40af"/>
+                  <text x="320" y="71" font-size="11" font-weight="bold" text-anchor="middle" fill="#1e40af">59</text>
+                  <text x="320" y="200" font-size="11" font-weight="medium" text-anchor="middle" fill="#334155">Stage 3: Follow-up</text>
+                </svg>
+              </div>
+            </div>
+
+            <hr class="my-6 border-slate-200">
+            <div class="text-xs text-slate-500 italic">
+              <sup>1</sup> <strong>discern:</strong> to detect, recognize, or distinguish something subtle or unclear.
+            </div>
+          `
+        },
+        6: {
+          title: "After Closing at the Laundromat",
+          type: "poetry",
+          text: `
+            <div class="font-serif leading-relaxed text-slate-800 bg-slate-50 p-6 rounded-xl border border-slate-200">
+              <h3 class="font-bold text-slate-900 mb-4 text-center text-lg italic">After Closing at the Laundromat</h3>
+              
+              <div class="space-y-4">
+                <div class="grid grid-cols-12">
+                  <div class="col-span-1 text-slate-400 font-sans text-xs select-none">1<br><br><br><br>5</div>
+                  <div class="col-span-11 italic">
+                    The last cycle hums to a quiet stop,<br>
+                    metal drums holding their warm breath.<br>
+                    Outside, streetlights keep their promises,<br>
+                    casting long shadows across the floor<br>
+                    where stray buttons rest like tiny coins.
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-12">
+                  <div class="col-span-1 text-slate-400 font-sans text-xs select-none"><br><br><br><br>10</div>
+                  <div class="col-span-11 italic">
+                    I sweep forgotten fragments into a pile—<br>
+                    a paper ticket, a thread of blue,<br>
+                    small pieces of lives that paused here,<br>
+                    mixed with lint and evening dust,<br>
+                    each item waiting to be noticed.
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-12">
+                  <div class="col-span-1 text-slate-400 font-sans text-xs select-none"><br><br><br><br>15</div>
+                  <div class="col-span-11 italic">
+                    For a moment, the room feels complete,<br>
+                    arranged by chance and late hour.<br>
+                    These scattered things stay still,<br>
+                    temporary stars on a concrete sky,<br>
+                    before morning opens the door.
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+        },
+        7: {
+          title: "Editing Set B (Standalone Items)",
+          type: "standalone",
+          text: `<div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 italic text-sm">
+                  This section consists of standalone revision and editing questions testing grammar, structure, parallel structure, tense consistency, and conciseness.
+                </div>`
+        }
+      },
+      questions: [
+        /* SECTION 1: EDITING SET A (Q1–Q4) */
+        {
+          id: 1,
+          sectionId: 1,
+          stem: "Read the sentence:<br><br><em>Priya packed three tools for the shoreline survey a measuring tape, a field notebook, and a water thermometer.</em><br><br>Which revision correctly punctuates the sentence?",
+          options: [
+            "Priya packed three tools for the shoreline survey: a measuring tape, a field notebook, and a water thermometer.",
+            "Priya packed three tools for the shoreline survey; a measuring tape, a field notebook, and a water thermometer.",
+            "Priya packed three tools for the shoreline survey, a measuring tape, a field notebook, and a water thermometer.",
+            "Priya packed three tools for the shoreline survey—a measuring tape a field notebook and a water thermometer."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. A colon (:) is required to introduce a list after a complete independent clause ('Priya packed three tools for the shoreline survey'). A semicolon (B) separates independent clauses, and a comma (C) creates a run-on/comma splice."
+        },
+        {
+          id: 2,
+          sectionId: 1,
+          stem: "Read the sentences:<br><br><em>In Harbor Point, the first bus route reached the museum ten minutes sooner. _____ the second route stopped directly in front of the entrance and required less walking.</em><br><br>Which transition word or phrase best completes the paragraph by showing the correct relationship between ideas?",
+          options: [
+            "For example,",
+            "However,",
+            "Therefore,",
+            "As a result,"
+          ],
+          correct: 1,
+          explanation: "Option B is correct. 'However' properly contrasts the speed advantage of the first bus route (10 minutes sooner) with the convenience advantage of the second route (less walking distance)."
+        },
+        {
+          id: 3,
+          sectionId: 1,
+          stem: "Read the sentence:<br><br><em>The set of photographs from the 2022 neighborhood festival _____ in a climate-controlled cabinet at the archive.</em><br><br>Which verb form correctly completes the sentence?",
+          options: [
+            "are stored",
+            "were storing",
+            "is stored",
+            "have been stored"
+          ],
+          correct: 2,
+          explanation: "Option C is correct. The subject of the sentence is the singular noun phrase 'The set' (prepositional phrase 'of photographs...' modifies 'set'). A singular subject requires the singular verb 'is stored'."
+        },
+        {
+          id: 4,
+          sectionId: 1,
+          stem: "Read the sentence:<br><br><em>After Mara interviewed the muralist, the reporter wrote that the artist had changed the design twice.</em><br><br>Which revision eliminates the dangling/ambiguous modifier to make the meaning completely clear?",
+          options: [
+            "Writing that the artist changed the design twice, the muralist was interviewed by Mara.",
+            "The reporter wrote that the artist changed the design twice after interviewing Mara.",
+            "After interviewing the muralist, the design had been changed twice by the artist.",
+            "After interviewing the muralist, Mara wrote that the artist had changed the design twice."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. It places the subject 'Mara' immediately after the introductory modifying clause 'After interviewing the muralist', clarifying that Mara is the reporter who conducted the interview and wrote the statement."
+        },
+
+        /* SECTION 2: GARDENS BETWEEN BUILDINGS (Q5–Q9) */
+        {
+          id: 5,
+          sectionId: 2,
+          stem: "Which summary best captures the key events and logical progression of the passage?",
+          options: [
+            "City officials measured garden acreage and immediately expanded total land allocation despite complaints from community plot holders.",
+            "After noticing that an easy measurement hid part of a problem involving urban food gardens, a team gathered broader evidence, limited its conclusion, and proposed a monitored trial.",
+            "Researchers criticized city leaders for using flawed soil, prompting an immediate council vote to shut down all food plots.",
+            "A team of ecologists replaced traditional water systems with rainwater collectors after determining that weather was the sole cause of low garden yields."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. It accurately summarizes the passage: initial square-footage metric hid problems, researchers gathered multi-factor field data, offered a qualified/limited recommendation, and leaders debated a monitored trial."
+        },
+        {
+          id: 6,
+          sectionId: 2,
+          stem: "According to paragraph 4, what was the primary value of conducting the second round of data collection?",
+          options: [
+            "It proved that soil degradation was caused entirely by seasonal rainfall variations.",
+            "It convinced all municipal leaders to adopt an identical timetable for land expansion.",
+            "It produced a similar pattern, making a simple equipment error less likely.",
+            "It allowed researchers to test new rainwater collection systems across all six blocks."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. Paragraph 4 explicitly states that because the second-round findings closely mirrored preliminary observations across diverse blocks, 'equipment errors or temporary weather anomalies could not account for' the results."
+        },
+        {
+          id: 7,
+          sectionId: 2,
+          stem: "Based on paragraph 6, which belief was shared by both groups of municipal leaders?",
+          options: [
+            "All new land allocations for food gardens should be terminated immediately.",
+            "Budget allocations should continue expanding based on initial paper estimates.",
+            "Infrastructure upgrades should be delayed until four more growing seasons are completed.",
+            "The evidence should influence what happens next, even though they disagree about how quickly to act."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Paragraph 6 notes that despite disagreement over timing (immediate halt vs. gradual testing), 'both groups agreed that empirical evidence—rather than initial optimistic assumptions—should guide future budget decisions.'"
+        },
+        {
+          id: 8,
+          sectionId: 2,
+          stem: "How are paragraphs 1 through 5 structurally organized?",
+          options: [
+            "A theory is proposed, disproved by laboratory testing, and completely abandoned.",
+            "A historical overview is presented, followed by personal anecdotes from local farmers.",
+            "A measurement problem is identified, a revised investigation is described, and a qualified recommendation follows.",
+            "Two competing city proposals are contrasted, followed by a summary of public votes."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. Paragraphs 1-2 identify the flawed metric problem; paragraphs 3-4 describe the revised multi-factor investigation; paragraph 5 delivers the qualified, limited recommendation."
+        },
+        {
+          id: 9,
+          sectionId: 2,
+          stem: "In paragraph 7, Dr. Thorne describes the report as 'less a verdict than a map.' What does this phrase convey about the report's purpose?",
+          options: [
+            "It issues a final legal ruling that closes the urban agriculture program.",
+            "It provides exact geographic boundaries for future municipal property sales.",
+            "It guides future investigation instead of claiming to settle every question.",
+            "It proves that initial city plans were completely fraudulent."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. Describing the report as a 'map' rather than a 'verdict' emphasizes that it serves as an adaptable guide for ongoing adjustments rather than a static final judgment."
+        },
+
+        /* SECTION 3: THE LIBRARY'S INVISIBLE TRAFFIC (Q10–Q15) */
+        {
+          id: 10,
+          sectionId: 3,
+          stem: "What is the main purpose of the passage?",
+          options: [
+            "To argue that public libraries should replace books with digital Wi-Fi lounges.",
+            "To demonstrate that automated gate sensors are fundamentally unreliable.",
+            "To detail how transit delays increase public spending on library catalog systems.",
+            "To explain how a team replaced an oversimplified conclusion with a cautious, testable plan."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. The passage explains how library analysts re-examined surface scan data (which assumed higher borrowing), discovered Wi-Fi commuting usage, and developed a prudent 2-location pilot plan."
+        },
+        {
+          id: 11,
+          sectionId: 3,
+          stem: "Why did researchers record their predictions before viewing the detailed digital logs (paragraph 2)?",
+          options: [
+            "To prove to the board that library staff already knew the outcome.",
+            "To fulfill a legal requirement mandated by the transit authority.",
+            "So they could compare what they expected with what the evidence actually showed.",
+            "To ensure that automated gate counters were functioning at maximum speed."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. Writing down explicit predictions beforehand allowed analysts to objectively contrast their initial assumptions (weekend borrowing) with actual empirical findings (weekday morning Wi-Fi users)."
+        },
+        {
+          id: 12,
+          sectionId: 3,
+          stem: "Which statement from the passage prevents the trial results from being treated as a universal rule?",
+          options: [
+            "Automated gates increased scan figures by fifteen percent in month one.",
+            "The trial lasted one semester and could not show whether habits persisted.",
+            "Commuters entered the library during morning transit delays.",
+            "The board intended to expand automated gates to all branches."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. Paragraph 4 explicitly notes that because the trial lasted only one semester, findings could not be generalized as a long-term universal trend in patron behavior."
+        },
+        {
+          id: 13,
+          sectionId: 3,
+          stem: "Read the footnote in paragraph 6. What does the word 'curate' emphasize about data analysis?",
+          options: [
+            "Accepting every raw statistic without questioning its origin.",
+            "Automatically deleting all data points recorded on weekends.",
+            "A description that emphasizes select and arrange deliberately.",
+            "Publishing raw dataset numbers directly to online public forums."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. As defined in the footnote, 'curate' means to select, organize, and present data deliberately to reveal underlying patterns rather than surface spikes."
+        },
+        {
+          id: 14,
+          sectionId: 3,
+          stem: "How do paragraphs 3 and 4 logically relate to each other?",
+          options: [
+            "Paragraph 3 introduces a new budget, and paragraph 4 lists staff cuts.",
+            "Paragraph 3 describes a technical failure, and paragraph 4 repairs the machine.",
+            "Paragraph 3 proves borrowing doubled, while paragraph 4 recommends closing branches.",
+            "Paragraph 3 presents the strongest result, while paragraph 4 explains why that result must be limited."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Paragraph 3 details the main finding (Wi-Fi usage spike vs flat book circulation), and paragraph 4 immediately contextualizes and limits that finding due to the short 1-semester trial timeframe."
+        },
+        {
+          id: 15,
+          sectionId: 3,
+          stem: "Why is the proposed two-location trial described as a sensible compromise?",
+          options: [
+            "It eliminates all digital technology from branch locations.",
+            "It begins acting on the evidence while preserving a chance to measure results before wider expansion.",
+            "It satisfies transit officials by building subways inside the library.",
+            "It guarantees that total book borrowing will increase by fifty percent."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. A 2-location trial tests automated systems in real conditions without overcommitting funds before long-term effectiveness is verified."
+        },
+
+        /* SECTION 4: THE LAST ITEM IN THE CABINET (Q16–Q20) */
+        {
+          id: 16,
+          sectionId: 4,
+          stem: "Which statement best expresses a central theme of the passage?",
+          options: [
+            "An object's importance can depend on the experiences and questions connected to it.",
+            "Monetary appraisals are the only reliable measure of historical value.",
+            "Archival work is purely mechanical and requires little critical thought.",
+            "Old instruments should be replaced with modern digital tools as quickly as possible."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Priya discovers that an unassuming, low-appraisal telescope holds profound historical significance through the human stories of harbor pilots and community maintenance tied to it."
+        },
+        {
+          id: 17,
+          sectionId: 4,
+          stem: "How does Priya's attitude toward her work change over the course of the story?",
+          options: [
+            "From enthusiasm about antique pricing to frustration with ledger errors.",
+            "From deep interest in captain biographies to boredom with physical drawer sorting.",
+            "From viewing cataloging as a routine task to seeking a career in maritime navigation.",
+            "From viewing it as a fixed record-keeping task to seeing it as a way to uncover missing stories."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Paragraph 5 highlights that Priya initially saw her job as a mechanical record-keeping exercise, but came to see it as an investigation to uncover forgotten human histories."
+        },
+        {
+          id: 18,
+          sectionId: 4,
+          stem: "In paragraph 6, why does Dr. Vance write 'Value is not the same as price' in the ledger margin?",
+          options: [
+            "He believes the telescope should be sold immediately at an auction.",
+            "He is scolding Priya for wasting time on a low-cost item.",
+            "He wants to increase the rental fees charged to museum patrons.",
+            "He agrees that the object's educational and historical importance cannot be captured by a price alone."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Dr. Vance acknowledges that the telescope's historical significance—its role in harbor piloting and shared community effort—far exceeds its commercial appraisal price."
+        },
+        {
+          id: 19,
+          sectionId: 4,
+          stem: "How does the third-person point of view shape the reader's understanding of the story?",
+          options: [
+            "It reveals how Priya's interpretation of the inventory changes as new evidence appears.",
+            "It presents only Dr. Vance's internal thoughts about museum policy.",
+            "It gives unbiased financial reports about nineteenth-century shipping rates.",
+            "It allows readers to hear directly from the harbor pilots who used the telescope."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. The third-person narrator tracks Priya's internal shifts, observations, and changing perspective as she investigates the details on Box 47-B."
+        },
+        {
+          id: 20,
+          sectionId: 4,
+          stem: "Which detail from the text best shows that previous owners valued the brass telescope?",
+          options: [
+            "It had been repaired several times.",
+            "It was placed in a cardboard box on a high shelf.",
+            "It had an estimated price tag attached to its eyepiece.",
+            "It matched the color of the mahogany catalog table."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Paragraph 3 notes hand-soldered lens rings and scratched dates spanning decades, proving past owners repeatedly invested effort to repair and preserve the instrument."
+        },
+
+        /* SECTION 5: READING THE MARKS IN PAPER (Q21–Q26) */
+        {
+          id: 21,
+          sectionId: 5,
+          stem: "Which summary best captures the key events and structure of the Harbor Point passage?",
+          options: [
+            "Vault humidity was too high, so conservators discarded all 19th-century logbooks and built new facilities.",
+            "Conservators tested single-factor sensors for ten years before discovering that digital scans were superior to paper.",
+            "Administrators agreed immediately on a full vault reconstruction after receiving a single water damage report.",
+            "After noticing that an easy measurement hid part of a problem involving document conservation, a team gathered broader evidence, limited its conclusion, and proposed a monitored trial."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. The passage describes how standard humidity metrics masked paper degradation, prompting a multi-factor study, a qualified recommendation, and a monitored trial."
+        },
+        {
+          id: 22,
+          sectionId: 5,
+          stem: "What was the main value of the second round of observations/testing in the study (paragraph 4)?",
+          options: [
+            "It produced a similar pattern, making a simple equipment error less likely.",
+            "It proved that cellulose degradation occurs only during summer months.",
+            "It allowed staff to eliminate all ambient airflow in the storage vaults.",
+            "It convinced administrators to complete all vault construction in one month."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Replicating the positive results across multiple document formats ruled out temporary anomalies or sensor errors as the cause of improved paper preservation."
+        },
+        {
+          id: 23,
+          sectionId: 5,
+          stem: "Based on paragraph 6, what belief was shared by both groups of archival administrators?",
+          options: [
+            "Storage vault upgrades should be canceled until new funding is found.",
+            "The evidence should influence what happens next, even though they disagree about how quickly to act.",
+            "Standard humidity readings are the only metric needed for document care.",
+            "All rare logbooks should be moved to an off-site private warehouse."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. Paragraph 6 notes that while one group favored immediate overhaul and another a gradual rollout, both agreed that scientific evidence must guide future protocols."
+        },
+        {
+          id: 24,
+          sectionId: 5,
+          stem: "How are paragraphs 1 through 5 of the text organized?",
+          options: [
+            "A measurement problem is identified, a revised investigation is described, and a qualified recommendation follows.",
+            "Three historical periods are compared in chronological order.",
+            "A debate between two scientists is resolved by a public vote.",
+            "A financial breakdown of budget costs leads to a sales proposal."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Paragraphs 1-2 highlight the inadequate single metric; paragraphs 3-4 describe the multi-factor study; paragraph 5 gives the qualified rollout recommendation."
+        },
+        {
+          id: 25,
+          sectionId: 5,
+          stem: "In paragraph 7, Dr. Lin describes the framework as 'less a verdict than a map.' How does this metaphor function?",
+          options: [
+            "It guides future investigation instead of claiming to settle every question.",
+            "It provides topographical navigation directions for visitors to the maritime archive.",
+            "It proves that all historical logbooks contain sea charts.",
+            "It asserts that paper conservation protocols can never be modified."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Calling the framework a 'map' emphasizes that it serves as a flexible, ongoing guide for preservation decisions rather than a static final verdict."
+        },
+        {
+          id: 26,
+          sectionId: 5,
+          stem: "Refer to both the text and Figure 1 ('Trial Measurement Over Time'). Which conclusion is supported by BOTH the text description and the line graph?",
+          options: [
+            "Paper preservation scores dropped below baseline during the trial period.",
+            "The measured index rose during the trial and remained above baseline at follow-up.",
+            "Baseline scores were higher than both the trial and follow-up measurements.",
+            "The follow-up score reached 90 points on the index scale."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. Both the text (Paragraph 4) and Figure 1 show that the index score rose from baseline (46) during the trial (64) and remained elevated above baseline at follow-up (59)."
+        },
+
+        /* SECTION 6: POEM — AFTER CLOSING AT THE LAUNDROMAT (Q27–Q32) */
+        {
+          id: 27,
+          sectionId: 6,
+          stem: "Which statement best expresses a central theme of the poem?",
+          options: [
+            "Brief, ordinary moments can become meaningful when someone pays close attention to them.",
+            "Late-night work is tedious and should be avoided whenever possible.",
+            "Public places are damaged when people leave trash behind.",
+            "Mechanical equipment is superior to human effort in maintaining order."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. The speaker finds quiet beauty and completeness in the mundane leftovers of a closed laundromat by observing forgotten items with care and imagination."
+        },
+        {
+          id: 28,
+          sectionId: 6,
+          stem: "What is the primary effect of the metaphor 'temporary stars on a concrete sky' in line 17?",
+          options: [
+            "It suggests the speaker is looking up through a broken ceiling.",
+            "It indicates that the laundromat will be illuminated by skylights.",
+            "It emphasizes that the floor is dirty and needs deep scrubbing.",
+            "It presents ordinary objects as briefly luminous and worthy of attention."
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Metaphorically comparing stray buttons and blue thread on the concrete floor to 'stars' elevates ordinary discarded items into something luminous and worthy of poetic reflection."
+        },
+        {
+          id: 29,
+          sectionId: 6,
+          stem: "How does the speaker view the arrival of morning in the final stanza?",
+          options: [
+            "The speaker accepts that the arrangement will disappear even while valuing it now.",
+            "The speaker fears that morning will bring dangerous crowds to the laundromat.",
+            "The speaker hopes morning will never arrive so the building stays closed.",
+            "The speaker believes morning will permanently preserve the scattered items."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Line 18 ('before morning opens the door') acknowledges that morning will disrupt the tranquil, temporary scene, but the speaker still cherishes the present still moment."
+        },
+        {
+          id: 30,
+          sectionId: 6,
+          stem: "How does the final stanza (lines 11–18) contribute to the poem's overall meaning?",
+          options: [
+            "It contrasts the coming changes with the speaker's present attention to a temporary scene.",
+            "It explains how to operate washing machines efficiently during peak hours.",
+            "It introduces a conflict between the speaker and the laundromat owner.",
+            "It proves that late-night workers are always lonely."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. The final stanza highlights how the fleeting stillness of the night creates a moment of quiet completeness before the morning rush resets the space."
+        },
+        {
+          id: 31,
+          sectionId: 6,
+          stem: "Why does the speaker list items such as 'a paper ticket, a thread of blue' in stanza 2 (lines 6–10)?",
+          options: [
+            "To show the kinds of overlooked details the speaker transforms through attention.",
+            "To complain about patrons who refuse to clean up after themselves.",
+            "To calculate the total cost of lost items in the laundromat.",
+            "To explain why the floor needs to be replaced."
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Listing small, mundane fragments ('paper ticket', 'thread of blue') highlights how ordinary, overlooked remnants of daily life become meaningful objects of focus."
+        },
+        {
+          id: 32,
+          sectionId: 6,
+          stem: "In line 3, the phrase 'keep their promises' most nearly means that the streetlights:",
+          options: [
+            "continue performing their expected tasks",
+            "make loud humming sounds through the window",
+            "shine brighter than the interior laundry lights",
+            "turn off automatically when visitors leave"
+          ],
+          correct: 0,
+          explanation: "Option A is correct. Saying streetlights 'keep their promises' is a personification meaning they reliably perform their job of casting steady light through the dark hours."
+        },
+
+        /* SECTION 7: EDITING SET B (Q33–Q36) */
+        {
+          id: 33,
+          sectionId: 7,
+          stem: "Read the sentence:<br><br><em>Before Jonah's robotics team tested its final design, it _____ three earlier versions of the gripping mechanism.</em><br><br>Which verb tense correctly completes the sentence?",
+          options: [
+            "builds",
+            "has built",
+            "had built",
+            "will build"
+          ],
+          correct: 2,
+          explanation: "Option C is correct. The past perfect tense ('had built') is required because the building of the earlier versions occurred prior to another completed past action ('tested its final design')."
+        },
+        {
+          id: 34,
+          sectionId: 7,
+          stem: "Read the sentence:<br><br><em>The 2018 archive internship taught students how to catalog artifacts, how to scan fragile documents, and _____.</em><br><br>Which phrase completes the sentence with parallel structure?",
+          options: [
+            "photographs were described in detail.",
+            "describing photographs accurately.",
+            "how to describe photographs.",
+            "also the description of photographs."
+          ],
+          correct: 2,
+          explanation: "Option C is correct. Parallel structure requires matching infinitive phrases introduced by 'how to': 'how to catalog...', 'how to scan...', and 'how to describe photographs'."
+        },
+        {
+          id: 35,
+          sectionId: 7,
+          stem: "Read the four sentences below:<br><br>(1) Elias's class wanted to learn which soil type retained the most moisture for plant growth.<br>(2) They poured two hundred milliliters of water into each sample funnel.<br>(3) First, they filled three identical funnels with equal amounts of sand, clay, and loam.<br>(4) Finally, they compared the amount of water collected in the measuring cylinders below.<br><br>Which sequence represents the most logical ordering of these sentences?",
+          options: [
+            "3, 2, 1, 4",
+            "1, 2, 3, 4",
+            "3, 1, 2, 4",
+            "1, 3, 2, 4"
+          ],
+          correct: 3,
+          explanation: "Option D is correct. Sequence 1, 3, 2, 4 follows logical experiment flow: (1) Goal statement -> (3) First step setup -> (2) Action taken -> (4) Final measurement ('Finally')."
+        },
+        {
+          id: 36,
+          sectionId: 7,
+          stem: "Read the sentence:<br><br><em>At 7:00 a.m. in the morning, volunteers began counting bicycles that crossed the bridge.</em><br><br>Which revision eliminates redundant wordiness while retaining exact meaning?",
+          options: [
+            "At 7:00 a.m. early in the morning hours, volunteers began counting bicycles.",
+            "At 7:00 a.m., volunteers began counting bicycles that crossed the bridge.",
+            "When the time reached 7:00 a.m. in the morning, counting of bicycles was started by volunteers.",
+            "Starting at 7:00 a.m. in the morning, volunteers counted bridge bicycles."
+          ],
+          correct: 1,
+          explanation: "Option B is correct. '7:00 a.m.' already includes the concept of 'in the morning'. Removing 'in the morning' eliminates wordy redundancy."
+        }
+      ]
+    };
+
+    /* ----------------------------------------------------
+       APPLICATION STATE MANAGEMENT
+    ---------------------------------------------------- */
+    let currentState = {
+      mode: 'exam', // 'practice' or 'exam'
+      currentQuestionIndex: 0, // 0 to 35
+      userAnswers: {}, // questionId -> optionIndex
+      eliminatedOptions: {}, // questionId -> Array of optionIndices
+      flaggedQuestions: new Set(), // Set of questionIds
+      fontSize: 'md', // 'sm', 'md', 'lg'
+      timerSeconds: 0,
+      timerRunning: true,
+      timerInterval: null,
+      testCompleted: false,
+      reviewFilter: 'all' // 'all', 'incorrect', 'flagged'
+    };
+
+    /* ----------------------------------------------------
+       INITIALIZATION & TIMER
+    ---------------------------------------------------- */
+    window.onload = function() {
+      startTimer();
+      renderSectionTabs();
+      renderQuestion();
+      setupKeyboardShortcuts();
+      updateProgress();
+    };
+
+    function startTimer() {
+      if (currentState.timerInterval) clearInterval(currentState.timerInterval);
+      currentState.timerInterval = setInterval(() => {
+        if (currentState.timerRunning) {
+          currentState.timerSeconds++;
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function toggleTimer() {
+      currentState.timerRunning = !currentState.timerRunning;
+      const icon = document.getElementById('timer-icon-pause');
+      if (currentState.timerRunning) {
+        icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+      } else {
+        icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(currentState.timerSeconds / 60);
+      const secs = currentState.timerSeconds % 60;
+      const formatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      document.getElementById('timer-display').innerText = formatted;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}m ${secs}s`;
+    }
+
+    /* ----------------------------------------------------
+       MODE & NAVIGATION CONTROLS
+    ---------------------------------------------------- */
+    function setMode(mode) {
+      currentState.mode = mode;
+      const practiceBtn = document.getElementById('mode-practice-btn');
+      const examBtn = document.getElementById('mode-exam-btn');
+
+      if (mode === 'practice') {
+        practiceBtn.className = "px-2.5 py-1 rounded font-medium transition-all bg-blue-600 text-white shadow-sm";
+        examBtn.className = "px-2.5 py-1 rounded font-medium transition-all text-slate-300 hover:text-white";
+      } else {
+        examBtn.className = "px-2.5 py-1 rounded font-medium transition-all bg-blue-600 text-white shadow-sm";
+        practiceBtn.className = "px-2.5 py-1 rounded font-medium transition-all text-slate-300 hover:text-white";
+      }
+
+      renderQuestion(); // Re-render to show/hide instant feedback
+    }
+
+    function setFontSize(size) {
+      currentState.fontSize = size;
+      const container = document.getElementById('passage-content-container');
+      container.classList.remove('read-font-sm', 'read-font-md', 'read-font-lg');
+      container.classList.add(`read-font-${size}`);
+
+      ['sm', 'md', 'lg'].forEach(s => {
+        const btn = document.getElementById(`font-btn-${s}`);
+        if (s === size) {
+          btn.className = "px-1.5 py-0.5 rounded text-blue-600 font-bold bg-blue-50";
+        } else {
+          btn.className = "px-1.5 py-0.5 rounded text-slate-600 font-bold hover:bg-slate-100";
+        }
+      });
+    }
+
+    function renderSectionTabs() {
+      const container = document.getElementById('section-tabs');
+      container.innerHTML = testData.sections.map(sec => {
+        const isCurrentSection = getCurrentQuestion().sectionId === sec.id;
+        return `
+          <button onclick="jumpToSection(${sec.id})" 
+                  class="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${
+                    isCurrentSection 
+                      ? 'bg-slate-900 text-white' 
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }">
+            Sec ${sec.id} (Q${sec.range[0]}-${sec.range[1]})
+          </button>
+        `;
+      }).join('');
+    }
+
+    function getCurrentQuestion() {
+      return testData.questions[currentState.currentQuestionIndex];
+    }
+
+    function jumpToQuestion(qIndex) {
+      currentState.currentQuestionIndex = qIndex;
+      renderQuestion();
+      renderSectionTabs();
+      closeNavDrawer();
+    }
+
+    function jumpToSection(secId) {
+      const section = testData.sections.find(s => s.id === secId);
+      if (section) {
+        jumpToQuestion(section.range[0] - 1);
+      }
+    }
+
+    function navigateQuestion(direction) {
+      const newIndex = currentState.currentQuestionIndex + direction;
+      if (newIndex >= 0 && newIndex < testData.questions.length) {
+        currentState.currentQuestionIndex = newIndex;
+        renderQuestion();
+        renderSectionTabs();
+      }
+    }
+
+    /* ----------------------------------------------------
+       KEYBOARD SHORTCUTS
+    ---------------------------------------------------- */
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        // Ignore if modal or drawer open or typing in input
+        if (document.activeElement.tagName === 'INPUT' || !document.getElementById('score-modal').classList.contains('hidden')) return;
+
+        if (e.key === 'ArrowRight') navigateQuestion(1);
+        if (e.key === 'ArrowLeft') navigateQuestion(-1);
+        if (e.key === 'f' || e.key === 'F') toggleFlagCurrent();
+
+        if (['1', '2', '3', '4'].includes(e.key)) {
+          selectAnswer(parseInt(e.key) - 1);
+        }
+        if (['a', 'b', 'c', 'd', 'A', 'B', 'C', 'D'].includes(e.key)) {
+          const charMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+          selectAnswer(charMap[e.key]);
+        }
+      });
+    }
+
+    /* ----------------------------------------------------
+       RENDER QUESTION & PASSAGE
+    ---------------------------------------------------- */
+    function renderQuestion() {
+      const q = getCurrentQuestion();
+      const p = testData.passages[q.sectionId];
+
+      // 1. Render Left Passage Pane
+      const passageContainer = document.getElementById('passage-content-container');
+      const passageBadge = document.getElementById('passage-badge');
+      passageBadge.innerText = `Section ${q.sectionId} • ${p.type.toUpperCase()}`;
+
+      passageContainer.innerHTML = `
+        <h2 class="text-xl font-bold font-sans text-slate-900 mb-4 border-b pb-2 border-slate-200">${p.title}</h2>
+        ${p.text}
+      `;
+
+      // 2. Render Header & Badges
+      document.getElementById('q-number-badge').innerText = `Q${q.id}`;
+      document.getElementById('q-section-title').innerText = p.title;
+      document.getElementById('current-q-index-text').innerText = q.id;
+
+      // Prev/Next Button state
+      document.getElementById('prev-btn').disabled = currentState.currentQuestionIndex === 0;
+      const nextBtn = document.getElementById('next-btn');
+      if (currentState.currentQuestionIndex === testData.questions.length - 1) {
+        nextBtn.innerHTML = `<span>Submit</span>`;
+      } else {
+        nextBtn.innerHTML = `<span>Next</span> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+      }
+
+      // 3. Flag state
+      const isFlagged = currentState.flaggedQuestions.has(q.id);
+      const flagBtn = document.getElementById('flag-btn');
+      const flagIcon = document.getElementById('flag-icon');
+      const flagText = document.getElementById('flag-text');
+
+      if (isFlagged) {
+        flagBtn.className = "flex items-center space-x-1.5 px-3 py-1 rounded-md border text-xs font-semibold transition border-amber-500 bg-amber-50 text-amber-700 shadow-xs";
+        flagIcon.setAttribute('fill', 'currentColor');
+        flagIcon.className = "w-4 h-4 text-amber-500";
+        flagText.innerText = "Flagged";
+      } else {
+        flagBtn.className = "flex items-center space-x-1.5 px-3 py-1 rounded-md border text-xs font-semibold transition border-slate-300 text-slate-600 hover:bg-slate-100";
+        flagIcon.setAttribute('fill', 'none');
+        flagIcon.className = "w-4 h-4 text-slate-400";
+        flagText.innerText = "Flag Question";
+      }
+
+      // 4. Question Stem
+      document.getElementById('q-stem-text').innerHTML = q.stem;
+
+      // 5. Options Cards
+      const optionsContainer = document.getElementById('options-container');
+      const selectedOpt = currentState.userAnswers[q.id];
+      const elimList = currentState.eliminatedOptions[q.id] || [];
+
+      optionsContainer.innerHTML = q.options.map((optText, optIdx) => {
+        const optionLetter = String.fromCharCode(65 + optIdx);
+        const isSelected = selectedOpt === optIdx;
+        const isEliminated = elimList.includes(optIdx);
+
+        // Styling calculation
+        let cardStyle = "border-slate-200 bg-white hover:border-slate-300 text-slate-800";
+        let letterStyle = "bg-slate-100 text-slate-700 border-slate-300";
+
+        if (isSelected) {
+          cardStyle = "border-blue-600 bg-blue-50/70 text-blue-900 ring-2 ring-blue-500/20 shadow-xs";
+          letterStyle = "bg-blue-600 text-white border-blue-600 font-bold";
+        }
+
+        if (currentState.mode === 'practice' && selectedOpt !== undefined) {
+          if (optIdx === q.correct) {
+            cardStyle = "border-emerald-500 bg-emerald-50 text-emerald-900 ring-2 ring-emerald-500/20";
+            letterStyle = "bg-emerald-600 text-white border-emerald-600 font-bold";
+          } else if (isSelected && optIdx !== q.correct) {
+            cardStyle = "border-rose-500 bg-rose-50 text-rose-900";
+            letterStyle = "bg-rose-600 text-white border-rose-600 font-bold";
+          }
+        }
+
+        return `
+          <div class="relative flex items-center group">
+            <!-- Main Option Selection Button -->
+            <button onclick="selectAnswer(${optIdx})" 
+                    class="w-full text-left p-4 rounded-xl border ${cardStyle} ${isEliminated ? 'eliminated' : ''} transition-all duration-150 flex items-start space-x-3.5 pr-12">
+              <span class="w-6 h-6 rounded-lg border flex items-center justify-center text-xs shrink-0 mt-0.5 ${letterStyle}">
+                ${optionLetter}
+              </span>
+              <span class="text-sm font-medium leading-relaxed">${optText}</span>
+            </button>
+
+            <!-- Elimination Strike Toggle (X) -->
+            <button onclick="toggleEliminate(${optIdx}, event)" 
+                    title="Strike out option" 
+                    class="absolute right-3 p-1.5 text-slate-300 hover:text-rose-500 rounded-lg hover:bg-slate-100 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // 6. Practice Mode Feedback Box
+      const feedbackBox = document.getElementById('practice-feedback-box');
+      if (currentState.mode === 'practice' && selectedOpt !== undefined) {
+        feedbackBox.classList.remove('hidden');
+        const isCorrect = selectedOpt === q.correct;
+        
+        if (isCorrect) {
+          feedbackBox.className = "rounded-xl p-5 border border-emerald-300 bg-emerald-50/90 shadow-xs";
+          document.getElementById('feedback-header').innerHTML = `
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-emerald-800">Correct Answer!</span>
+          `;
+        } else {
+          feedbackBox.className = "rounded-xl p-5 border border-rose-300 bg-rose-50/90 shadow-xs";
+          document.getElementById('feedback-header').innerHTML = `
+            <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-rose-800">Incorrect Choice</span>
+          `;
+        }
+
+        document.getElementById('feedback-explanation').innerHTML = `
+          <p class="font-semibold text-slate-900 mb-1">Explanation:</p>
+          <p class="text-slate-700">${q.explanation}</p>
+        `;
+      } else {
+        feedbackBox.classList.add('hidden');
+      }
+    }
+
+    /* ----------------------------------------------------
+       ANSWER SELECTION & ELIMINATION
+    ---------------------------------------------------- */
+    function selectAnswer(optIdx) {
+      const q = getCurrentQuestion();
+      currentState.userAnswers[q.id] = optIdx;
+      updateProgress();
+      renderQuestion();
+    }
+
+    function toggleEliminate(optIdx, event) {
+      event.stopPropagation();
+      const q = getCurrentQuestion();
+      if (!currentState.eliminatedOptions[q.id]) {
+        currentState.eliminatedOptions[q.id] = [];
+      }
+      const list = currentState.eliminatedOptions[q.id];
+      const index = list.indexOf(optIdx);
+      if (index > -1) {
+        list.splice(index, 1);
+      } else {
+        list.push(optIdx);
+      }
+      renderQuestion();
+    }
+
+    function toggleFlagCurrent() {
+      const q = getCurrentQuestion();
+      if (currentState.flaggedQuestions.has(q.id)) {
+        currentState.flaggedQuestions.delete(q.id);
+      } else {
+        currentState.flaggedQuestions.add(q.id);
+      }
+      renderQuestion();
+    }
+
+    function updateProgress() {
+      const count = Object.keys(currentState.userAnswers).length;
+      document.getElementById('progress-text').innerText = `${count} / 36 Answered`;
+    }
+
+    /* ----------------------------------------------------
+       DRAWER NAVIGATOR
+    ---------------------------------------------------- */
+    function toggleNavDrawer() {
+      const drawer = document.getElementById('nav-drawer');
+      if (drawer.classList.contains('hidden')) {
+        renderNavGrid();
+        drawer.classList.remove('hidden');
+      } else {
+        drawer.classList.add('hidden');
+      }
+    }
+
+    function closeNavDrawer() {
+      document.getElementById('nav-drawer').classList.add('hidden');
+    }
+
+    function renderNavGrid() {
+      const container = document.getElementById('nav-grid-container');
+      container.innerHTML = testData.sections.map(sec => {
+        const secQuestions = testData.questions.filter(q => q.sectionId === sec.id);
+        return `
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">${sec.title}</h4>
+            <div class="grid grid-cols-6 gap-2">
+              ${secQuestions.map(q => {
+                const isAnswered = currentState.userAnswers[q.id] !== undefined;
+                const isFlagged = currentState.flaggedQuestions.has(q.id);
+                const isCurrent = currentState.currentQuestionIndex === (q.id - 1);
+
+                let btnStyle = "border-slate-300 bg-white text-slate-700 hover:bg-slate-100";
+                if (isAnswered) btnStyle = "bg-blue-600 text-white border-blue-600 font-bold";
+                if (isFlagged) btnStyle += " ring-2 ring-amber-500 border-amber-500";
+                if (isCurrent) btnStyle += " ring-2 ring-slate-900";
+
+                return `
+                  <button onclick="jumpToQuestion(${q.id - 1})" 
+                          class="h-10 rounded-lg border flex flex-col items-center justify-center text-xs transition font-semibold relative ${btnStyle}">
+                    <span>${q.id}</span>
+                    ${isFlagged ? '<span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-amber-400"></span>' : ''}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ----------------------------------------------------
+       SCORE & REVIEW MODAL
+    ---------------------------------------------------- */
+    function confirmSubmitTest() {
+      const answeredCount = Object.keys(currentState.userAnswers).length;
+      if (answeredCount < 36) {
+        const confirmResult = window.confirm(`You have answered ${answeredCount} of 36 questions. Are you sure you want to finish and submit your test now?`);
+        if (!confirmResult) return;
+      }
+      calculateAndShowScore();
+    }
+
+    function calculateAndShowScore() {
+      currentState.testCompleted = true;
+      currentState.timerRunning = false;
+
+      let correctCount = 0;
+      testData.questions.forEach(q => {
+        if (currentState.userAnswers[q.id] === q.correct) {
+          correctCount++;
+        }
+      });
+
+      const percentage = Math.round((correctCount / 36) * 100);
+
+      document.getElementById('final-score-text').innerText = `${correctCount} / 36`;
+      document.getElementById('final-pct-text').innerText = `${percentage}%`;
+      document.getElementById('final-time-text').innerText = formatTime(currentState.timerSeconds);
+
+      renderSectionBreakdown();
+      renderReviewCards();
+
+      document.getElementById('score-modal').classList.remove('hidden');
+    }
+
+    function renderSectionBreakdown() {
+      const container = document.getElementById('section-breakdown-container');
+      container.innerHTML = testData.sections.map(sec => {
+        const secQuestions = testData.questions.filter(q => q.sectionId === sec.id);
+        let secCorrect = 0;
+        secQuestions.forEach(q => {
+          if (currentState.userAnswers[q.id] === q.correct) secCorrect++;
+        });
+        const pct = Math.round((secCorrect / secQuestions.length) * 100);
+
+        return `
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between">
+            <div class="flex justify-between items-center text-xs font-bold mb-1.5">
+              <span class="text-slate-800">${sec.title}</span>
+              <span class="text-slate-600">${secCorrect} / ${secQuestions.length} (${pct}%)</span>
+            </div>
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div class="bg-blue-600 h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterReview(filter) {
+      currentState.reviewFilter = filter;
+      ['all', 'incorrect', 'flagged'].forEach(f => {
+        const btn = document.getElementById(`filter-${f}-btn`);
+        if (f === filter) {
+          btn.className = "px-3 py-1 rounded bg-white text-slate-900 shadow-xs font-bold";
+        } else {
+          btn.className = "px-3 py-1 rounded text-slate-600 hover:text-slate-900";
+        }
+      });
+      renderReviewCards();
+    }
+
+    function renderReviewCards() {
+      const container = document.getElementById('review-cards-container');
+      
+      let filteredQuestions = testData.questions.filter(q => {
+        const userAns = currentState.userAnswers[q.id];
+        const isCorrect = userAns === q.correct;
+        const isFlagged = currentState.flaggedQuestions.has(q.id);
+
+        if (currentState.reviewFilter === 'incorrect') return !isCorrect;
+        if (currentState.reviewFilter === 'flagged') return isFlagged;
+        return true; // 'all'
+      });
+
+      if (filteredQuestions.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">No questions match the selected filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filteredQuestions.map(q => {
+        const userAns = currentState.userAnswers[q.id];
+        const isCorrect = userAns === q.correct;
+        const isFlagged = currentState.flaggedQuestions.has(q.id);
+
+        const statusBadge = isCorrect 
+          ? `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full">Correct</span>`
+          : `<span class="bg-rose-100 text-rose-800 border border-rose-300 text-xs font-bold px-2.5 py-0.5 rounded-full">Incorrect</span>`;
+
+        const userChoiceText = userAns !== undefined 
+          ? `${String.fromCharCode(65 + userAns)}. ${q.options[userAns]}` 
+          : `<span class="italic text-slate-400">Unanswered</span>`;
+
+        const correctChoiceText = `${String.fromCharCode(65 + q.correct)}. ${q.options[q.correct]}`;
+
+        return `
+          <div class="border rounded-xl p-5 bg-white shadow-xs space-y-3 ${isCorrect ? 'border-slate-200' : 'border-rose-200 bg-rose-50/20'}">
+            <div class="flex items-center justify-between border-b pb-2 border-slate-100">
+              <div class="flex items-center space-x-2">
+                <span class="font-bold text-sm text-slate-900">Q${q.id}</span>
+                ${statusBadge}
+                ${isFlagged ? '<span class="bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold px-2 py-0.5 rounded-full">Flagged</span>' : ''}
+              </div>
+              <button onclick="closeScoreModal(); jumpToQuestion(${q.id - 1});" class="text-xs font-bold text-blue-600 hover:underline">
+                View in Test →
+              </button>
+            </div>
+
+            <div class="text-sm font-medium text-slate-800">${q.stem}</div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+              <div class="p-3 rounded-lg border ${isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}">
+                <span class="font-bold text-slate-500 uppercase block mb-1">Your Answer:</span>
+                <span class="font-semibold text-slate-900">${userChoiceText}</span>
+              </div>
+
+              <div class="p-3 rounded-lg border bg-emerald-50 border-emerald-200">
+                <span class="font-bold text-slate-500 uppercase block mb-1">Correct Answer:</span>
+                <span class="font-semibold text-emerald-900">${correctChoiceText}</span>
+              </div>
+            </div>
+
+            <div class="text-xs bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-700 leading-relaxed">
+              <span class="font-bold text-slate-900">Explanation: </span> ${q.explanation}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function closeScoreModal() {
+      document.getElementById('score-modal').classList.add('hidden');
+    }
+
+    function retakeTest() {
+      if (window.confirm("Are you sure you want to reset all answers and retake the test?")) {
+        currentState.userAnswers = {};
+        currentState.eliminatedOptions = {};
+        currentState.flaggedQuestions.clear();
+        currentState.currentQuestionIndex = 0;
+        currentState.timerSeconds = 0;
+        currentState.timerRunning = true;
+        currentState.testCompleted = false;
+        closeScoreModal();
+        renderQuestion();
+        renderSectionTabs();
+        updateProgress();
+      }
+    }
+  </script>
+</body>
+</html>
