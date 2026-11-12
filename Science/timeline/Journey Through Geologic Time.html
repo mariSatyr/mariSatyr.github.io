@@ -5,125 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Journey Through Geologic Time</title>
 <style>
-:root{--bg:#fbf8f1;--fg:#1d2430;--mut:#5d6675;--card:#fff;--line:#d9d3c4;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171d;--fg:#eef0f4;--mut:#a3abba;--card:#1f242d;--line:#343b49}}
-:root[data-theme="dark"]{--bg:#14171d;--fg:#eef0f4;--mut:#a3abba;--card:#1f242d;--line:#343b49}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
-header{padding:14px 20px 8px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}h1{font-size:clamp(20px,3vw,30px);margin:0}header p{margin:0;color:var(--mut);font-size:14px}
-#bar{display:flex;align-items:center;gap:10px;padding:0 20px 8px}#bar button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer}
-#track{flex:1;height:14px;border-radius:7px;position:relative;display:flex;overflow:hidden;cursor:pointer;border:1px solid var(--line)}#track div{height:100%}#thumb{position:absolute;top:-2px;bottom:-2px;border:3px solid var(--fg);border-radius:6px;pointer-events:none}
-#now{font-size:13px;color:var(--mut);min-width:150px;text-align:right;font-variant-numeric:tabular-nums}
-#scroller{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;scroll-behavior:smooth;border-top:1px solid var(--line)}.col{flex:0 0 min(86vw,400px);display:flex;flex-direction:column;border-right:1px solid var(--line);position:relative}
-.head{padding:14px 16px 12px}.head .tag{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.head h2{margin:2px 0;font-size:28px}.head .age{font-size:14px;font-weight:600}.head .d{font-size:13px;margin-top:6px;line-height:1.4}
-.items{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}.card{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;transition:transform .15s,box-shadow .15s}.card:hover,.card:focus{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.18);outline:none}
-.pic{width:56px;height:56px;border-radius:50%;display:block;object-fit:cover;flex:none;background:linear-gradient(135deg,var(--line),var(--card))}.card b{font-size:15px}.card small{display:block;color:var(--mut);font-size:12px}
-#tip{position:fixed;z-index:50;width:min(310px,calc(100vw - 16px));background:var(--card);border:2px solid var(--fg);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .12s}#tip.on{opacity:1}#tip .big{width:100%;height:150px;object-fit:cover;border-radius:10px;display:block;margin-bottom:10px;background:linear-gradient(135deg,var(--line),var(--card))}#tip h3{margin:0 0 4px;font-size:18px}#tip .w{font-size:12px;color:var(--mut);margin-bottom:6px}#tip p{margin:0;font-size:14px;line-height:1.45}#tip .credit{display:block;margin-top:8px;color:var(--mut);font-size:11px;line-height:1.4;pointer-events:auto}#tip .credit a{color:inherit}
+:root{color-scheme:light dark;--bg:#fbf8f1;--fg:#1d2430;--mut:#5d6675;--card:#fff;--line:#d9d3c4;box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root{--bg:#14171d;--fg:#eef0f4;--mut:#a3abba;--card:#1f242d;--line:#343b49}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}body{background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+header{padding:14px 20px 8px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;justify-content:space-between}h1{font-size:clamp(20px,3vw,30px);margin:0}header p{margin:0;color:var(--mut)}
+#bar{display:flex;align-items:center;gap:10px;padding:0 20px 8px}button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:6px 12px;font-size:15px;cursor:pointer}button:focus-visible,.card:focus-visible{outline:3px solid #1976d2;outline-offset:2px}#track{flex:1;height:14px;border-radius:7px;position:relative;display:flex;overflow:hidden;cursor:pointer;border:1px solid var(--line)}#track div{height:100%}#thumb{position:absolute;top:-2px;bottom:-2px;width:10px;border:2px solid var(--fg);border-radius:7px;background:var(--card);pointer-events:none}#now{font-size:13px;color:var(--mut);min-width:150px;text-align:right;font-variant-numeric:tabular-nums}
+#scroller{flex:1;overflow-x:auto;overflow-y:hidden;display:flex;scroll-behavior:smooth;border-top:1px solid var(--line);scroll-snap-type:x mandatory}.col{flex:0 0 min(86vw,400px);display:flex;flex-direction:column;border-right:1px solid var(--line);scroll-snap-align:start}.head{padding:14px 16px 12px}.head .tag{font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.head h2{margin:2px 0;font-size:28px}.head .age{font-size:14px;font-weight:600}.head p{font-size:14px;margin:6px 0 0;line-height:1.4}.items{padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}.card{display:flex;gap:12px;align-items:center;text-align:left;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;width:100%}.pic{width:64px;height:64px;border-radius:50%;display:block;object-fit:cover;flex:none;background:linear-gradient(135deg,var(--line),var(--card))}.card b{font-size:15px}.card small{display:block;color:var(--mut);margin-top:3px;line-height:1.35}
+#tip{position:fixed;z-index:5;width:min(330px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto;background:var(--card);border:2px solid var(--fg);border-radius:14px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}#tip.on{display:block}#tip .big{width:100%;max-height:180px;object-fit:cover;border-radius:8px;background:var(--line)}#tip h3{margin:8px 0 4px}#tip p{margin:6px 0;line-height:1.45;color:var(--mut)}#close{float:right;padding:2px 8px}
 @media(max-width:600px){header{padding:10px 12px 8px}#bar{padding:0 12px 8px;gap:6px}#now{min-width:104px;font-size:11px}.col{flex-basis:88vw}}
 </style>
 </head>
 <body>
-<header><h1>Journey Through Geologic Time</h1><p>Scroll or drag sideways from Earth’s birth to today. Hover over (or tap) a creature to meet it.</p></header>
-<div id="bar"><button id="L" aria-label="Scroll back in time">◀</button><div id="track" aria-label="Timeline progress"><div id="thumb"></div></div><button id="R" aria-label="Scroll forward in time">▶</button><div id="now" aria-live="polite"></div></div>
-<div id="scroller" tabindex="0" aria-label="Geologic time periods"></div>
-<div id="tip" role="tooltip"><img class="big" id="tb" alt=""><h3 id="tn"></h3><div class="w" id="tw"></div><p id="tf"></p><small class="credit" id="tc"></small></div>
+<header><h1>Journey Through Geologic Time</h1><p>Scroll or drag sideways from Earth’s birth to today. Select an image to learn more.</p></header>
+<div id="bar"><button id="L" aria-label="Scroll back in time">◀</button><div id="track" aria-label="Timeline progress"><div id="thumb"></div></div><button id="R" aria-label="Scroll forward in time">▶</button><span id="now" aria-live="polite"></span></div>
+<main id="scroller" tabindex="0" aria-label="Geologic time periods"></main>
+<aside id="tip" role="dialog" aria-modal="false" aria-labelledby="tn"><button id="close" aria-label="Close details">×</button><img class="big" id="tb" alt=""><h3 id="tn"></h3><p id="tf"></p></aside>
 <script>
-// Images are discovered from Wikimedia Commons and only shown when Commons reports a CC BY, CC BY-SA, or CC0 license.
-// Each image's title, creator, license, and Commons file page are shown in the creature tooltip.
-var D=[
-["Hadean",4600,4000,"Hadean Eon","Precambrian","#ae027e","Earth forms as a ball of molten rock. A giant impact makes the Moon.",[
-["Molten Earth","The surface was covered in magma oceans and constant volcanic eruptions. No fossils survive from this time.","molten early Earth magma ocean illustration"],
-["Moon-forming impact","A Mars-sized planet is thought to have struck the young Earth, throwing out debris that became the Moon.","giant impact hypothesis Earth Moon illustration"]]],
-["Archean",4000,2500,"Archean Eon","Precambrian","#f0047f","Oceans form and the first life appears, all of it microscopic.",[
-["First microbes","Single-celled life appeared in the oceans, and the oldest fossil evidence is more than 3.4 billion years old.","ancient bacteria microfossil Archean"],
-["Stromatolites","Layered mounds built by mats of bacteria. They are some of the oldest fossils ever found.","stromatolite fossil microbial mat"]]],
-["Proterozoic",2500,538.8,"Proterozoic Eon","Precambrian","#f73563","Oxygen builds up in the air, and the first complex, many-celled life appears.",[
-["Oxygen makers","Cyanobacteria released oxygen for hundreds of millions of years and changed the atmosphere.","cyanobacteria stromatolite microscope"],
-["Dickinsonia","A flat, ribbed, oval animal from the Ediacaran Period at the very end of this eon. Scientists still debate what it was.","Dickinsonia fossil Ediacaran"],
-["Ediacaran biota","Soft-bodied fronds, discs and tubes were Earth’s first large, complex organisms.","Ediacaran biota fossil reconstruction"]]],
-["Cambrian",538.8,486.85,"Phanerozoic Eon","Paleozoic","#7fa056","The “Cambrian explosion”: most major animal groups show up in the fossil record.",[
-["Trilobites","Armored, many-legged sea animals. Thousands of species lived through the Paleozoic.","trilobite fossil Cambrian"],
-["Anomalocaris","One of the largest predators of its day, up to about a meter long, with grasping appendages.","Anomalocaris fossil reconstruction"],
-["Hallucigenia","A tiny, spiny worm-like animal that walked on pairs of legs. Early scientists even drew it upside down.","Hallucigenia fossil reconstruction"]]],
-["Ordovician",486.85,443.1,"Phanerozoic Eon","Paleozoic","#009270","Seas teem with life, and a major ice age ends the period with a mass extinction.",[
-["Giant nautiloids","Shelled relatives of squid, some with shells several meters long, hunted in the seas.","Ordovician giant nautiloid fossil orthocone"],
-["Brachiopods and corals","Lampshell animals and early corals covered shallow sea floors.","Ordovician brachiopod coral fossil"],
-["Jawless fish","Early fish with no jaws sucked up food from the sea floor.","Ordovician jawless fish fossil"]]],
-["Silurian",443.1,419.62,"Phanerozoic Eon","Paleozoic","#b3e1b6","Life begins to creep onto land, and reefs spread through warm seas.",[
-["Sea scorpions","Eurypterids were giant aquatic predators, and some grew longer than a person.","eurypterid sea scorpion fossil"],
-["First land plants","Tiny vascular plants stood only a few centimeters tall.","Cooksonia early land plant fossil"],
-["First jawed fish","Jaws evolved, which changed how animals hunt and defend themselves.","early jawed fish placoderm fossil"]]],
-["Devonian",419.62,358.86,"Phanerozoic Eon","Paleozoic","#cb8c37","The “Age of Fishes.” Fish with limb-like fins begin to crawl toward land.",[
-["Dunkleosteus","A 6-meter armored fish with bony, blade-like plates in place of teeth.","Dunkleosteus fossil reconstruction"],
-["Tiktaalik","A fish with a flat head, neck and sturdy fins that could prop up its body in the shallows.","Tiktaalik fossil reconstruction"],
-["First forests","Trees such as Archaeopteris spread across the land.","Archaeopteris fossil forest reconstruction"]]],
-["Carboniferous",358.86,298.9,"Phanerozoic Eon","Paleozoic","#67a599","Vast swampy forests grow, and they later turn into coal.",[
-["Meganeura","A giant dragonfly relative with a wingspan of about 70 centimeters.","Meganeura fossil reconstruction"],
-["Coal forests","Giant club mosses and tree ferns grew in warm swamps.","Carboniferous coal forest reconstruction"],
-["Early amphibians","Large, salamander-like animals ruled the swamps.","Carboniferous amphibian fossil reconstruction"]]],
-["Permian",298.9,251.9,"Phanerozoic Eon","Paleozoic","#f04028","All land joins into one supercontinent. The period ends with the worst mass extinction ever.",[
-["Dimetrodon","A sail-backed animal that is actually more closely related to mammals than to dinosaurs.","Dimetrodon fossil reconstruction"],
-["Pangea","One giant supercontinent with a very dry interior.","Pangaea Permian paleogeographic map"],
-["The Great Dying","Roughly 90% of ocean species vanished, and trilobites were among them.","Permian Triassic extinction fossil evidence"]]],
-["Triassic",251.9,201.4,"Phanerozoic Eon","Mesozoic","#812b92","Life recovers. The first dinosaurs, mammals and sea reptiles appear.",[
-["Coelophysis","A slim, fast early dinosaur that hunted in the Triassic scrub.","Coelophysis fossil reconstruction"],
-["Ichthyosaurs","Dolphin-shaped marine reptiles that breathed air.","ichthyosaur fossil reconstruction"],
-["First mammals","Small, shrew-like animals scurried beneath the feet of the dinosaurs.","Triassic early mammal fossil reconstruction"]]],
-["Jurassic",201.4,143.1,"Phanerozoic Eon","Mesozoic","#34b2c9","Giant plant-eating dinosaurs roam, and the first birds take to the air.",[
-["Brachiosaurus","A towering long-necked giant that stood about 12 meters tall.","Brachiosaurus fossil skeleton"],
-["Stegosaurus","A plated plant eater with spikes on its tail.","Stegosaurus fossil skeleton"],
-["Archaeopteryx","A feathered, winged animal with teeth and a long bony tail, and an early link between dinosaurs and birds.","Archaeopteryx fossil feathered dinosaur"]]],
-["Cretaceous",143.1,66,"Phanerozoic Eon","Mesozoic","#7fc64e","The age of Tyrannosaurus and Triceratops. An asteroid ends the dinosaurs.",[
-["Tyrannosaurus rex","A top predator up to about 12 meters long, with one of the strongest bites of any land animal.","Tyrannosaurus rex fossil skeleton"],
-["Triceratops","A three-horned plant eater with a huge bony frill.","Triceratops fossil skeleton"],
-["Flowering plants","Flowers evolved and began to spread across the world.","Cretaceous flowering plant fossil"],
-["Asteroid impact","A huge asteroid struck what is now Mexico about 66 million years ago, and non-bird dinosaurs went extinct.","Chicxulub crater impact illustration"]]],
-["Paleogene",66,23.04,"Phanerozoic Eon","Cenozoic","#fd9a52","Mammals spread into the empty niches and quickly grow bigger.",[
-["Basilosaurus","An early whale up to about 18 meters long, with a long, snake-like body.","Basilosaurus fossil whale reconstruction"],
-["Titanoboa","A giant snake that lived in hot swamps, perhaps more than 12 meters long.","Titanoboa fossil reconstruction"],
-["Early horses","Small, forest-dwelling animals about the size of a dog.","Eohippus early horse fossil reconstruction"]]],
-["Neogene",23.04,2.58,"Phanerozoic Eon","Cenozoic","#ffe619","Grasslands spread, and our early human relatives stand up on two legs.",[
-["Megalodon","A giant shark, perhaps 15 meters long, with teeth bigger than a human hand.","megalodon fossil tooth"],
-["Australopithecus","Early human relatives who walked upright. The famous skeleton “Lucy” belongs to this group.","Australopithecus afarensis Lucy fossil"],
-["Grazing horses","Horses grew bigger and developed teeth for chewing tough grass.","Neogene horse fossil reconstruction"]]],
-["Quaternary",2.58,0,"Phanerozoic Eon","Cenozoic","#f9f97f","Ice ages come and go, and modern humans appear.",[
-["Woolly mammoth","A furry, tusked relative of elephants that lived in the cold steppes.","woolly mammoth fossil reconstruction"],
-["Saber-toothed cat","Smilodon had huge canine teeth and hunted large prey.","Smilodon saber toothed cat fossil reconstruction"],
-["Homo sapiens","Modern humans appeared in Africa about 300,000 years ago.","Homo sapiens early human fossil reconstruction"],
-["Ice ages","Huge sheets of ice repeatedly spread across North America and Europe.","Pleistocene ice age glacier landscape"]]]
+// Every image below is a local JPG in this folder; the explicit mapping keeps filenames aligned with timeline items.
+const periods=[
+{n:"Hadean",start:4600,end:4000,eon:"Hadean Eon",era:"Precambrian",color:"#ae027e",summary:"Earth forms as a ball of molten rock. A giant impact makes the Moon.",items:[
+["Molten Earth","The surface was covered in magma oceans and constant volcanic eruptions. No fossils survive from this time.","molten-earth.jpg"],["Moon-forming impact","A Mars-sized planet is thought to have struck the young Earth, throwing out debris that became the Moon.","moon-forming-impact.jpg"]]},
+{n:"Archean",start:4000,end:2500,eon:"Archean Eon",era:"Precambrian",color:"#f0047f",summary:"Oceans form and the first life appears, all of it microscopic.",items:[
+["First microbes","Single-celled life appeared in the oceans, and the oldest fossil evidence is more than 3.4 billion years old.","first-microbes.jpg"],["Stromatolites","Layered mounds built by mats of bacteria. They are some of the oldest fossils ever found.","stromatolites.jpg"]]},
+{n:"Proterozoic",start:2500,end:538.8,eon:"Proterozoic Eon",era:"Precambrian",color:"#f73563",summary:"Oxygen builds up in the air, and the first complex, many-celled life appears.",items:[
+["Oxygen makers","Cyanobacteria released oxygen for hundreds of millions of years and changed the atmosphere.","oxygen-makers.jpg"],["Dickinsonia","A flat, ribbed, oval animal from the Ediacaran Period at the very end of this eon. Scientists still debate what it was.","dickinsonia.jpg"],["Ediacaran biota","Soft-bodied fronds, discs and tubes were Earth’s first large, complex organisms.","ediacaran-biota.jpg"]]},
+{n:"Cambrian",start:538.8,end:486.85,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#7fa056",summary:"The “Cambrian explosion”: most major animal groups show up in the fossil record.",items:[
+["Trilobites","Armored, many-legged sea animals. Thousands of species lived through the Paleozoic.","trilobites.jpg"],["Anomalocaris","One of the largest predators of its day, up to about a meter long, with grasping appendages.","anomalocaris.jpg"],["Hallucigenia","A tiny, spiny worm-like animal that walked on pairs of legs. Early scientists even drew it upside down.","hallucigenia.jpg"]]},
+{n:"Ordovician",start:486.85,end:443.1,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#009270",summary:"Seas teem with life, and a major ice age ends the period with a mass extinction.",items:[
+["Giant nautiloids","Shelled relatives of squid, some with shells several meters long, hunted in the seas.","giant-nautiloids.jpg"],["Brachiopods and corals","Lampshell animals and early corals covered shallow sea floors.","brachiopods-and-corals.jpg"],["Jawless fish","Early fish with no jaws sucked up food from the sea floor.","jawless-fish.jpg"]]},
+{n:"Silurian",start:443.1,end:419.62,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#b3e1b6",summary:"Life begins to creep onto land, and reefs spread through warm seas.",items:[
+["Sea scorpions","Eurypterids were giant aquatic predators, and some grew longer than a person.","sea-scorpions.jpg"],["First land plants","Tiny vascular plants stood only a few centimeters tall.","first-land-plants.jpg"],["First jawed fish","Jaws evolved, which changed how animals hunt and defend themselves.","first-jawed-fish.jpg"]]},
+{n:"Devonian",start:419.62,end:358.86,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#cb8c37",summary:"The “Age of Fishes.” Fish with limb-like fins begin to crawl toward land.",items:[
+["Dunkleosteus","A 6-meter armored fish with bony, blade-like plates in place of teeth.","dunkleosteus.jpg"],["Tiktaalik","A fish with a flat head, neck and sturdy fins that could prop up its body in the shallows.","tiktaalik.jpg"],["First forests","Trees such as Archaeopteris spread across the land.","first-forests.jpg"]]},
+{n:"Carboniferous",start:358.86,end:298.9,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#67a599",summary:"Vast swampy forests grow, and they later turn into coal.",items:[
+["Meganeura","A giant dragonfly relative with a wingspan of about 70 centimeters.","meganeura.jpg"],["Coal forests","Giant club mosses and tree ferns grew in warm swamps.","coal-forests.jpg"],["Early amphibians","Large, salamander-like animals ruled the swamps.","early-amphibians.jpg"]]},
+{n:"Permian",start:298.9,end:251.9,eon:"Phanerozoic Eon",era:"Paleozoic",color:"#f04028",summary:"All land joins into one supercontinent. The period ends with the worst mass extinction ever.",items:[
+["Dimetrodon","A sail-backed animal that is actually more closely related to mammals than to dinosaurs.","dimetrodon.jpg"],["Pangea","One giant supercontinent with a very dry interior.","pangea.jpg"],["The Great Dying","Roughly 90% of ocean species vanished, and trilobites were among them.","the-great-dying.jpg"]]},
+{n:"Triassic",start:251.9,end:201.4,eon:"Phanerozoic Eon",era:"Mesozoic",color:"#812b92",summary:"Life recovers. The first dinosaurs, mammals and sea reptiles appear.",items:[
+["Coelophysis","A slim, fast early dinosaur that hunted in the Triassic scrub.","coelophysis.jpg"],["Ichthyosaurs","Dolphin-shaped marine reptiles that breathed air.","ichthyosaurs.jpg"],["First mammals","Small, shrew-like animals scurried beneath the feet of the dinosaurs.","first-mammals.jpg"]]},
+{n:"Jurassic",start:201.4,end:143.1,eon:"Phanerozoic Eon",era:"Mesozoic",color:"#34b2c9",summary:"Giant plant-eating dinosaurs roam, and the first birds take to the air.",items:[
+["Brachiosaurus","A towering long-necked giant that stood about 12 meters tall.","brachiosaurus.jpg"],["Stegosaurus","A plated plant eater with spikes on its tail.","stegosaurus.jpg"],["Archaeopteryx","A feathered, winged animal with teeth and a long bony tail, and an early link between dinosaurs and birds.","archaeopteryx.jpg"]]},
+{n:"Cretaceous",start:143.1,end:66,eon:"Phanerozoic Eon",era:"Mesozoic",color:"#7fc64e",summary:"The age of Tyrannosaurus and Triceratops. An asteroid ends the dinosaurs.",items:[
+["Tyrannosaurus rex","A top predator up to about 12 meters long, with one of the strongest bites of any land animal.","tyrannosaurus-rex.jpg"],["Triceratops","A three-horned plant eater with a huge bony frill.","triceratops.jpg"],["Flowering plants","Flowers evolved and began to spread across the world.","flowering-plants.jpg"],["Asteroid impact","A huge asteroid struck what is now Mexico about 66 million years ago, and non-bird dinosaurs went extinct.","asteroid-impact.jpg"]]},
+{n:"Paleogene",start:66,end:23.04,eon:"Phanerozoic Eon",era:"Cenozoic",color:"#fd9a52",summary:"Mammals spread into the empty niches and quickly grow bigger.",items:[
+["Basilosaurus","An early whale up to about 18 meters long, with a long, snake-like body.","basilosaurus.jpg"],["Titanoboa","A giant snake that lived in hot swamps, perhaps more than 12 meters long.","titanoboa.jpg"],["Early horses","Small, forest-dwelling animals about the size of a dog.","early-horses.jpg"]]},
+{n:"Neogene",start:23.04,end:2.58,eon:"Phanerozoic Eon",era:"Cenozoic",color:"#ffe619",summary:"Grasslands spread, and our early human relatives stand up on two legs.",items:[
+["Megalodon","A giant shark, perhaps 15 meters long, with teeth bigger than a human hand.","megalodon.jpg"],["Australopithecus","Early human relatives who walked upright. The famous skeleton “Lucy” belongs to this group.","australopithecus.jpg"],["Grazing horses","Horses grew bigger and developed teeth for chewing tough grass.","grazing-horses.jpg"]]},
+{n:"Quaternary",start:2.58,end:0,eon:"Phanerozoic Eon",era:"Cenozoic",color:"#f9f97f",summary:"Ice ages come and go, and modern humans appear.",items:[
+["Woolly mammoth","A furry, tusked relative of elephants that lived in the cold steppes.","woolly-mammoth.jpg"],["Saber-toothed cat","Smilodon had huge canine teeth and hunted large prey.","saber-toothed-cat.jpg"],["Homo sapiens","Modern humans appeared in Africa about 300,000 years ago.","homo-sapiens.jpg"],["Ice ages","Huge sheets of ice repeatedly spread across North America and Europe.","ice-ages.jpg"]]}
 ];
-var S=document.getElementById("scroller"),T=document.getElementById("track"),TH=document.getElementById("thumb"),N=document.getElementById("now"),tip=document.getElementById("tip");
-function lum(h){var r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3,2),16),b=parseInt(h.substr(5,2),16);return(0.299*r+0.587*g+0.114*b)/255}
-function ink(c){return lum(c)>0.6?"#1d2430":"#ffffff"}
-function fmt(a){return a>=1000?(a/1000).toFixed(2).replace(/\.?0+$/,'')+" billion":a+" million"}
-function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
-var imageTasks=[];
-D.forEach(function(p,i){
- var col=el("div","col");col.dataset.i=i;
- var head=el("div","head");head.style.background=p[5];head.style.color=ink(p[5]);head.appendChild(el("div","tag",p[3]+" · "+p[4]));head.appendChild(el("h2","",p[0]));head.appendChild(el("div","age",fmt(p[1])+" → "+(p[2]===0?"today":fmt(p[2])+" yrs ago")));head.appendChild(el("div","d",p[6]));
- var items=el("div","items");
- p[7].forEach(function(it,j){var card=el("div","card");card.tabIndex=0;card.dataset.p=i;card.dataset.j=j;var img=el("img","pic");img.alt=it[0];img.loading="lazy";img.dataset.placeholder="true";card.appendChild(img);var label=el("div");label.appendChild(el("b","",it[0]));label.appendChild(el("small","",p[0]));card.appendChild(label);items.appendChild(card);imageTasks.push({item:it,img:img})});
- col.appendChild(head);col.appendChild(items);S.appendChild(col);var seg=el("div");seg.style.flex="1";seg.style.background=p[5];T.insertBefore(seg,TH);
-});
-function metadataValue(info,key){return info&&info[key]&&info[key].value?info[key].value.replace(/<[^>]*>/g,"").trim():""}
-function allowedLicense(name){return /^CC BY(?:-SA)?(?: \d+(?:\.\d+)?)?$|^CC0(?: 1\.0)?$/i.test(name.trim())}
-async function findCommonsImage(task){
- try{
-  var url="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch="+encodeURIComponent("filetype:bitmap "+task.item[2])+"&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=640";
-  var response=await fetch(url);if(!response.ok) return;var data=await response.json();var pages=data.query&&data.query.pages?Object.values(data.query.pages):[];
-  var candidate=pages.map(function(page){var info=page.imageinfo&&page.imageinfo[0];if(!info)return null;var meta=info.extmetadata||{};return{page:page,info:info,license:metadataValue(meta,"LicenseShortName"),author:metadataValue(meta,"Artist"),title:page.title.replace(/^File:/,""),fileUrl:info.descriptionurl,licenseUrl:metadataValue(meta,"LicenseUrl")}}).find(function(x){return x&&x.info.mime&&x.info.mime.indexOf("image/")===0&&allowedLicense(x.license)&&x.info.thumburl});
-  if(!candidate)return;
-  task.img.src=candidate.info.thumburl;task.img.dataset.placeholder="false";task.img.dataset.fileUrl=candidate.fileUrl;task.img.dataset.license=candidate.license;task.img.dataset.licenseUrl=candidate.licenseUrl;task.img.dataset.author=candidate.author;task.img.dataset.title=candidate.title;
- }catch(e){/* Keep the neutral placeholder if Commons is unavailable. */}
-}
-var cursor=0;async function loadImages(){var workers=Array.from({length:4},async function(){while(cursor<imageTasks.length){var task=imageTasks[cursor++];await findCommonsImage(task)}});await Promise.all(workers)}loadImages();
-function show(card){var p=D[card.dataset.p],it=p[7][card.dataset.j],img=card.querySelector(".pic"),big=document.getElementById("tb"),credit=document.getElementById("tc");big.src=img.src||"";big.alt=it[0];big.style.background=p[5];document.getElementById("tn").textContent=it[0];document.getElementById("tw").textContent=p[0]+" Period · "+p[3];document.getElementById("tf").textContent=it[1];credit.replaceChildren();if(img.dataset.fileUrl){var link=el("a","","Image: "+img.dataset.title);link.href=img.dataset.fileUrl;link.target="_blank";link.rel="noopener noreferrer";credit.appendChild(link);credit.appendChild(document.createTextNode(" · "+(img.dataset.author||"Creator not identified")+" · "));var license=el("a","",img.dataset.license);license.href=img.dataset.licenseUrl||img.dataset.fileUrl;license.target="_blank";license.rel="noopener noreferrer";credit.appendChild(license)}else{credit.textContent="No verified Creative Commons image is available for this item."}
- var r=card.getBoundingClientRect(),w=Math.min(310,innerWidth-16),x=r.right+12;if(x+w>innerWidth-8)x=r.left-w-12;if(x<8)x=Math.max(8,(innerWidth-w)/2);tip.style.left=x+"px";tip.style.top=Math.max(8,Math.min(r.top-60,innerHeight-tip.offsetHeight-8))+"px";tip.classList.add("on")}
-function hide(){tip.classList.remove("on")}
-S.addEventListener("mouseover",function(e){var c=e.target.closest(".card");if(c)show(c)});S.addEventListener("mouseout",function(e){if(e.target.closest(".card"))hide()});S.addEventListener("focusin",function(e){var c=e.target.closest(".card");if(c)show(c)});S.addEventListener("focusout",hide);S.addEventListener("click",function(e){var c=e.target.closest(".card");if(c){show(c);setTimeout(hide,3500)}});S.addEventListener("scroll",function(){hide();var f=S.scrollLeft/(S.scrollWidth-S.clientWidth||1);TH.style.left=(f*(100-100*S.clientWidth/S.scrollWidth))+"%";TH.style.width=(100*S.clientWidth/S.scrollWidth)+"%";var cw=S.scrollWidth/D.length,idx=Math.min(D.length-1,Math.round((S.scrollLeft+S.clientWidth/2)/cw-.5));var p=D[idx];N.textContent=p[0]+" · "+(p[2]===0?"today":fmt(p[2])+" yrs ago")});
-S.addEventListener("wheel",function(e){if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();S.style.scrollBehavior="auto";S.scrollLeft+=e.deltaY*1.5;S.style.scrollBehavior=""}},{passive:false});
-var drag=null;S.addEventListener("pointerdown",function(e){if(e.pointerType==="mouse"&&!e.target.closest(".card")&&!e.target.closest(".items")){drag={x:e.clientX,l:S.scrollLeft};S.style.scrollBehavior="auto"}});window.addEventListener("pointermove",function(e){if(drag)S.scrollLeft=drag.l-(e.clientX-drag.x)});window.addEventListener("pointerup",function(){drag=null;S.style.scrollBehavior=""});
-T.addEventListener("click",function(e){var r=T.getBoundingClientRect();S.scrollLeft=((e.clientX-r.left)/r.width)*S.scrollWidth-S.clientWidth/2});document.getElementById("L").onclick=function(){S.scrollLeft-=S.clientWidth*.7};document.getElementById("R").onclick=function(){S.scrollLeft+=S.clientWidth*.7};S.dispatchEvent(new Event("scroll"));
+const scroller=document.getElementById('scroller'),track=document.getElementById('track'),thumb=document.getElementById('thumb'),now=document.getElementById('now'),tip=document.getElementById('tip');
+function formatAge(age){return age>=1000?(age/1000).toFixed(2).replace(/\.?0+$/,'')+' billion':age+' million'}
+function textColor(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(.299*r+.587*g+.114*b)/255>.6?'#1d2430':'#fff'}
+periods.forEach((period,index)=>{const col=document.createElement('section');col.className='col';const head=document.createElement('div');head.className='head';head.style.background=period.color;head.style.color=textColor(period.color);head.innerHTML=`<div class="tag">${period.eon} · ${period.era}</div><h2>${period.n}</h2><div class="age">${formatAge(period.start)}–${formatAge(period.end)} years ago</div><p>${period.summary}</p>`;const items=document.createElement('div');items.className='items';period.items.forEach(([name,description,file])=>{const card=document.createElement('button');card.className='card';card.type='button';card.dataset.name=name;card.dataset.description=description;const img=document.createElement('img');img.className='pic';img.src=file;img.alt=name;img.loading='lazy';img.onerror=()=>{img.alt=`Image unavailable: ${name}`;img.classList.add('missing')};const label=document.createElement('span');const title=document.createElement('b');title.textContent=name;const detail=document.createElement('small');detail.textContent=description;label.append(title,detail);card.append(img,label);card.addEventListener('click',()=>showDetails(card,img));items.append(card)});col.append(head,items);scroller.append(col);const segment=document.createElement('div');segment.style.flex='1';segment.style.background=period.color;track.insertBefore(segment,thumb)});
+function showDetails(card,img){document.getElementById('tb').src=img.src;document.getElementById('tb').alt=card.dataset.name;document.getElementById('tn').textContent=card.dataset.name;document.getElementById('tf').textContent=card.dataset.description;tip.classList.add('on');const rect=card.getBoundingClientRect(),width=Math.min(330,innerWidth-16);let x=rect.right+10;if(x+width>innerWidth-8)x=rect.left-width-10;if(x<8)x=Math.max(8,(innerWidth-width)/2);tip.style.left=x+'px';tip.style.top=Math.max(8,Math.min(rect.top,innerHeight-tip.offsetHeight-8))+'px'}
+document.getElementById('close').addEventListener('click',()=>tip.classList.remove('on'));document.addEventListener('keydown',e=>{if(e.key==='Escape')tip.classList.remove('on')});scroller.addEventListener('scroll',()=>{const max=scroller.scrollWidth-scroller.clientWidth,progress=max?scroller.scrollLeft/max:0;thumb.style.left=`calc(${progress*100}% - ${progress*10}px)`;const index=Math.min(periods.length-1,Math.floor(progress*periods.length));now.textContent=periods[index].n+' · '+formatAge(periods[index].start)+' years ago'});document.getElementById('L').onclick=()=>scroller.scrollBy({left:-scroller.clientWidth*.8,behavior:'smooth'});document.getElementById('R').onclick=()=>scroller.scrollBy({left:scroller.clientWidth*.8,behavior:'smooth'});track.addEventListener('click',e=>{const rect=track.getBoundingClientRect();scroller.scrollLeft=(e.clientX-rect.left)/rect.width*(scroller.scrollWidth-scroller.clientWidth)});scroller.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();scroller.scrollLeft+=e.deltaY*1.5}},{passive:false});scroller.dispatchEvent(new Event('scroll'));
 </script>
 </body>
 </html>
