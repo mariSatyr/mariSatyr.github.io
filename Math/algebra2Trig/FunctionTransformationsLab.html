@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Function Transformations Lab</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f7f8fb;--card:#fff;--tx:#1d2433;--mu:#5b6477;--bd:#dde1ea;--ac:#2563eb;--f:#2563eb;--g:#ea580c;--gu:#16a34a;--ok:#15803d;--bad:#b91c1c;--grid:#e6e9f0;--axis:#8892a6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--card:#1b2030;--tx:#e8ebf3;--mu:#9aa3b8;--bd:#2c3347;--ac:#6ea0ff;--f:#6ea0ff;--g:#fb923c;--gu:#4ade80;--ok:#4ade80;--bad:#f87171;--grid:#262c3d;--axis:#7b86a0}}
+:root[data-theme="dark"]{--bg:#12151c;--card:#1b2030;--tx:#e8ebf3;--mu:#9aa3b8;--bd:#2c3347;--ac:#6ea0ff;--f:#6ea0ff;--g:#fb923c;--gu:#4ade80;--ok:#4ade80;--bad:#f87171;--grid:#262c3d;--axis:#7b86a0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1020px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:0 0 4px}.sub{color:var(--mu);margin:0 0 14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px}
+label{font-weight:600;font-size:.9rem}
+input[type=text]{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:1rem ui-monospace,Menlo,monospace}
+input[type=number]{width:70px;padding:6px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+input[type=range]{flex:1;min-width:0}
+.row{display:flex;align-items:center;gap:8px;margin:8px 0}.row .nm{width:150px;font-size:.85rem;color:var(--mu)}
+@media(max-width:480px){.row{flex-wrap:wrap}.row .nm{width:100%}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip,.btn{padding:6px 11px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;font:inherit;font-size:.85rem;cursor:pointer}
+.btn{border-radius:8px;font-weight:600;font-size:.95rem;padding:9px 14px}.btn.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+canvas{width:100%;aspect-ratio:1;display:block;border:1px solid var(--bd);border-radius:10px;background:var(--card)}
+.eq{font:600 1.05rem ui-monospace,Menlo,monospace;margin:10px 0 4px;overflow-x:auto}
+.leg{display:flex;gap:14px;font-size:.85rem;margin-top:8px;flex-wrap:wrap}.leg i{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:5px;vertical-align:middle}
+ul{margin:6px 0;padding-left:20px}.err{color:var(--bad);font-size:.85rem;min-height:1.2em}
+.msg{margin-top:10px;padding:10px;border-radius:8px;border:1px solid var(--bd)}.msg.ok{border-color:var(--ok);color:var(--ok)}.msg.bad{border-color:var(--bad);color:var(--bad)}
+.pg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.pg label{display:block;margin-bottom:3px}
+.hide{display:none}.mu{color:var(--mu);font-size:.85rem}
+</style></head><body><div class="wrap">
+<h1>Function Transformations Lab</h1>
+<p class="sub">Every transformed function has the form g(x) = a · f(b(x − h)) + k</p>
+<div class="tabs"><button class="tab on" id="t1">Explore</button><button class="tab" id="t2">Predict the transformations</button></div>
+
+<div id="p1" class="grid">
+ <div class="card">
+  <label for="fin">Enter your function f(x)</label>
+  <input type="text" id="fin" value="x^2" autocomplete="off" spellcheck="false">
+  <div class="err" id="ferr"></div>
+  <div class="chips" id="chips"></div>
+  <div class="mu">You can use x, + − * / ^, parentheses, sin, cos, tan, sqrt, abs, ln, log, exp, pi, e.</div>
+  <div id="sl"></div>
+  <button class="btn" id="rst">Reset sliders</button>
+ </div>
+ <div class="card">
+  <canvas id="c1"></canvas>
+  <div class="leg"><span><i style="background:var(--f)"></i>f(x) original</span><span><i style="background:var(--g)"></i>g(x) transformed</span></div>
+  <div class="eq" id="eq1"></div><ul id="ds1"></ul>
+ </div>
+</div>
+
+<div id="p2" class="grid hide">
+ <div class="card">
+  <div class="row"><label for="lvl">Level</label>
+   <select id="lvl" style="padding:6px;border-radius:8px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit">
+    <option value="1">1 · Shifts only</option><option value="2">2 · Shifts and reflections</option><option value="3">3 · Shifts, reflections and stretches</option></select>
+   <button class="btn pri" id="nw">New problem</button></div>
+  <div class="eq" id="pf"></div>
+  <p class="mu">The blue curve is the original f(x). The orange curve is g(x) = a · f(b(x − h)) + k. Predict a, b, h and k.</p>
+  <div class="pg">
+   <div><label for="ga">a (vertical)</label><input type="text" id="ga" value="1"></div>
+   <div><label for="gb">b (horizontal)</label><input type="text" id="gb" value="1"></div>
+   <div><label for="gh">h (left/right)</label><input type="text" id="gh" value="0"></div>
+   <div><label for="gk">k (up/down)</label><input type="text" id="gk" value="0"></div>
+  </div>
+  <div class="row"><input type="checkbox" id="pv"><label for="pv" style="font-weight:400">Preview my guess on the graph (green)</label></div>
+  <div class="row"><button class="btn pri" id="ck">Check</button><button class="btn" id="rv">Reveal answer</button></div>
+  <div class="mu">Fractions like 1/2 are fine. Score: <b id="sc">0</b> correct of <b id="tt">0</b></div>
+  <div class="msg hide" id="pm"></div>
+ </div>
+ <div class="card">
+  <canvas id="c2"></canvas>
+  <div class="leg"><span><i style="background:var(--f)"></i>f(x)</span><span><i style="background:var(--g)"></i>g(x) to figure out</span><span><i style="background:var(--gu)"></i>your guess</span></div>
+ </div>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+function compile(src){
+ const s=src.toLowerCase().replace(/\s+/g,'');let i=0;
+ const F={sin:Math.sin,cos:Math.cos,tan:Math.tan,sqrt:Math.sqrt,abs:Math.abs,ln:Math.log,log:Math.log10,exp:Math.exp};
+ const atomStart=()=>/[0-9.(a-z]/.test(s[i]||'');
+ function expr(){let n=term();while(s[i]=='+'||s[i]=='-'){const o=s[i++],r=term(),l=n;n=o=='+'?x=>l(x)+r(x):x=>l(x)-r(x)}return n}
+ function term(){let n=unary();while(i<s.length&&(s[i]=='*'||s[i]=='/'||atomStart())){let o='*';if(s[i]=='*'||s[i]=='/')o=s[i++];const r=unary(),l=n;n=o=='*'?x=>l(x)*r(x):x=>l(x)/r(x)}return n}
+ function unary(){if(s[i]=='-'){i++;const n=unary();return x=>-n(x)}if(s[i]=='+'){i++;return unary()}return pow()}
+ function pow(){const b=atom();if(s[i]=='^'){i++;const e=unary();return x=>Math.pow(b(x),e(x))}return b}
+ function atom(){
+  if(s[i]=='('){i++;const n=expr();if(s[i]!=')')throw 1;i++;return n}
+  let m=s.slice(i).match(/^(\d+\.?\d*|\.\d+)/);if(m){i+=m[0].length;const v=parseFloat(m[0]);return()=>v}
+  m=s.slice(i).match(/^(sin|cos|tan|sqrt|abs|ln|log|exp|pi|x|e)/);if(!m)throw 1;i+=m[0].length;const t=m[0];
+  if(t=='x')return x=>x;if(t=='pi')return()=>Math.PI;if(t=='e')return()=>Math.E;
+  const arg=s[i]=='('?atom():pow(),f=F[t];return x=>f(arg(x));
+ }
+ if(!s)throw 1;const r=expr();if(i<s.length)throw 1;return r;
+}
+const num=n=>{const r=Math.round(n*100)/100;return(r<0?'−':'')+Math.abs(r)};
+function eqn(p){
+ const inner=p.h?'(x '+(p.h>0?'−':'+')+' '+Math.abs(p.h)+')':'x';
+ const arg=p.b===1?inner:p.b===-1?'−'+inner:num(p.b)+inner;
+ let s='f('+arg+')';if(p.a===-1)s='−'+s;else if(p.a!==1)s=num(p.a)+s;
+ if(p.k)s+=' '+(p.k>0?'+':'−')+' '+Math.abs(p.k);return'g(x) = '+s}
+function desc(p){const d=[];
+ if(p.a<0)d.push('a = '+num(p.a)+': reflected over the x-axis');
+ if(Math.abs(p.a)>1)d.push('|a| = '+Math.abs(p.a)+': vertical stretch by a factor of '+Math.abs(p.a));
+ if(Math.abs(p.a)<1&&p.a!==0)d.push('|a| = '+Math.abs(p.a)+': vertical compression by a factor of '+Math.abs(p.a));
+ if(p.a===0)d.push('a = 0: everything collapses onto the x-axis');
+ if(p.b<0)d.push('b = '+num(p.b)+': reflected over the y-axis');
+ if(Math.abs(p.b)>1)d.push('|b| = '+Math.abs(p.b)+': horizontal compression by a factor of 1/'+Math.abs(p.b));
+ if(Math.abs(p.b)<1&&p.b!==0)d.push('|b| = '+Math.abs(p.b)+': horizontal stretch by a factor of '+Math.round(100/Math.abs(p.b))/100);
+ if(p.h)d.push('h = '+num(p.h)+': shifted '+Math.abs(p.h)+' unit(s) '+(p.h>0?'right':'left'));
+ if(p.k)d.push('k = '+num(p.k)+': shifted '+Math.abs(p.k)+' unit(s) '+(p.k>0?'up':'down'));
+ if(!d.length)d.push('No transformation: g(x) is the same as f(x)');return d}
+const mk=(f,p)=>x=>p.a*f(p.b*(x-p.h))+p.k;
+function draw(cv,curves){
+ const dpr=window.devicePixelRatio||1,w=cv.clientWidth;cv.width=w*dpr;cv.height=w*dpr;
+ const c=cv.getContext('2d');c.scale(dpr,dpr);const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();
+ const R=10,X=x=>(x+R)/(2*R)*w,Y=y=>(R-y)/(2*R)*w;
+ c.lineWidth=1;c.strokeStyle=col('--grid');c.beginPath();
+ for(let v=-R;v<=R;v++){c.moveTo(X(v),0);c.lineTo(X(v),w);c.moveTo(0,Y(v));c.lineTo(w,Y(v))}c.stroke();
+ c.strokeStyle=col('--axis');c.lineWidth=1.5;c.beginPath();c.moveTo(X(0),0);c.lineTo(X(0),w);c.moveTo(0,Y(0));c.lineTo(w,Y(0));c.stroke();
+ c.fillStyle=col('--mu');c.font='11px system-ui';
+ for(let v=-8;v<=8;v+=2)if(v){c.fillText(v,X(v)-4,Y(0)+13);c.fillText(v,X(0)+4,Y(v)+4)}
+ curves.forEach(({fn,color})=>{c.strokeStyle=col(color);c.lineWidth=2.5;c.beginPath();let pen=false,py=0;
+  for(let px=0;px<=w;px++){const y=fn(-R+px*2*R/w);if(!isFinite(y)||Math.abs(y)>1e4){pen=false;continue}
+   const sy=Y(y);if(pen&&Math.abs(sy-py)>w*.7)pen=false;pen?c.lineTo(px,sy):c.moveTo(px,sy);pen=true;py=sy}
+  c.stroke()})}
+
+/* Explore tab */
+const P={a:1,b:1,h:0,k:0};
+const SL=[['a','a: vertical stretch / reflection',-4,4,.25],['b','b: horizontal stretch / reflection',-4,4,.25],['h','h: horizontal shift',-8,8,.5],['k','k: vertical shift',-8,8,.5]];
+$('sl').innerHTML=SL.map(([n,t,lo,hi,st])=>`<div class="row"><span class="nm">${t}</span><input type="range" id="r${n}" min="${lo}" max="${hi}" step="${st}" value="${P[n]}"><input type="number" id="n${n}" min="${lo}" max="${hi}" step="${st}" value="${P[n]}"></div>`).join('');
+SL.forEach(([n])=>{const set=v=>{if(v===''||isNaN(v))return;P[n]=+v;$('r'+n).value=v;$('n'+n).value=v;upd1()};
+ $('r'+n).oninput=e=>set(e.target.value);$('n'+n).oninput=e=>set(e.target.value)});
+$('rst').onclick=()=>{Object.assign(P,{a:1,b:1,h:0,k:0});SL.forEach(([n])=>{$('r'+n).value=$('n'+n).value=P[n]});upd1()};
+['x^2','x^3','abs(x)','sqrt(x)','sin(x)','cos(x)','1/x','2^x','ln(x)','x^3 - 3x'].forEach(t=>{const b=document.createElement('button');b.className='chip';b.textContent=t;b.onclick=()=>{$('fin').value=t;upd1()};$('chips').appendChild(b)});
+function upd1(){let f;try{f=compile($('fin').value);$('ferr').textContent=''}catch(e){$('ferr').textContent='I can’t read that function yet. Check your parentheses and symbols.';return}
+ draw($('c1'),[{fn:f,color:'--f'},{fn:mk(f,P),color:'--g'}]);
+ $('eq1').textContent=eqn(P);$('ds1').innerHTML=desc(P).map(t=>'<li>'+t+'</li>').join('')}
+$('fin').oninput=upd1;
+
+/* Predict tab */
+const BANK=['x^2','abs(x)','sqrt(x)','x^3','sin(x)','2^x','ln(x)','x^3 - 3x'];
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,pk=a=>a[ri(0,a.length-1)];
+let Q=null,score=0,total=0,done=false;
+function newQ(){const L=+$('lvl').value;let p;
+ do{p={a:1,b:1,h:ri(-4,4),k:ri(-4,4)};
+  if(L==1){if(Math.random()<.4)p.h=0;else if(Math.random()<.5)p.k=0}
+  if(L>=2){p.a=pk([1,-1]);p.b=pk([1,-1])}
+  if(L==3){p.a=pk([-3,-2,-1,-.5,.5,1,2,3]);p.b=pk([-2,-1,-.5,.5,1,2])}
+ }while(!p.h&&!p.k&&p.a===1&&p.b===1);
+ const src=pk(BANK);Q={src,f:compile(src),p};done=false;
+ $('pf').textContent='f(x) = '+src.replace(/\*/g,'·');
+ ['a','b','h','k'].forEach(n=>$('g'+n).value=n=='a'||n=='b'?1:0);$('pm').className='msg hide';upd2()}
+function guess(){try{const g={};for(const n of['a','b','h','k']){g[n]=compile($('g'+n).value)(0);if(!isFinite(g[n]))throw 1}return g}catch(e){return null}}
+function upd2(){const cv=[{fn:Q.f,color:'--f'},{fn:mk(Q.f,Q.p),color:'--g'}];
+ if($('pv').checked){const g=guess();if(g)cv.push({fn:mk(Q.f,g),color:'--gu'})}draw($('c2'),cv)}
+function say(t,c){const m=$('pm');m.className='msg '+c;m.innerHTML=t}
+$('ck').onclick=()=>{if(done){say('Already solved. Try a new problem!','ok');return}
+ const g=guess();if(!g){say('Enter numbers (or fractions like 1/2) in all four boxes.','bad');return}
+ total++;const gf=mk(Q.f,g),tf=mk(Q.f,Q.p);let same=true;
+ for(let x=-8;x<=8;x+=.5){const u=gf(x),v=tf(x);if(isFinite(u)||isFinite(v)){if(!(Math.abs(u-v)<1e-6))same=false}}
+ if(same){score++;done=true;say('Correct! '+eqn(Q.p)+'<ul>'+desc(Q.p).map(t=>'<li>'+t+'</li>').join('')+'</ul>','ok')}
+ else{const w=['a','b','h','k'].filter(n=>Math.abs(g[n]-Q.p[n])>1e-6);
+  say('Not quite. Look at where the key points moved and how the shape changed. Parameters to recheck: '+w.join(', ')+'.','bad')}
+ $('sc').textContent=score;$('tt').textContent=total;$('pv').checked=true;upd2()};
+$('rv').onclick=()=>{say('Answer: '+eqn(Q.p)+'<ul>'+desc(Q.p).map(t=>'<li>'+t+'</li>').join('')+'</ul>','ok');done=true;upd2()};
+$('nw').onclick=newQ;$('lvl').onchange=newQ;$('pv').onchange=upd2;
+['a','b','h','k'].forEach(n=>$('g'+n).oninput=()=>{if($('pv').checked)upd2()});
+
+/* Tabs */
+function show(n){$('p1').classList.toggle('hide',n!=1);$('p2').classList.toggle('hide',n!=2);$('t1').classList.toggle('on',n==1);$('t2').classList.toggle('on',n==2);n==1?upd1():(Q||newQ(),upd2())}
+$('t1').onclick=()=>show(1);$('t2').onclick=()=>show(2);
+addEventListener('resize',()=>$('p1').classList.contains('hide')?Q&&upd2():upd1());
+upd1();
+</script></body></html>
