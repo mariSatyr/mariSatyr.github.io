@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHSAT Practice Test 5 (Form A) — Electronic Assessment</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      scroll-behavior: smooth;
+    }
+    .passage-font {
+      font-family: 'Lora', Georgia, serif;
+    }
+
+    /* 4-Minute Light Flash Overlay Animation */
+    @keyframes fourMinuteLightFlash {
+      0% {
+        opacity: 0;
+        box-shadow: inset 0 0 0 0 rgba(251, 191, 36, 0);
+      }
+      15% {
+        opacity: 0.92;
+        background-color: rgba(254, 243, 199, 0.78);
+        box-shadow: inset 0 0 90px 30px rgba(245, 158, 11, 0.95);
+      }
+      35% {
+        opacity: 0.25;
+        background-color: rgba(255, 255, 255, 0.25);
+        box-shadow: inset 0 0 30px 10px rgba(245, 158, 11, 0.4);
+      }
+      55% {
+        opacity: 0.95;
+        background-color: rgba(254, 240, 138, 0.85);
+        box-shadow: inset 0 0 110px 40px rgba(234, 179, 8, 1);
+      }
+      80% {
+        opacity: 0.45;
+        background-color: rgba(254, 249, 195, 0.35);
+      }
+      100% {
+        opacity: 0;
+        background-color: transparent;
+        box-shadow: inset 0 0 0 0 rgba(251, 191, 36, 0);
+      }
+    }
+
+    .light-flash-active {
+      animation: fourMinuteLightFlash 2.2s ease-in-out forwards;
+    }
+
+    @keyframes beaconPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+      }
+      50% {
+        transform: scale(1.18);
+        box-shadow: 0 0 18px 6px rgba(245, 158, 11, 0.9);
+      }
+    }
+
+    .beacon-flashing {
+      animation: beaconPulse 0.65s ease-in-out 4;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    .fraction {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 0.88em;
+      line-height: 1.05;
+      margin: 0 2px;
+    }
+    .fraction > span:first-child {
+      border-bottom: 1.5px solid currentColor;
+      padding: 0 3px;
+    }
+    .fraction > span:last-child {
+      padding: 0 3px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+  <!-- Full-Screen 4-Minute Visual Light Flash Overlay -->
+  <div id="light-flash-overlay" class="fixed inset-0 pointer-events-none z-50 opacity-0 transition-opacity"></div>
+
+  <!-- 4-Minute Flash Toast Banner -->
+  <div id="flash-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 hidden">
+    <div class="flex items-center gap-3 bg-amber-500 text-slate-950 font-bold px-5 py-3 rounded-2xl shadow-2xl border-2 border-amber-200">
+      <span class="inline-flex h-4 w-4 rounded-full bg-white animate-ping"></span>
+      <span id="flash-toast-text">4-Minute Interval Light Flash!</span>
+    </div>
+  </div>
+
+  <!-- Sticky Top Navigation & Proctoring Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <!-- Title & Section Switcher -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm">
+            5A
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+              SHSAT Practice Test 5 <span class="text-indigo-600 font-semibold">(Form A)</span>
+            </h1>
+            <p class="text-xs text-slate-500">All 80 Questions Required • Light Flashes Every 4 Minutes</p>
+          </div>
+        </div>
+
+        <!-- Timer & 4-Minute Light Beacon -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div id="beacon-container" class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+            <span id="flash-beacon" class="w-3.5 h-3.5 rounded-full bg-amber-400 border border-amber-600 shadow-inner transition-all"></span>
+            <div class="text-xs leading-tight">
+              <div class="font-bold text-amber-900">Next Flash: <span id="next-flash-countdown" class="font-mono">04:00</span></div>
+              <div class="text-[11px] text-amber-700">Flashes: <span id="flash-count">0</span></div>
+            </div>
+            <button type="button" onclick="triggerLightFlash(true)" title="Preview the 4-minute light flash"
+              class="ml-1 text-[11px] font-semibold bg-amber-200/80 hover:bg-amber-300 text-amber-950 px-2 py-1 rounded-lg transition">
+              Test Light
+            </button>
+          </div>
+
+          <div class="bg-slate-900 text-white px-3.5 py-1.5 rounded-xl text-right shadow-sm">
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Elapsed Time</div>
+            <div id="elapsed-timer" class="font-mono text-sm sm:text-base font-bold text-emerald-400">00:00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar & Quick Controls -->
+      <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="scrollToSection('part-1-reading')"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+            Part 1: Reading (21–50)
+          </button>
+          <button type="button" onclick="scrollToSection('part-2-math')"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 transition">
+            Part 2: Math (51–100)
+          </button>
+          <button type="button" onclick="toggleNavigatorModal()"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1.5">
+            <span>Question Grid</span>
+            <span id="nav-badge" class="bg-slate-700 text-white text-[11px] px-1.5 py-0.2 rounded-md">0/80</span>
+          </button>
+        </div>
+
+        <div class="flex-1 max-w-md flex items-center gap-3">
+          <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+          <span id="progress-label" class="text-xs font-bold text-slate-700 whitespace-nowrap">0 / 80 Answered</span>
+        </div>
+
+        <button type="button" id="top-submit-btn" onclick="handleSubmitTest()"
+          class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition cursor-pointer">
+          Submit &amp; Grade Test
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Validation Alert Banner (Shown if user tries to submit with unanswered questions) -->
+  <div id="validation-banner" class="hidden max-w-5xl mx-auto mt-6 px-4 sm:px-6">
+    <div class="bg-rose-50 border-2 border-rose-300 rounded-2xl p-5 shadow-md">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center font-bold shrink-0 mt-0.5">!</div>
+          <div>
+            <h2 class="text-base font-extrabold text-rose-900">Action Required: Every Question Must Be Answered</h2>
+            <p id="validation-summary" class="text-sm text-rose-800 mt-1">
+              You still have unanswered questions. Click any question number below to jump directly to it:
+            </p>
+            <div id="unanswered-pills" class="flex flex-wrap gap-1.5 mt-3 max-h-36 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+        <button type="button" onclick="hideValidationBanner()" class="text-rose-500 hover:text-rose-800 font-bold text-lg leading-none px-2">
+          &times;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Score Report Dashboard (Hidden until graded) -->
+  <section id="results-dashboard" class="hidden max-w-6xl mx-auto mt-8 px-4 sm:px-6">
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
+      <div class="bg-gradient-to-r from-indigo-700 via-indigo-600 to-sky-600 px-6 sm:px-10 py-8 text-white">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <span class="inline-block text-xs font-bold uppercase tracking-widest bg-white/20 px-3 py-1 rounded-full mb-2">
+              Official Electronic Score Report
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold">SHSAT Practice Test 5 — Results</h2>
+            <p class="text-indigo-100 text-sm mt-1">Completed in <span id="final-time" class="font-bold text-white">00:00</span> • 4-Minute Light Flashes Triggered: <span id="final-flashes" class="font-bold text-white">0</span></p>
+          </div>
+          <button type="button" onclick="resetExam()"
+            class="px-5 py-2.5 rounded-xl bg-white text-indigo-700 hover:bg-indigo-50 font-bold text-sm shadow transition">
+            Retake Test
+          </button>
+        </div>
+      </div>
+
+      <!-- Score Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 p-6 sm:p-8 bg-slate-50/70 border-b border-slate-200">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Composite Score</div>
+          <div class="mt-2 flex items-baseline gap-3">
+            <span id="total-score-num" class="text-4xl font-extrabold text-indigo-600">0/80</span>
+            <span id="total-score-pct" class="text-lg font-bold text-slate-600">(0%)</span>
+          </div>
+          <p id="total-performance-note" class="text-xs text-slate-500 mt-2">All 80 questions graded.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Part 1: Reading (Q21–50)</div>
+          <div class="mt-2 flex items-baseline gap-3">
+            <span id="reading-score-num" class="text-4xl font-extrabold text-emerald-600">0/30</span>
+            <span id="reading-score-pct" class="text-lg font-bold text-slate-600">(0%)</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">5 Passages • Reading Comprehension</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Part 2: Mathematics (Q51–100)</div>
+          <div class="mt-2 flex items-baseline gap-3">
+            <span id="math-score-num" class="text-4xl font-extrabold text-sky-600">0/50</span>
+            <span id="math-score-pct" class="text-lg font-bold text-slate-600">(0%)</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-2">Arithmetic, Algebra, Geometry &amp; Word Problems</p>
+        </div>
+      </div>
+
+      <!-- Review Filter Controls -->
+      <div class="px-6 sm:px-8 py-4 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-slate-700">Filter Review:</span>
+          <button type="button" id="filter-all-btn" onclick="filterReview('all')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition">
+            All 80 Questions
+          </button>
+          <button type="button" id="filter-wrong-btn" onclick="filterReview('incorrect')"
+            class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Incorrect Only (<span id="incorrect-count">0</span>)
+          </button>
+        </div>
+        <p class="text-xs text-slate-500">Scroll down to inspect explanations alongside each question.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Exam Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-12">
+
+    <!-- ==================== PART 1: READING ==================== -->
+    <section id="part-1-reading" class="space-y-8">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Part 1 • Questions 21–50</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Reading Comprehension</h2>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl">30 Questions</span>
+        </div>
+        <p class="text-sm text-slate-600 mt-4 leading-relaxed">
+          <strong>DIRECTIONS:</strong> Read each passage below and answer the questions following it. Base your answers only on information contained in the passage. You may reread a passage if you need to. Select the best answer for each question.
+        </p>
+      </div>
+
+      <!-- Reading Passages & Questions Injected Here -->
+      <div id="reading-container" class="space-y-10"></div>
+    </section>
+
+    <!-- ==================== PART 2: MATHEMATICS ==================== -->
+    <section id="part-2-math" class="space-y-8 pt-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-600">Part 2 • Questions 51–100</span>
+            <h2 class="text-2xl font-extrabold text-slate-900 mt-0.5">Mathematics</h2>
+          </div>
+          <span class="text-xs font-semibold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl">50 Questions</span>
+        </div>
+        <div class="text-sm text-slate-600 mt-4 space-y-2 leading-relaxed">
+          <p><strong>GENERAL INSTRUCTIONS:</strong> Solve each problem and select the best answer from the choices given.</p>
+          <ul class="list-disc list-inside text-xs text-slate-500 space-y-1">
+            <li>Formulas and definitions of mathematical terms and symbols are not provided.</li>
+            <li>Diagrams other than graphs are not necessarily drawn to scale. Do not assume any relationship in a diagram unless it is specifically stated or can be figured out from the information given.</li>
+            <li>Assume that a diagram is in one plane unless the problem specifically states that it is not.</li>
+            <li>Graphs are drawn to scale. Unless stated otherwise, you can assume relationships according to appearance.</li>
+            <li>Reduce all fractions to lowest terms.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Math Questions Injected Here -->
+      <div id="math-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+    </section>
+
+    <!-- Bottom Submit Card -->
+    <div id="bottom-submit-card" class="bg-white rounded-3xl border-2 border-slate-200 p-6 sm:p-8 shadow-md text-center space-y-4">
+      <h3 class="text-xl font-extrabold text-slate-900">Ready to Finish &amp; Grade Your Test?</h3>
+      <p id="bottom-status-text" class="text-sm text-slate-600 max-w-xl mx-auto">
+        You must answer all 80 questions (Questions 21 through 100) before submitting. Currently answered: <strong class="text-indigo-600">0 of 80</strong>.
+      </p>
+      <div class="pt-2">
+        <button type="button" onclick="handleSubmitTest()"
+          class="px-8 py-3.5 rounded-2xl text-base font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+          Submit All 80 Answers &amp; Grade Test
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Question Navigator Modal -->
+  <div id="navigator-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-extrabold text-slate-900">Question Navigator (21–100)</h3>
+          <p class="text-xs text-slate-500">Click any question number to jump directly to it.</p>
+        </div>
+        <button type="button" onclick="toggleNavigatorModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-slate-700">
+          &times;
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-6">
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-2">Part 1: Reading (21–50)</div>
+          <div id="nav-grid-reading" class="grid grid-cols-6 sm:grid-cols-10 gap-2"></div>
+        </div>
+        <div>
+          <div class="text-xs font-bold uppercase tracking-wider text-sky-600 mb-2">Part 2: Mathematics (51–100)</div>
+          <div id="nav-grid-math" class="grid grid-cols-6 sm:grid-cols-10 gap-2"></div>
+        </div>
+      </div>
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+        <div class="flex items-center gap-4">
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-indigo-600 inline-block"></span> Answered</span>
+          <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-white border border-slate-300 inline-block"></span> Unanswered</span>
+        </div>
+        <button type="button" onclick="toggleNavigatorModal()" class="font-bold text-indigo-600 hover:underline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // DATA: READING PASSAGES (Q21 - Q50)
+    // =========================================================================
+    const readingPassages = [
+      {
+        id: "passage-1",
+        title: "Passage 1 — The Saber-Toothed Cat",
+        range: "Questions 21–26",
+        lines: [
+          { num: "", text: "The saber-toothed cat, now extinct but once one of history's most ferocious carnivores, lived between ten thousand and forty thousand years ago. The saber-tooth is named" },
+          { num: "5", text: "for its most notable feature, a pair of sharp, curved canine teeth—as long as eight inches—used to attack and kill a variety of large, grass-eating animals. Its most frequent prey was the elephant-like mastodon." },
+          { num: "10", text: "Skeletons of the two animals have been found together on several continents, and the extinction of the saber-tooth closely followed the demise of mastodons in each of these locations." },
+          { num: "15", text: "Much of what scientists know about the saber-tooth results from their study of bones found in the La Brea tar pits in Los Angeles. For centuries these sticky death traps performed a grisly service for modern" },
+          { num: "20", text: "scientists, trapping and suffocating thousands of careless, usually healthy animals, both predator and prey, and preserving their bones in asphalt. From La Brea bones, much of the saber-tooth's violent life" },
+          { num: "25", text: "has been reconstructed. The cat's six-foot long skeleton revealed its killing technique: a swift and powerful forward charge, a 90-degree opening of the jaw, and, finally, the use of its sharp teeth and powerful neck" },
+          { num: "30", text: "muscles to inflict wounds that could bring down even a mastodon in a few minutes." },
+          { num: "", text: "Recent studies, however, have somewhat modified scientists' view of the efficient, lone killer and hint that the saber-tooth" },
+          { num: "35", text: "had a heart at least for its own kind. The many chipped, broken, mended, arthritic, dislocated, and infected La Brea bones have led researchers to conclude that the violent attacks of the saber-tooth often put them" },
+          { num: "40", text: "out of commission for considerable amounts of time. During these mending periods, researchers have reasoned, other cats must have allowed wounded comrades to share in their kills until they could hunt again." },
+          { num: "45", text: "The attractive image of a saber-tooth social life, with cats hunting in packs and supporting their own wounded, much like today's lions, is supplemented by another La Brea discovery. A study of saber-tooth" },
+          { num: "50", text: "throat bones indicates that the cats possessed the ability to purr as well as roar." }
+        ],
+        questions: [
+          {
+            num: 21,
+            text: "Which of the following best tells what this passage is about?",
+            options: [
+              { label: "A", text: "how scientists find saber-tooth bones" },
+              { label: "B", text: "the relationship between mastodons and saber-tooths" },
+              { label: "C", text: "how the La Brea tar pits were formed" },
+              { label: "D", text: "how knowledge about saber-tooths is gained from bone studies" },
+              { label: "E", text: "why saber-tooths are studied by scientists" }
+            ],
+            correct: "D",
+            explanation: "Throughout the passage, scientists reconstruct the saber-tooth's hunting technique, social life, and vocal abilities by studying preserved bones from the La Brea tar pits."
+          },
+          {
+            num: 22,
+            text: "Which of the following is <em>not</em> mentioned in the passage as a behavior of saber-tooths?",
+            options: [
+              { label: "F", text: "charging prey" },
+              { label: "G", text: "biting prey" },
+              { label: "H", text: "sharing food" },
+              { label: "J", text: "escaping its predators" },
+              { label: "K", text: "purring" }
+            ],
+            correct: "J",
+            explanation: "Charging prey (line 27), biting prey (lines 27–29), sharing food (lines 42–44), and purring (line 51) are all mentioned; escaping predators is never mentioned."
+          },
+          {
+            num: 23,
+            text: "What does the passage imply about the prey of the saber-toothed cat?",
+            options: [
+              { label: "A", text: "They often killed the cats during their battles." },
+              { label: "B", text: "They were dependent upon the cats for survival." },
+              { label: "C", text: "They were usually larger than the cats." },
+              { label: "D", text: "They lived primarily in what is now California." },
+              { label: "E", text: "They were never trapped in the tar pits." }
+            ],
+            correct: "C",
+            explanation: "Lines 7–9 state that saber-tooths attacked 'a variety of large, grass-eating animals,' most frequently the elephant-like mastodon, which was much larger than the six-foot-long cat."
+          },
+          {
+            num: 24,
+            text: "Which of the following best describes what is suggested by the statement that the saber-tooth “had a heart” (line 35)?",
+            options: [
+              { label: "F", text: "The killing behavior was unusual for the cats." },
+              { label: "G", text: "The cats felt something like regret at killing their prey." },
+              { label: "H", text: "The cats never behaved violently toward each other." },
+              { label: "J", text: "The cats felt emotions such as fear and anger." },
+              { label: "K", text: "The cats' food-sharing resembled an act of kindness." }
+            ],
+            correct: "K",
+            explanation: "Lines 34–44 explain that 'had a heart at least for its own kind' refers to healthy saber-tooths allowing wounded comrades to share in their kills while mending."
+          },
+          {
+            num: 25,
+            text: "What is the most likely reason that saber-toothed cats became extinct?",
+            options: [
+              { label: "A", text: "They were trapped and killed in the tar pits." },
+              { label: "B", text: "Their main source of food became extinct." },
+              { label: "C", text: "Many were wounded, but they were not nursed by other saber-tooths." },
+              { label: "D", text: "They were killed off by their predators." },
+              { label: "E", text: "They were extremely vulnerable to disease and injury." }
+            ],
+            correct: "B",
+            explanation: "Lines 8–13 note that the mastodon was their most frequent prey and that the extinction of the saber-tooth closely followed the demise of mastodons."
+          },
+          {
+            num: 26,
+            text: "What is the “grisly service” (line 19) provided by the La Brea tar pits?",
+            options: [
+              { label: "F", text: "They trapped predators that would have killed other animal species." },
+              { label: "G", text: "They helped predators capture their prey more easily." },
+              { label: "H", text: "They trapped only saber-toothed cats." },
+              { label: "J", text: "They preserved the skeletons of animal species that are now extinct." },
+              { label: "K", text: "They provided a place where wounded saber-tooths could go to die." }
+            ],
+            correct: "J",
+            explanation: "Lines 18–23 explain that while the pits suffocated thousands of animals ('grisly'), they performed a 'service' by preserving their bones in asphalt for modern scientists."
+          }
+        ]
+      },
+      {
+        id: "passage-2",
+        title: "Passage 2 — The Japanese Tea Ceremony",
+        range: "Questions 27–32",
+        lines: [
+          { num: "", text: "Tea has a long history of medicinal use in India and China, where it was used to relieve drowsiness and thus aid the meditation of Buddhist monks. A monk studying" },
+          { num: "5", text: "in China brought the first tea to Japan some time before A.D. 729—the first recorded use of tea in that country. In 1191, tea drinking in Japan was further encouraged by Yaesai, a Zen master who" },
+          { num: "10", text: "brought new tea seeds from China. Yaesai treated the tea plant as a sacred remedy and an aid to religious experience. His writings contain the outline of what has become known as the “tea ceremony.”" },
+          { num: "15", text: "According to some sources, the Japanese nobility practiced a quite different social activity associated with tea drinking—the tea tournament. Reminiscent of modern-day wine-tasting events, tea tournaments" },
+          { num: "20", text: "involved tasting bowls of tea from different areas and guessing the origin of each. This version of tea drinking was far removed from the earlier connection with religious activity." },
+          { num: "25", text: "The next important development in the tea ceremony occurred during the fifteenth century. The Silver Pavilion was built for a retired Japanese military leader, or shogun, who devoted the rest of his life to perfecting" },
+          { num: "30", text: "the arts and rituals of the ceremony. By that time the tea ceremony had become an essential part of the cultural life of Japan. Perhaps the ceremony reached its pinnacle in the sixteenth century with the great tea" },
+          { num: "35", text: "master Rikyu, who established the rules and etiquette for the ceremony as it is still practiced today." },
+          { num: "", text: "The tea ceremony has been described as a “ritualized sequence of movements, a formal dance of significant gestures.” Two" },
+          { num: "40", text: "principles prevail: <em>shibui</em> (impeccable taste) and <em>wabi</em> (simplicity and absence of luxury), and the ceremony follows strict rules. The ceremony takes place in a tea room," },
+          { num: "45", text: "either part of a house or a separate building in a garden. Although simple in design and lacking in pretension, tea rooms are built of the finest materials and with the most expert workmanship. Often they cost more" },
+          { num: "50", text: "than the house itself!" },
+          { num: "", text: "The full tea ceremony has three parts and may last for four hours. The guests spend a few moments in the garden before being invited into the tea room for a light meal." },
+          { num: "55", text: "After eating, they return to the garden for meditation before returning for “thick tea.” The host prepares one cup of tea, and the cup is passed from one guest to another in a series of bows and other movements. Again" },
+          { num: "60", text: "the guests retreat to the garden. During the third part, known as “weak tea,” a separate batch of tea is prepared for each guest. The weak tea part of the ceremony is often the only one practiced today, when tea cere-" },
+          { num: "65", text: "monies may be conducted to honor birthdays or other special days. Even in this shortened form, however, the tea ceremony provides busy people an opportunity for quiet reflection in a gracious setting." }
+        ],
+        questions: [
+          {
+            num: 27,
+            text: "Which of the following best tells what this passage is about?",
+            options: [
+              { label: "A", text: "tea ceremonies around the world" },
+              { label: "B", text: "a contrast between the tea ceremony and other Japanese traditions" },
+              { label: "C", text: "the development of the Japanese tea ceremony" },
+              { label: "D", text: "how tea came to Japan" },
+              { label: "E", text: "how Rikyu invented the tea ceremony" }
+            ],
+            correct: "C",
+            explanation: "The passage traces the historical origins, evolution through Yaesai, the shogun, and Rikyu, principles, and modern form of the Japanese tea ceremony."
+          },
+          {
+            num: 28,
+            text: "What does the passage suggest about the use of tea as a medicinal cure?",
+            options: [
+              { label: "F", text: "It was used only by members of the nobility." },
+              { label: "G", text: "It could cure almost any disease." },
+              { label: "H", text: "It was used only in Japan." },
+              { label: "J", text: "It has been used in this way for centuries." },
+              { label: "K", text: "Its use was considered foolish by Zen masters." }
+            ],
+            correct: "J",
+            explanation: "Lines 1–2 state directly that 'Tea has a long history of medicinal use in India and China,' dating back prior to A.D. 729."
+          },
+          {
+            num: 29,
+            text: "Which of the following statements is true of the present-day tea ceremony in Japan?",
+            options: [
+              { label: "A", text: "It usually includes only the weak tea portion." },
+              { label: "B", text: "It never takes place in the host's home." },
+              { label: "C", text: "It often occurs in an ornate tea pavilion." },
+              { label: "D", text: "It requires four hours to complete." },
+              { label: "E", text: "It always includes a light meal." }
+            ],
+            correct: "A",
+            explanation: "Lines 62–64 state: 'The weak tea part of the ceremony is often the only one practiced today.'"
+          },
+          {
+            num: 30,
+            text: "According to the passage, which of the following statements about Rikyu's tea ceremony is accurate?",
+            options: [
+              { label: "F", text: "He developed it around the year 1200." },
+              { label: "G", text: "It established rules that are still observed." },
+              { label: "H", text: "It consisted only of thick tea." },
+              { label: "J", text: "It was used by Buddhist monks." },
+              { label: "K", text: "It was intended only for shoguns and other aristocracy." }
+            ],
+            correct: "G",
+            explanation: "Lines 34–37 state that in the sixteenth century, Rikyu 'established the rules and etiquette for the ceremony as it is still practiced today.'"
+          },
+          {
+            num: 31,
+            text: "Which of the following is an expression of the principle of <em>wabi</em>?",
+            options: [
+              { label: "A", text: "a wine-tasting party" },
+              { label: "B", text: "a tea tournament" },
+              { label: "C", text: "the design of a tea room" },
+              { label: "D", text: "the desire to celebrate birthdays" },
+              { label: "E", text: "the desire to drink only the finest tea imported from China" }
+            ],
+            correct: "C",
+            explanation: "Wabi is defined as 'simplicity and absence of luxury' (lines 41–42), and lines 46–47 note that tea rooms are 'simple in design and lacking in pretension.'"
+          },
+          {
+            num: 32,
+            text: "From the comments of the author, the most likely reason the tea ceremony has survived to the present day is that",
+            options: [
+              { label: "F", text: "tea is still considered a luxury." },
+              { label: "G", text: "people again recognize the medicinal value of tea." },
+              { label: "H", text: "people still use tea as an aid to religious experience." },
+              { label: "J", text: "people appreciate the opportunity to be quiet and reflective." },
+              { label: "K", text: "people still enjoy participating in tea tournaments." }
+            ],
+            correct: "J",
+            explanation: "The concluding sentence (lines 66–69) states that even today 'the tea ceremony provides busy people an opportunity for quiet reflection in a gracious setting.'"
+          }
+        ]
+      },
+      {
+        id: "passage-3",
+        title: "Passage 3 — The Swahili Trading Network",
+        range: "Questions 33–38",
+        lines: [
+          { num: "", text: "The tenth century A.D. was a period of cultural and artistic revival in the European countries bordering the Mediterranean Sea. The magnificent works of art and architecture" },
+          { num: "5", text: "of that period used, among other materials, African gold, ivory, and rock crystals. But most of these materials would have been unavailable to European artists without a sophisticated trading network" },
+          { num: "10", text: "established along the east coast of Africa, from present-day Somalia to northern Mozambique. The African traders represented many groups but were united by their common use of the Swahili language." },
+          { num: "15", text: "For that reason, the traders are collectively known as “Swahili.”" },
+          { num: "", text: "For centuries, the Swahili had sailed the African coast in small, seaworthy boats of their own design. They were expert navigators," },
+          { num: "20", text: "and their knowledge of the dangerous coastal waters enabled them to expand their influence along 3,000 kilometers of East African coastline. In this region, known as the Swahili corridor, the Swahili" },
+          { num: "25", text: "traded salt, cloth, and iron products for a wide range of goods from groups living in the African interior." },
+          { num: "", text: "In the ninth century, the Swahili traded with Persian Gulf merchants, who in turn" },
+          { num: "30", text: "traded with China. The exchanges involved Chinese pottery—discovered in recent East African coastal excavations—for African goods, particularly ivory. In the tenth century a new trade sprang up as Muslim" },
+          { num: "35", text: "traders from the Red Sea came seeking African gold, ivory, and crystals to sell to Mediterranean Europe. They found the Swahili trading network already in place. For the goods they sought, the Muslims" },
+          { num: "40", text: "offered not only money but technical advice in matters that ranged from building techniques to arts and crafts." },
+          { num: "", text: "The Swahili trading network did more than help the circulation of international products" },
+          { num: "45", text: "between Europe, Asia, and Africa. Since the Swahili traded with varied African societies, from herders and farmers to hunters, they became a source of exchange for both goods and information within the" },
+          { num: "50", text: "region. Their network brought both economic advancement and a degree of cultural unity among the people of East Africa." }
+        ],
+        questions: [
+          {
+            num: 33,
+            text: "Which of the following best tells what this passage is about?",
+            options: [
+              { label: "A", text: "the role played by the Swahili in international trade in the ninth and tenth centuries" },
+              { label: "B", text: "the Swahili contribution to a revival of African art and culture" },
+              { label: "C", text: "the effect of the Swahili traders on the art of tenth-century Europe" },
+              { label: "D", text: "the sailing and boatbuilding skills of the Swahili traders" },
+              { label: "E", text: "how the Swahili traders used their wealth to develop their homeland" }
+            ],
+            correct: "A",
+            explanation: "The passage describes the Swahili trading corridor and its crucial role linking the African interior with Persian Gulf, Chinese, Red Sea, and European markets in the 9th and 10th centuries."
+          },
+          {
+            num: 34,
+            text: "Who were the Swahili's first trading partners?",
+            options: [
+              { label: "F", text: "the Chinese" },
+              { label: "G", text: "European countries" },
+              { label: "H", text: "other African societies" },
+              { label: "J", text: "Red Sea merchants" },
+              { label: "K", text: "Persian Gulf merchants" }
+            ],
+            correct: "H",
+            explanation: "Lines 23–27 show that before 9th-century Persian Gulf merchants or 10th-century Red Sea traders arrived, the Swahili already had a network trading with 'groups living in the African interior.'"
+          },
+          {
+            num: 35,
+            text: "What was most important in enabling the Swahili to establish their trade along such a large portion of the African coast?",
+            options: [
+              { label: "A", text: "large holdings of gold and ivory" },
+              { label: "B", text: "knowledge of the coastal waters" },
+              { label: "C", text: "ability to trade with European countries" },
+              { label: "D", text: "knowledge of European art" },
+              { label: "E", text: "possession of goods from China" }
+            ],
+            correct: "B",
+            explanation: "Lines 19–23 explicitly state: 'their knowledge of the dangerous coastal waters enabled them to expand their influence along 3,000 kilometers of East African coastline.'"
+          },
+          {
+            num: 36,
+            text: "What is an example of the goods sought by the traders from the Red Sea?",
+            options: [
+              { label: "F", text: "Chinese pottery" },
+              { label: "G", text: "money" },
+              { label: "H", text: "art objects" },
+              { label: "J", text: "building techniques" },
+              { label: "K", text: "ivory" }
+            ],
+            correct: "K",
+            explanation: "Lines 34–37 state that Muslim traders from the Red Sea came 'seeking African gold, ivory, and crystals.'"
+          },
+          {
+            num: 37,
+            text: "What was the most likely location for the Swahili to exchange gold for Chinese pottery?",
+            options: [
+              { label: "A", text: "in the interior of Africa" },
+              { label: "B", text: "on the coast of East Africa" },
+              { label: "C", text: "in the Persian Gulf" },
+              { label: "D", text: "on the shores of the Red Sea" },
+              { label: "E", text: "somewhere in China" }
+            ],
+            correct: "B",
+            explanation: "Lines 30–33 note that 'Chinese pottery—discovered in recent East African coastal excavations—[was exchanged] for African goods.'"
+          },
+          {
+            num: 38,
+            text: "In what way were Swahili traders involved in the artistic revival in tenth-century Europe?",
+            options: [
+              { label: "F", text: "The materials they traded with Muslim traders from the Red Sea were used in the European revival." },
+              { label: "G", text: "They sold African gold, ivory, and crystals to the Europeans in exchange for arts and crafts." },
+              { label: "H", text: "They traded salt, cloth, and iron products with Persian Gulf merchants in exchange for gold, ivory, and crystals." },
+              { label: "J", text: "They offered technical advice as well as money in exchange for European art." },
+              { label: "K", text: "Their network introduced artistic practices of the Chinese to Europeans." }
+            ],
+            correct: "F",
+            explanation: "Lines 4–10 and 34–38 explain that the Swahili supplied African gold, ivory, and crystals to Red Sea Muslim traders, who sold them to Mediterranean Europe for art and architecture."
+          }
+        ]
+      },
+      {
+        id: "passage-4",
+        title: "Passage 4 — Comets: Fear and Fascination",
+        range: "Questions 39–44",
+        lines: [
+          { num: "", text: "A brilliant comet appears in the sky about once every ten years. In recent times, the appearance—technically called an apparition—of a comet is frequently the occasion" },
+          { num: "5", text: "for celebration, including T-shirts and posters. One shirt, for Halley's comet in 1985–86, trumpeted, “coming soon to a sky near you.” For most of the history of the human race, however, the appearance of a" },
+          { num: "10", text: "comet has inspired fear, dire predictions, and irrational behavior. At first glance, that may seem surprising. Comets are beautiful, slow-moving objects, absolutely quiet, and clearly very far away from the" },
+          { num: "15", text: "earth. Why, then, did they inspire such terror and forecasts of doom in virtually every culture of the world for thousands of years? It may well be because—until the last few centuries—people could not fit comets into" },
+          { num: "20", text: "what they knew about the universe, and because fear is a very human reaction to the unknown." },
+          { num: "", text: "In earlier times, people were in much closer touch with the natural world around them" },
+          { num: "25", text: "than are most people today. They watched the skies and learned to recognize, if not fully understand, the regularity of the movements of heavenly bodies. They learned to predict these movements and to" },
+          { num: "30", text: "connect them with specific aspects of their lives, such as the passage of time, the seasons, and the weather. Comets, on the other hand, appeared without warning anywhere in the sky, wandered aimlessly for a few" },
+          { num: "35", text: "days, then disappeared as suddenly as they had come. With no apparent rhyme or reason for their appearances, comets became objects of awe and fear." },
+          { num: "", text: "In the twenty-first century, these" },
+          { num: "40", text: "once-feared objects can be described scientifically. For example, every comet has a head, with a nucleus of icy material that has been described as a “dirty snowball.” This nucleus is surrounded by a fuzzy-look-" },
+          { num: "45", text: "ing, gaseous region called the coma. Frequently a comet also has a tail composed of gases and dust. The ancient Chinese called comets broom stars, the Aztecs referred to them as smoking stars, and the" },
+          { num: "50", text: "Tshi people of Zaire named them hair stars. The English name for them comes from the Greek <em>kometes</em>, meaning long-haired. The Tonga people of the South Pacific perhaps came closest to the truth when they named" },
+          { num: "55", text: "them stars of dust." },
+          { num: "", text: "Nearly every culture has taken the arrival of a comet as a sign of undesirable change or bad luck. To the Masai of East Africa, comets portended famine, and to the Zulus" },
+          { num: "60", text: "farther south, war. The Chinese catalogued dozens of comet types, each predicting a specific kind of doom. Europeans regarded them with superstition and fear. Only the !Kung people of modern-day Namibia were" },
+          { num: "65", text: "optimistic when sighting a comet, believing it guaranteed a happy future." },
+          { num: "", text: "Although we now know a great deal about comets and can predict their apparitions and movements with considerable accuracy," },
+          { num: "70", text: "they are still capable of inspiring awe and wonder as they light up the night sky." }
+        ],
+        questions: [
+          {
+            num: 39,
+            text: "Which of the following best tells what this passage is about?",
+            options: [
+              { label: "A", text: "the return of Halley's comet" },
+              { label: "B", text: "what comets look like" },
+              { label: "C", text: "people's fascination with and fear of comets" },
+              { label: "D", text: "records of comet apparitions" },
+              { label: "E", text: "what astronomers know about comets" }
+            ],
+            correct: "C",
+            explanation: "The passage explores how humanity's view of comets shifted from ancient terror and superstition to modern scientific understanding and celebration."
+          },
+          {
+            num: 40,
+            text: "Why did comets inspire fear in ancient times?",
+            options: [
+              { label: "F", text: "They appeared to be very close to earth." },
+              { label: "G", text: "They appeared frequently in the night sky." },
+              { label: "H", text: "They exploded noisily when they disappeared." },
+              { label: "J", text: "Their appearances were unpredictable." },
+              { label: "K", text: "They predicted war and disaster." }
+            ],
+            correct: "J",
+            explanation: "Lines 32–38 explain that unlike regular heavenly bodies, comets 'appeared without warning... With no apparent rhyme or reason for their appearances, comets became objects of awe and fear.'"
+          },
+          {
+            num: 41,
+            text: "The !Kung people differed from other African cultures because they",
+            options: [
+              { label: "A", text: "thought comets were made of dust." },
+              { label: "B", text: "kept careful records of comet apparitions." },
+              { label: "C", text: "believed comets told of coming war." },
+              { label: "D", text: "understood the movements of comets." },
+              { label: "E", text: "took comets to be signals of good luck." }
+            ],
+            correct: "E",
+            explanation: "Lines 63–66 note that unlike cultures that saw comets as bad luck, 'Only the !Kung people of modern-day Namibia were optimistic when sighting a comet, believing it guaranteed a happy future.'"
+          },
+          {
+            num: 42,
+            text: "Why does the author say that the Tongan name for a comet “came closest to the truth” (line 54)?",
+            options: [
+              { label: "F", text: "The tail of a comet is made of dust." },
+              { label: "G", text: "The shape of the head and tail of a comet suggests long hair." },
+              { label: "H", text: "A comet is a type of star." },
+              { label: "J", text: "A comet is composed of smoke." },
+              { label: "K", text: "The Tongans believed comets brought good luck." }
+            ],
+            correct: "F",
+            explanation: "Lines 46–47 state that a comet has 'a tail composed of gases and dust,' making the Tongan name 'stars of dust' scientifically accurate."
+          },
+          {
+            num: 43,
+            text: "The T-shirt boasting, “coming soon to a sky near you,” implied that",
+            options: [
+              { label: "A", text: "Halley's comet was not bright enough to be seen." },
+              { label: "B", text: "the appearance of Halley's comet cannot be predicted accurately." },
+              { label: "C", text: "the arrival of a comet still inspires great interest." },
+              { label: "D", text: "comets are no longer of interest to the public." },
+              { label: "E", text: "something terrible would happen in 1985 or 1986." }
+            ],
+            correct: "C",
+            explanation: "Lines 3–8 use the T-shirt slogan to illustrate that comet apparitions are now an 'occasion for celebration' and enthusiastic public interest."
+          },
+          {
+            num: 44,
+            text: "Which of the following statements about the relationship between comets and disasters is best supported by the passage?",
+            options: [
+              { label: "F", text: "They may occur at the same time, but that doesn't mean that one causes the other." },
+              { label: "G", text: "The relationship that existed in ancient times no longer exists." },
+              { label: "H", text: "Increased scientific knowledge about comets can be used to predict disasters more accurately." },
+              { label: "J", text: "If people were in closer touch with the natural world, the relationship would be clearer." },
+              { label: "K", text: "Most ancient cultures did not believe there was a relationship between comets and disasters." }
+            ],
+            correct: "F",
+            explanation: "The passage characterizes ancient beliefs linking comets to famine, war, and doom as 'superstition and fear' rather than scientific cause and effect."
+          }
+        ]
+      },
+      {
+        id: "passage-5",
+        title: "Passage 5 — Traditional Folk Performers of India",
+        range: "Questions 45–50",
+        lines: [
+          { num: "", text: "For centuries, traveling performers played an important role in the culture of India. In ancient times, villagers living in remote areas depended on these traditional folk" },
+          { num: "5", text: "artists to bring news from far-away places and to entertain them with songs, stories, and acrobatics. Even though the local leaders in the sixteenth century emphasized court-based entertainment and, later," },
+          { num: "10", text: "industrialization broke down the old village society, the traditional arts managed to survive. But since India became independent in 1947, people in the rural areas began relying on radio, television, and the movies" },
+          { num: "15", text: "for information and entertainment. Support for the wandering entertainers was no longer strong enough to sustain them, and like many displaced workers before them, these folk artists fled to the city in" },
+          { num: "20", text: "search of new audiences." },
+          { num: "", text: "In the neighborhoods of the largest cities in India, new threats faced the storytellers, puppeteers, and sword-swallowers. Because they performed in the streets, they" },
+          { num: "25", text: "were considered beggars—illegal under the new laws of independent India. As recent arrivals with little money, they became squatters in the slums of the cities, victims of slum-clearing projects that frequently" },
+          { num: "30", text: "flattened their huts. But two recent changes may have created a turning point in the fortunes of the performers. The government has finally recognized their right to form a cooperative and be treated like" },
+          { num: "35", text: "other businesspeople. And the outside world, exposed to recent movies and TV shows about India, has become fascinated with all things Indian and discovered (or rediscovered) the ancient traditions of the" },
+          { num: "40", text: "folk artists." },
+          { num: "", text: "The transition from rural wandering to urban street performing has encouraged other changes as well. In earlier days, the various arts were performed by members of" },
+          { num: "45", text: "different castes, who would not associate with each other. The cooperative has required that those divisions be broken down. Now some young people even change from one skill to another. Women have won" },
+          { num: "50", text: "the right to perform in roles once reserved for men. Some children of these performers have chosen not to follow the old traditions and have become bus drivers and industrial workers, but others are preserving the old" },
+          { num: "55", text: "ways. Many street artists return annually to their rural ancestral villages, but when they go back to the city, they are coming home." }
+        ],
+        questions: [
+          {
+            num: 45,
+            text: "Which of the following best tells what this passage is about?",
+            options: [
+              { label: "A", text: "Traditional traveling performers in India have had to adapt to changing times." },
+              { label: "B", text: "Folk artists traditionally provided a means of communication in India." },
+              { label: "C", text: "Folk artists inherited their skills from their ancestors." },
+              { label: "D", text: "It is extremely important for a country to preserve its artistic heritage." },
+              { label: "E", text: "Steps must be taken to preserve the Indian tradition of street performance." }
+            ],
+            correct: "A",
+            explanation: "The passage details how India's traditional performers adapted from rural traveling entertainers to urban street artists forming cooperatives and breaking old barriers."
+          },
+          {
+            num: 46,
+            text: "Which of the threats to traveling performers came first?",
+            options: [
+              { label: "F", text: "the invention of television" },
+              { label: "G", text: "laws against begging" },
+              { label: "H", text: "industrialization" },
+              { label: "J", text: "slum clearances" },
+              { label: "K", text: "entertainment based in the courts of rulers" }
+            ],
+            correct: "K",
+            explanation: "Lines 7–11 present the chronological order: first, 16th-century local leaders emphasized 'court-based entertainment,' followed later by industrialization, and then post-1947 radio/TV, begging laws, and slum clearances."
+          },
+          {
+            num: 47,
+            text: "Which of these statements would the author most likely agree with?",
+            options: [
+              { label: "A", text: "Traditional street performing will soon die out." },
+              { label: "B", text: "Puppetry, acrobatics, and storytelling are now primarily urban professions." },
+              { label: "C", text: "The cooperative has eliminated the occupations of artists and musicians." },
+              { label: "D", text: "Laws against begging should be repealed." },
+              { label: "E", text: "Soon people will see traditional Indian arts only on television." }
+            ],
+            correct: "B",
+            explanation: "Lines 18–20 and 55–58 explain that folk artists fled to the cities and now regard the city as 'home.'"
+          },
+          {
+            num: 48,
+            text: "The passage suggests that the Indian government currently treats street performers as",
+            options: [
+              { label: "F", text: "national treasures." },
+              { label: "G", text: "beggars." },
+              { label: "H", text: "businesspeople." },
+              { label: "J", text: "displaced persons." },
+              { label: "K", text: "slumlords." }
+            ],
+            correct: "H",
+            explanation: "Lines 32–35 state: 'The government has finally recognized their right to form a cooperative and be treated like other businesspeople.'"
+          },
+          {
+            num: 49,
+            text: "Which of the following is <em>not</em> suggested as a strength of the current folk artists?",
+            options: [
+              { label: "A", text: "their willingness to change as society changes" },
+              { label: "B", text: "their ability to preserve traditional values" },
+              { label: "C", text: "the fact that they are breaking down caste barriers" },
+              { label: "D", text: "their ability to experiment with new methods" },
+              { label: "E", text: "their willingness to travel constantly around the country once again" }
+            ],
+            correct: "E",
+            explanation: "The passage notes they transitioned from rural wandering to permanent urban living (lines 41–42, 57–58), not that they returned to traveling constantly around the country."
+          },
+          {
+            num: 50,
+            text: "What effect has the rediscovery of ancient traditions by the outside world had on Indian folk artists?",
+            options: [
+              { label: "F", text: "They have regained some of their former popularity." },
+              { label: "G", text: "They have lost their legal status as performers." },
+              { label: "H", text: "They have returned to their homes in the rural villages." },
+              { label: "J", text: "They have rejected changes in favor of the old traditions." },
+              { label: "K", text: "They have restricted the participation of women and children." }
+            ],
+            correct: "F",
+            explanation: "Lines 30–40 cite the outside world's fascination and rediscovery of their ancient traditions as a positive 'turning point in the fortunes of the performers.'"
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // DATA: MATHEMATICS QUESTIONS (Q51 - Q100) WITH INLINE SVG DIAGRAMS
+    // =========================================================================
+    const mathQuestions = [
+      {
+        num: 51,
+        text: "What is the greatest common factor of 105 and 126?",
+        options: [
+          { label: "A", text: "3" },
+          { label: "B", text: "7" },
+          { label: "C", text: "9" },
+          { label: "D", text: "21" },
+          { label: "E", text: "35" }
+        ],
+        correct: "D",
+        explanation: "105 = 3 × 5 × 7 and 126 = 2 × 3² × 7. The common prime factors are 3 × 7 = 21."
+      },
+      {
+        num: 52,
+        text: "Simonne, Marco, and Evon were partners in business. Simonne and Marco each received twice as much of the profit as Evon received. If the total profit was $1,800, how much did Evon receive?",
+        options: [
+          { label: "F", text: "$360" },
+          { label: "G", text: "$600" },
+          { label: "H", text: "$720" },
+          { label: "J", text: "$900" },
+          { label: "K", text: "$1,800" }
+        ],
+        correct: "F",
+        explanation: "Let Evon's share = E. Then Simonne = 2E and Marco = 2E. Total = E + 2E + 2E = 5E = $1,800 → E = $360."
+      },
+      {
+        num: 53,
+        svg: `
+          <svg viewBox="0 0 340 70" class="w-full max-w-sm mx-auto my-2">
+            <line x1="25" y1="38" x2="315" y2="38" stroke="#1e293b" stroke-width="2.5" />
+            <circle cx="25" cy="38" r="4" fill="#1e293b" />
+            <circle cx="195" cy="38" r="4" fill="#1e293b" />
+            <circle cx="275" cy="38" r="4" fill="#1e293b" />
+            <circle cx="315" cy="38" r="4" fill="#1e293b" />
+            <text x="25" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">M</text>
+            <text x="195" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">N</text>
+            <text x="275" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">P</text>
+            <text x="315" y="24" text-anchor="middle" font-size="14" font-weight="bold" fill="#0f172a">Q</text>
+          </svg>
+        `,
+        text: `In the figure above, points N and P are on line segment MQ.<br/>
+               NQ = 30 cm<br/>
+               MN : NQ = 3 : 2<br/>
+               NP : PQ = 2 : 1<br/>
+               What is the length of MP?`,
+        options: [
+          { label: "A", text: "5 cm" },
+          { label: "B", text: "20 cm" },
+          { label: "C", text: "50 cm" },
+          { label: "D", text: "60 cm" },
+          { label: "E", text: "65 cm" }
+        ],
+        correct: "E",
+        explanation: "Since MN : NQ = 3 : 2 and NQ = 30, MN = (3/2)×30 = 45 cm. Since NP : PQ = 2 : 1 and NP + PQ = 30, NP = 20 cm and PQ = 10 cm. Thus MP = MN + NP = 45 + 20 = 65 cm."
+      },
+      {
+        num: 54,
+        text: "Express 48.762 × 100 in scientific notation.",
+        options: [
+          { label: "F", text: "0.48762 × 10³" },
+          { label: "G", text: "0.48762 × 10⁴" },
+          { label: "H", text: "4.8762 × 10²" },
+          { label: "J", text: "4.8762 × 10³" },
+          { label: "K", text: "48.762 × 10²" }
+        ],
+        correct: "J",
+        explanation: "48.762 × 100 = 4,876.2 = 4.8762 × 10³."
+      },
+      {
+        num: 55,
+        svg: `
+          <svg viewBox="0 0 420 75" class="w-full max-w-md mx-auto my-2">
+            <line x1="15" y1="42" x2="405" y2="42" stroke="#1e293b" stroke-width="2" />
+            <polygon points="15,42 23,38 23,46" fill="#1e293b" />
+            <polygon points="405,42 397,38 397,46" fill="#1e293b" />
+            ${[-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12].map((val, idx) => {
+              const x = 35 + idx * 29;
+              return `
+                <line x1="${x}" y1="36" x2="${x}" y2="48" stroke="#1e293b" stroke-width="1.5" />
+                <text x="${x}" y="64" text-anchor="middle" font-size="11" fill="#334155">${val}</text>
+              `;
+            }).join('')}
+            <!-- S at -12 (x=35), R at -4 (x=151), P at -1 (x=194.5) -->
+            <circle cx="35" cy="42" r="4.5" fill="#2563eb" />
+            <text x="35" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">S</text>
+            <circle cx="151" cy="42" r="4.5" fill="#2563eb" />
+            <text x="151" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">R</text>
+            <circle cx="194.5" cy="42" r="4.5" fill="#2563eb" />
+            <text x="194.5" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">P</text>
+          </svg>
+        `,
+        text: "On the number line above, Q (not shown) is the midpoint of SR. What is the length of PQ?",
+        options: [
+          { label: "A", text: "2.5 units" },
+          { label: "B", text: "6.5 units" },
+          { label: "C", text: "7 units" },
+          { label: "D", text: "9 units" },
+          { label: "E", text: "13 units" }
+        ],
+        correct: "C",
+        explanation: "S is at -12 and R is at -4, so their midpoint Q is at (-12 + -4)/2 = -8. P is at -1. The distance PQ = |-1 - (-8)| = 7 units."
+      },
+      {
+        num: 56,
+        text: "An 11-sided polygon has 3 sides each of length <em>x</em> centimeters and 6 sides each of length 2<em>x</em> centimeters. The lengths of the other 2 sides are 12 centimeters and 13 centimeters. If the perimeter of the polygon is 100 centimeters, what is the value of <em>x</em>?",
+        options: [
+          { label: "F", text: "3" },
+          { label: "G", text: "5" },
+          { label: "H", text: "12" },
+          { label: "J", text: "25" },
+          { label: "K", text: "75" }
+        ],
+        correct: "G",
+        explanation: "Perimeter = 3(x) + 6(2x) + 12 + 13 = 15x + 25 = 100 → 15x = 75 → x = 5."
+      },
+      {
+        num: 57,
+        text: "What is the value of 3|<em>x</em>| − 5|<em>y</em>| if <em>x</em> = −7 and <em>y</em> = −11?",
+        options: [
+          { label: "A", text: "−76" },
+          { label: "B", text: "−34" },
+          { label: "C", text: "−4" },
+          { label: "D", text: "34" },
+          { label: "E", text: "76" }
+        ],
+        correct: "B",
+        explanation: "3|-7| − 5|-11| = 3(7) − 5(11) = 21 − 55 = −34."
+      },
+      {
+        num: 58,
+        text: "(√36)(√16) =",
+        options: [
+          { label: "F", text: "4" },
+          { label: "G", text: "6" },
+          { label: "H", text: "24" },
+          { label: "J", text: "48" },
+          { label: "K", text: "144" }
+        ],
+        correct: "H",
+        explanation: "√36 = 6 and √16 = 4, so 6 × 4 = 24."
+      },
+      {
+        num: 59,
+        text: "Miller's Factory has decided to run nonstop for three 14-hour shifts. The whistle to start the first shift is to blow at 9:00 a.m. At what time should the whistle blow to end the third shift?",
+        options: [
+          { label: "A", text: "3:00 a.m." },
+          { label: "B", text: "3:00 p.m." },
+          { label: "C", text: "1:00 a.m." },
+          { label: "D", text: "1:00 p.m." },
+          { label: "E", text: "12:00 midnight" }
+        ],
+        correct: "A",
+        explanation: "3 shifts × 14 hours = 42 hours = 24 hours + 18 hours. Starting at 9:00 a.m., 24 hours later is 9:00 a.m. the next day, and 18 hours after that is 3:00 a.m."
+      },
+      {
+        num: 60,
+        text: `<em>N</em> is an element of the set {0.2, 0.7, 1.4, 2.0, 7.0}, and <span class="fraction"><span>4.2<em>N</em></span><span>1.2</span></span> is an integer. What is <em>N</em>?`,
+        options: [
+          { label: "F", text: "0.2" },
+          { label: "G", text: "0.7" },
+          { label: "H", text: "1.4" },
+          { label: "J", text: "2.0" },
+          { label: "K", text: "7.0" }
+        ],
+        correct: "J",
+        explanation: "4.2N / 1.2 = (42/12)N = (7/2)N = 3.5N. Testing the choices, only N = 2.0 yields an integer: 3.5 × 2.0 = 7."
+      },
+      {
+        num: 61,
+        text: "{1, 2, 3, ..., 175, 176, 177, 178}<br/>How many numbers in the set above have 5 as a factor but do <em>not</em> have 10 as a factor?",
+        options: [
+          { label: "A", text: "1" },
+          { label: "B", text: "3" },
+          { label: "C", text: "4" },
+          { label: "D", text: "17" },
+          { label: "E", text: "18" }
+        ],
+        correct: "E",
+        explanation: "Multiples of 5 from 1 to 178: floor(178/5) = 35 numbers. Multiples of 10 from 1 to 178: floor(178/10) = 17 numbers. Subtracting gives 35 − 17 = 18 numbers (5, 15, 25, ..., 175)."
+      },
+      {
+        num: 62,
+        text: "<em>n</em> is an even integer and 10 &lt; <em>n</em> &lt; 19. What is the mean of all possible values of <em>n</em>?",
+        options: [
+          { label: "F", text: "14" },
+          { label: "G", text: "14.5" },
+          { label: "H", text: "15" },
+          { label: "J", text: "15.5" },
+          { label: "K", text: "30" }
+        ],
+        correct: "H",
+        explanation: "The even integers strictly between 10 and 19 are 12, 14, 16, and 18. Their mean is (12 + 14 + 16 + 18) / 4 = 60 / 4 = 15."
+      },
+      {
+        num: 63,
+        svg: `
+          <svg viewBox="0 0 220 220" class="w-48 h-48 mx-auto my-2">
+            <!-- 5 squares cross centered at (110, 110), square size = 46 -->
+            <rect x="87" y="41" width="46" height="138" fill="#cbd5e1" stroke="#334155" stroke-width="1.5" />
+            <rect x="41" y="87" width="138" height="46" fill="#cbd5e1" stroke="#334155" stroke-width="1.5" />
+            <line x1="87" y1="87" x2="133" y2="87" stroke="#334155" stroke-width="1.5" />
+            <line x1="87" y1="133" x2="133" y2="133" stroke="#334155" stroke-width="1.5" />
+            <line x1="87" y1="87" x2="87" y2="133" stroke="#334155" stroke-width="1.5" />
+            <line x1="133" y1="87" x2="133" y2="133" stroke="#334155" stroke-width="1.5" />
+            <!-- Circumscribed circle passing through (110, 41), (110, 179), (41, 110), (179, 110) -> radius = 69 -->
+            <circle cx="110" cy="110" r="69" fill="none" stroke="#0f172a" stroke-width="2" />
+            <circle cx="110" cy="41" r="3.5" fill="#0f172a" />
+            <text x="110" y="30" text-anchor="middle" font-size="13" font-weight="bold">P</text>
+            <circle cx="110" cy="179" r="3.5" fill="#0f172a" />
+            <text x="110" y="198" text-anchor="middle" font-size="13" font-weight="bold">M</text>
+            <circle cx="41" cy="110" r="3.5" fill="#0f172a" />
+            <text x="27" y="115" text-anchor="middle" font-size="13" font-weight="bold">N</text>
+            <circle cx="179" cy="110" r="3.5" fill="#0f172a" />
+            <text x="193" y="115" text-anchor="middle" font-size="13" font-weight="bold">Q</text>
+          </svg>
+        `,
+        text: "The shaded figure in the diagram above consists of five squares. It touches the circle at points M, N, P, and Q. The radius of the circle is 15 centimeters. What is the area of the shaded portion of the figure?",
+        options: [
+          { label: "A", text: "25 sq cm" },
+          { label: "B", text: "100 sq cm" },
+          { label: "C", text: "125 sq cm" },
+          { label: "D", text: "500 sq cm" },
+          { label: "E", text: "900 sq cm" }
+        ],
+        correct: "D",
+        explanation: "The diameter of the circle is 2 × 15 = 30 cm, which spans 3 squares across (PM or NQ). So each square has side length 30 ÷ 3 = 10 cm and area 10² = 100 sq cm. Five squares have total area 5 × 100 = 500 sq cm."
+      },
+      {
+        num: 64,
+        text: `Sam has 40 grams of nitrate to conduct an experiment. This experiment requires that <span class="fraction"><span>2</span><span>5</span></span> gram of nitrate be added to a soil bed each day. At this rate, what is the maximum number of days that Sam can conduct the experiment?`,
+        options: [
+          { label: "F", text: "18 days" },
+          { label: "G", text: "40 days" },
+          { label: "H", text: "100 days" },
+          { label: "J", text: "200 days" },
+          { label: "K", text: "400 days" }
+        ],
+        correct: "H",
+        explanation: "40 ÷ (2/5) = 40 × (5/2) = 100 days."
+      },
+      {
+        num: 65,
+        text: `This week Elliott worked 3 days as a clerk in his mother's store. He was paid $3.78 per hour. If he worked 6<span class="fraction"><span>1</span><span>2</span></span> hours each day, how much should Elliott be paid?`,
+        options: [
+          { label: "A", text: "$11.34" },
+          { label: "B", text: "$13.23" },
+          { label: "C", text: "$13.28" },
+          { label: "D", text: "$35.91" },
+          { label: "E", text: "$73.71" }
+        ],
+        correct: "E",
+        explanation: "Total hours = 3 × 6.5 = 19.5 hours. Total pay = 19.5 × $3.78 = $73.71."
+      },
+      {
+        num: 66,
+        text: `Assume that the notation <em>F</em>(<em>w, x, y, z</em>) means “Add <em>w</em> and <em>x</em>, multiply this result by <em>y</em>, and then subtract <em>z</em>.” What is the value of <em>F</em>(3, 5, 6, 3) − <em>F</em>(4, 6, 3, 5)?`,
+        options: [
+          { label: "F", text: "5" },
+          { label: "G", text: "15" },
+          { label: "H", text: "20" },
+          { label: "J", text: "45" },
+          { label: "K", text: "70" }
+        ],
+        correct: "H",
+        explanation: "F(3, 5, 6, 3) = (3 + 5)×6 − 3 = 48 − 3 = 45. F(4, 6, 3, 5) = (4 + 6)×3 − 5 = 30 − 5 = 25. Difference = 45 − 25 = 20."
+      },
+      {
+        num: 67,
+        text: "Twelve out of 25 students picked “The Flying Fuzz Brothers” as their favorite video game. What percentage of the class did <em>not</em> pick “The Flying Fuzz Brothers”?",
+        options: [
+          { label: "A", text: "13/25 %" },
+          { label: "B", text: "13%" },
+          { label: "C", text: "48%" },
+          { label: "D", text: "51%" },
+          { label: "E", text: "52%" }
+        ],
+        correct: "E",
+        explanation: "25 − 12 = 13 students did not pick it. 13/25 = 52/100 = 52%."
+      },
+      {
+        num: 68,
+        text: "The product of 3 different positive integers is 10. What is their sum?",
+        options: [
+          { label: "F", text: "7" },
+          { label: "G", text: "8" },
+          { label: "H", text: "10" },
+          { label: "J", text: "13" },
+          { label: "K", text: "30" }
+        ],
+        correct: "G",
+        explanation: "The only three distinct positive integers whose product is 10 are 1, 2, and 5 (1 × 2 × 5 = 10). Their sum is 1 + 2 + 5 = 8."
+      },
+      {
+        num: 69,
+        text: "A circle has an area of <em>p</em> square feet and a circumference of <em>q</em> feet. If <em>p</em> = 2.5<em>q</em>, what is the radius of the circle?",
+        options: [
+          { label: "A", text: "1.25 ft" },
+          { label: "B", text: "√2.5 ft" },
+          { label: "C", text: "2.5 ft" },
+          { label: "D", text: "5 ft" },
+          { label: "E", text: "10 ft" }
+        ],
+        correct: "D",
+        explanation: "Area p = πr² and circumference q = 2πr. Given πr² = 2.5(2πr) = 5πr. Dividing both sides by πr gives r = 5 ft."
+      },
+      {
+        num: 70,
+        svg: `
+          <svg viewBox="0 0 280 155" class="w-64 mx-auto my-2">
+            <polygon points="65,35 215,35 250,125 30,125" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+            <line x1="175" y1="35" x2="175" y2="125" stroke="#334155" stroke-width="1.5" stroke-dasharray="4,3" />
+            <polyline points="171,39 175,35 179,39" fill="none" stroke="#334155" stroke-width="1.5" />
+            <polyline points="171,121 175,125 179,121" fill="none" stroke="#334155" stroke-width="1.5" />
+            <text x="140" y="24" text-anchor="middle" font-size="13" font-weight="bold">20 cm</text>
+            <text x="140" y="144" text-anchor="middle" font-size="13" font-weight="bold">30 cm</text>
+            <text x="168" y="84" text-anchor="end" font-size="13" font-weight="bold">15 cm</text>
+          </svg>
+        `,
+        text: "What is the area of the trapezoid above?",
+        options: [
+          { label: "F", text: "50 sq cm" },
+          { label: "G", text: "65 sq cm" },
+          { label: "H", text: "80 sq cm" },
+          { label: "J", text: "375 sq cm" },
+          { label: "K", text: "750 sq cm" }
+        ],
+        correct: "J",
+        explanation: "Area of trapezoid = ½(b₁ + b₂)h = ½(20 + 30)(15) = 25 × 15 = 375 sq cm."
+      },
+      {
+        num: 71,
+        text: `For what positive value of <em>x</em> does <span class="fraction"><span>4</span><span>5</span></span> = <span class="fraction"><span><em>x</em>²</span><span>20</span></span> ?`,
+        options: [
+          { label: "A", text: "4" },
+          { label: "B", text: "5" },
+          { label: "C", text: "8" },
+          { label: "D", text: "16" },
+          { label: "E", text: "256" }
+        ],
+        correct: "A",
+        explanation: "Cross-multiplying gives 5x² = 80 → x² = 16 → x = 4 (since x > 0)."
+      },
+      {
+        num: 72,
+        svg: `
+          <svg viewBox="0 0 280 235" class="w-64 mx-auto my-2">
+            <text x="140" y="18" text-anchor="middle" font-size="12" font-weight="bold" fill="#0f172a">PEOPLE WHO EAT COTTON CANDY</text>
+            <!-- Circle center (140, 130), radius 85 -->
+            <circle cx="140" cy="130" r="85" fill="#f8fafc" stroke="#0f172a" stroke-width="1.8" />
+            <!-- Angles starting from -135 deg:
+                 27% = 97.2 deg -> -135 to -37.8
+                 24% = 86.4 deg -> -37.8 to 48.6
+                 16% = 57.6 deg -> 48.6 to 106.2
+                 14% = 50.4 deg -> 106.2 to 156.6
+                 19% = 68.4 deg -> 156.6 to 225 (-135)
+            -->
+            <line x1="140" y1="130" x2="79.9" y2="69.9" stroke="#0f172a" stroke-width="1.4" />
+            <line x1="140" y1="130" x2="207.2" y2="77.9" stroke="#0f172a" stroke-width="1.4" />
+            <line x1="140" y1="130" x2="196.2" y2="193.8" stroke="#0f172a" stroke-width="1.4" />
+            <line x1="140" y1="130" x2="116.3" y2="211.6" stroke="#0f172a" stroke-width="1.4" />
+            <line x1="140" y1="130" x2="62.0" y2="163.8" stroke="#0f172a" stroke-width="1.4" />
+
+            <text x="143" y="75" text-anchor="middle" font-size="11" font-weight="bold">27%</text>
+            <text x="143" y="88" text-anchor="middle" font-size="10">10-yr-olds</text>
+
+            <text x="186" y="130" text-anchor="middle" font-size="11" font-weight="bold">24%</text>
+            <text x="186" y="143" text-anchor="middle" font-size="10">11-yr-olds</text>
+
+            <text x="152" y="182" text-anchor="middle" font-size="11" font-weight="bold">16%</text>
+            <text x="152" y="195" text-anchor="middle" font-size="10">12-yr-olds</text>
+
+            <text x="104" y="168" text-anchor="middle" font-size="11" font-weight="bold">14%</text>
+            <text x="104" y="181" text-anchor="middle" font-size="10">13-yr-olds</text>
+
+            <text x="92" y="118" text-anchor="middle" font-size="11" font-weight="bold">19%</text>
+            <text x="92" y="131" text-anchor="middle" font-size="10">all others</text>
+          </svg>
+        `,
+        text: "If 10,000 pounds of cotton candy are consumed each year, how many pounds are consumed by 12-year-olds?",
+        options: [
+          { label: "A", text: "16 lb" },
+          { label: "B", text: "160 lb" },
+          { label: "C", text: "625 lb" },
+          { label: "D", text: "1,600 lb" },
+          { label: "E", text: "120,000 lb" }
+        ],
+        correct: "D",
+        explanation: "From the circle graph, 12-year-olds account for 16%. 16% of 10,000 = 0.16 × 10,000 = 1,600 lb."
+      },
+      {
+        num: 73,
+        text: "Four consecutive multiples of 10 have a sum of 300. What is the least of these numbers?",
+        options: [
+          { label: "F", text: "20" },
+          { label: "G", text: "30" },
+          { label: "H", text: "40" },
+          { label: "J", text: "50" },
+          { label: "K", text: "60" }
+        ],
+        correct: "K",
+        explanation: "Let the four numbers be x, x+10, x+20, x+30. Their sum is 4x + 60 = 300 → 4x = 240 → x = 60."
+      },
+      {
+        num: 74,
+        svg: `
+          <svg viewBox="0 0 220 155" class="w-48 mx-auto my-2">
+            <polygon points="110,20 45,130 175,130" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+            <text x="64" y="75" text-anchor="end" font-size="13" font-weight="bold">8 cm</text>
+            <text x="156" y="75" text-anchor="start" font-size="13" font-weight="bold">8 cm</text>
+            <text x="110" y="148" text-anchor="middle" font-size="13" font-weight="bold">8 cm</text>
+          </svg>
+        `,
+        text: "What is the area of a square that has the same perimeter as the triangle above?",
+        options: [
+          { label: "A", text: "16 sq cm" },
+          { label: "B", text: "24 sq cm" },
+          { label: "C", text: "32 sq cm" },
+          { label: "D", text: "36 sq cm" },
+          { label: "E", text: "64 sq cm" }
+        ],
+        correct: "D",
+        explanation: "Perimeter of triangle = 8 + 8 + 8 = 24 cm. A square with perimeter 24 cm has side length 24 ÷ 4 = 6 cm, so its area is 6² = 36 sq cm."
+      },
+      {
+        num: 75,
+        text: "Jorge is 5 less than the number that is 3 times his brother's age. If his brother is 8 years old, how old is Jorge?",
+        options: [
+          { label: "F", text: "9 yr" },
+          { label: "G", text: "16 yr" },
+          { label: "H", text: "19 yr" },
+          { label: "J", text: "25 yr" },
+          { label: "K", text: "29 yr" }
+        ],
+        correct: "H",
+        explanation: "3 × 8 − 5 = 24 − 5 = 19 years old."
+      },
+      {
+        num: 76,
+        svg: `
+          <div class="my-2 overflow-x-auto">
+            <div class="text-xs font-extrabold text-center tracking-wide text-slate-800 mb-1.5">SCHOOL EXHIBIT VISITORS</div>
+            <table class="w-full max-w-md mx-auto text-center border-collapse border border-slate-400 text-xs">
+              <thead>
+                <tr class="bg-slate-100">
+                  <th class="border border-slate-400 px-2 py-1 font-bold text-left">Day</th>
+                  <th class="border border-slate-400 px-2 py-1">1</th>
+                  <th class="border border-slate-400 px-2 py-1">2</th>
+                  <th class="border border-slate-400 px-2 py-1">3</th>
+                  <th class="border border-slate-400 px-2 py-1">4</th>
+                  <th class="border border-slate-400 px-2 py-1">5</th>
+                  <th class="border border-slate-400 px-2 py-1">6</th>
+                  <th class="border border-slate-400 px-2 py-1">7</th>
+                  <th class="border border-slate-400 px-2 py-1">8</th>
+                  <th class="border border-slate-400 px-2 py-1">9</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border border-slate-400 px-2 py-1 font-bold text-left bg-slate-50">Number of Visitors</td>
+                  <td class="border border-slate-400 px-2 py-1">16</td>
+                  <td class="border border-slate-400 px-2 py-1">21</td>
+                  <td class="border border-slate-400 px-2 py-1">20</td>
+                  <td class="border border-slate-400 px-2 py-1">17</td>
+                  <td class="border border-slate-400 px-2 py-1">19</td>
+                  <td class="border border-slate-400 px-2 py-1">21</td>
+                  <td class="border border-slate-400 px-2 py-1">17</td>
+                  <td class="border border-slate-400 px-2 py-1">21</td>
+                  <td class="border border-slate-400 px-2 py-1">18</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        `,
+        text: "According to the table above, what is the median number of visitors in the nine days?",
+        options: [
+          { label: "F", text: "18½" },
+          { label: "G", text: "18²⁄₉" },
+          { label: "H", text: "19" },
+          { label: "J", text: "20" },
+          { label: "K", text: "21" }
+        ],
+        correct: "H",
+        explanation: "Ordering the 9 values from least to greatest: 16, 17, 17, 18, 19, 20, 21, 21, 21. The 5th (middle) value is 19."
+      },
+      {
+        num: 77,
+        text: "If <em>x</em> = 14 and <em>y</em> = 11, what is the value of 5<em>x</em>(<em>x</em> − <em>y</em>)?",
+        options: [
+          { label: "A", text: "3" },
+          { label: "B", text: "15" },
+          { label: "C", text: "67" },
+          { label: "D", text: "73" },
+          { label: "E", text: "210" }
+        ],
+        correct: "E",
+        explanation: "5(14)(14 − 11) = 70 × 3 = 210."
+      },
+      {
+        num: 78,
+        svg: `
+          <svg viewBox="0 0 320 140" class="w-72 mx-auto my-2">
+            <!-- W(25,115), Z(125,115), Y(295,115), X(125,28) -->
+            <polygon points="25,115 125,28 295,115" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+            <line x1="125" y1="28" x2="125" y2="115" stroke="#0f172a" stroke-width="1.8" />
+            <path d="M 55,115 A 30,30 0 0,0 48,95" fill="none" stroke="#0f172a" stroke-width="1.5" />
+            <text x="62" y="108" font-size="12" font-weight="bold">20°</text>
+            <text x="15" y="120" font-size="13" font-weight="bold">W</text>
+            <text x="125" y="18" text-anchor="middle" font-size="13" font-weight="bold">X</text>
+            <text x="125" y="133" text-anchor="middle" font-size="13" font-weight="bold">Z</text>
+            <text x="302" y="120" font-size="13" font-weight="bold">Y</text>
+          </svg>
+        `,
+        text: "In the diagram above, Z is a point on side WY of triangle WXY. Triangles WXZ and XYZ are similar. What is the measure of ∠WXY?",
+        options: [
+          { label: "F", text: "20°" },
+          { label: "G", text: "70°" },
+          { label: "H", text: "90°" },
+          { label: "J", text: "110°" },
+          { label: "K", text: "140°" }
+        ],
+        correct: "H",
+        explanation: "Since W, Z, Y are collinear and △WXZ ~ △XYZ, the supplementary angles ∠WZX and ∠YZX must be equal (both 90°). Thus ∠WXZ = 90° − 20° = 70°, and ∠ZXY = ∠W = 20°. Therefore ∠WXY = 70° + 20° = 90°."
+      },
+      {
+        num: 79,
+        text: "For what value of <em>p</em> is 3(<em>p</em> − 4) = 2(<em>p</em> + 1)?",
+        options: [
+          { label: "A", text: "1" },
+          { label: "B", text: "2" },
+          { label: "C", text: "4" },
+          { label: "D", text: "5" },
+          { label: "E", text: "14" }
+        ],
+        correct: "E",
+        explanation: "3p − 12 = 2p + 2 → p = 14."
+      },
+      {
+        num: 80,
+        text: `The probability of drawing a green candy from a jar of 20 candies is <span class="fraction"><span>1</span><span>4</span></span>. How many yellow candies should be added to the jar in order to reduce the probability to <span class="fraction"><span>1</span><span>6</span></span>?`,
+        options: [
+          { label: "F", text: "3" },
+          { label: "G", text: "4" },
+          { label: "H", text: "6" },
+          { label: "J", text: "8" },
+          { label: "K", text: "10" }
+        ],
+        correct: "K",
+        explanation: "Number of green candies = (1/4) × 20 = 5. Let y be the yellow candies added: 5 / (20 + y) = 1/6 → 20 + y = 30 → y = 10."
+      },
+      {
+        num: 81,
+        text: `John works 5 days a week. On Monday he completes <span class="fraction"><span>1</span><span>2</span></span> of his week's work. On Tuesday he completes <span class="fraction"><span>1</span><span>4</span></span> of the remainder of his work for the week. What fraction of the week's work remains to be done?`,
+        options: [
+          { label: "A", text: "1/8" },
+          { label: "B", text: "1/4" },
+          { label: "C", text: "1/3" },
+          { label: "D", text: "3/8" },
+          { label: "E", text: "3/4" }
+        ],
+        correct: "D",
+        explanation: "After Monday, 1/2 remains. On Tuesday he completes (1/4) × (1/2) = 1/8. Remaining work = 1/2 − 1/8 = 3/8."
+      },
+      {
+        num: 82,
+        svg: `
+          <svg viewBox="0 0 240 315" class="w-56 mx-auto my-2">
+            <!-- 12x16 grid, cell = 16px -->
+            <g stroke="#94a3b8" stroke-width="0.9">
+              ${Array.from({length: 13}, (_, i) => `<line x1="${24 + i*16}" y1="12" x2="${24 + i*16}" y2="284" />`).join('')}
+              ${Array.from({length: 18}, (_, j) => `<line x1="24" y1="${12 + j*16}" x2="216" y2="${12 + j*16}" />`).join('')}
+            </g>
+            <!-- Outer & interior walls matching PDF grid:
+                 Living Room: x from col 1 to 6 (40 to 120), y from row 1 to 8 (28 to 156)
+                 Kitchen: x from col 6 to 10 (120 to 184), y from row 1 to 6 (28 to 124)
+                 Entryway: x from col 1 to 6 (40 to 120), y from row 8 to 11 (156 to 204)
+                 Bedroom A: x from col 6 to 10 (120 to 184), y from row 6 to 11 (124 to 204)
+                 Bedroom B: x from col 4 to 10 (88 to 184) -> 6 units wide, y from row 11 to 15.5 (204 to 276) -> 4.5 units tall
+            -->
+            <g stroke="#0f172a" stroke-width="2.5" fill="none">
+              <polyline points="40,156 40,28 184,28 184,276 88,276 88,204 40,204 40,172" />
+              <line x1="120" y1="28" x2="120" y2="76" />
+              <line x1="40" y1="156" x2="72" y2="156" />
+              <polyline points="120,140 120,124 184,124" />
+              <polyline points="120,188 120,204 184,204" />
+            </g>
+            <rect x="65" y="76" width="46" height="28" fill="white" />
+            <text x="88" y="88" text-anchor="middle" font-size="10" font-weight="bold">Living</text>
+            <text x="88" y="100" text-anchor="middle" font-size="10" font-weight="bold">Room</text>
+
+            <rect x="131" y="64" width="44" height="16" fill="white" />
+            <text x="153" y="76" text-anchor="middle" font-size="10" font-weight="bold">Kitchen</text>
+
+            <rect x="52" y="172" width="56" height="16" fill="white" />
+            <text x="80" y="184" text-anchor="middle" font-size="10" font-weight="bold">Entryway</text>
+
+            <rect x="128" y="154" width="48" height="26" fill="white" />
+            <text x="152" y="165" text-anchor="middle" font-size="10" font-weight="bold">Bedroom</text>
+            <text x="152" y="177" text-anchor="middle" font-size="10" font-weight="bold">A</text>
+
+            <rect x="104" y="232" width="64" height="16" fill="white" />
+            <text x="136" y="244" text-anchor="middle" font-size="10" font-weight="bold">Bedroom B</text>
+
+            <text x="120" y="304" text-anchor="middle" font-size="12" font-weight="bold">scale: 1 in. = 2 ft</text>
+          </svg>
+        `,
+        text: "The floor plan above is drawn on a grid made up of 1-inch squares. About how many square yards of carpet are needed to cover bedroom B?",
+        options: [
+          { label: "F", text: "12 sq yd" },
+          { label: "G", text: "27 sq yd" },
+          { label: "H", text: "54 sq yd" },
+          { label: "J", text: "81 sq yd" },
+          { label: "K", text: "108 sq yd" }
+        ],
+        correct: "F",
+        explanation: "On the grid, Bedroom B measures 6 inches wide by 4.5 inches high. Using 1 in. = 2 ft, its dimensions are 12 ft × 9 ft = 108 sq ft. Since 1 sq yd = 9 sq ft, 108 ÷ 9 = 12 sq yd."
+      },
+      {
+        num: 83,
+        text: "Nicki has <em>n</em> stamps. She has half as many stamps as Mark has. Together, Nicki and Mark have 100 more stamps than Basilio. In terms of <em>n</em>, how many stamps does Basilio have?",
+        options: [
+          { label: "A", text: "3n − 100" },
+          { label: "B", text: "3n + 100" },
+          { label: "C", text: "½n + 100" },
+          { label: "D", text: "n − 100" },
+          { label: "E", text: "³⁄₂n − 100" }
+        ],
+        correct: "A",
+        explanation: "Nicki = n, so Mark = 2n. Together they have n + 2n = 3n stamps. Basilio has 100 fewer than their total: 3n − 100."
+      },
+      {
+        num: 84,
+        svg: `
+          <svg viewBox="0 0 210 200" class="w-48 mx-auto my-2">
+            <!-- Square ABCD: A(35,165), B(35,35), C(165,35), D(165,165), side = 130 -->
+            <rect x="35" y="35" width="130" height="130" fill="#f8fafc" stroke="#0f172a" stroke-width="1.8" />
+            <!-- Arc BED centered at A(35,165) radius 130 -->
+            <path d="M 35,35 A 130,130 0 0,1 165,165" fill="none" stroke="#0f172a" stroke-width="1.5" />
+            <!-- Arc AEC centered at B(35,35) radius 130 -->
+            <path d="M 35,165 A 130,130 0 0,0 165,35" fill="none" stroke="#0f172a" stroke-width="1.5" />
+            <text x="22" y="35" font-size="13" font-weight="bold">B</text>
+            <text x="172" y="35" font-size="13" font-weight="bold">C</text>
+            <text x="22" y="172" font-size="13" font-weight="bold">A</text>
+            <text x="172" y="172" font-size="13" font-weight="bold">D</text>
+            <text x="132" y="105" font-size="13" font-weight="bold">E</text>
+          </svg>
+        `,
+        text: "In the diagram above, ABCD is a square. BED is an arc of a circle centered at A, and AEC is an arc of a circle centered at B. The circles intersect at E. Find the measure of ∠EBA (not shown).",
+        options: [
+          { label: "F", text: "30°" },
+          { label: "G", text: "45°" },
+          { label: "H", text: "50°" },
+          { label: "J", text: "60°" },
+          { label: "K", text: "90°" }
+        ],
+        correct: "J",
+        explanation: "Because E lies on the circle centered at A with radius AB, AE = AB. Because E lies on the circle centered at B with radius BA, BE = AB. Thus △ABE is equilateral, and ∠EBA = 60°."
+      },
+      {
+        num: 85,
+        text: "In an election between two candidates, the winner received 55% of the 17,000 votes. The loser received the remaining votes. How many more votes did the winner receive than the loser?",
+        options: [
+          { label: "F", text: "500" },
+          { label: "G", text: "1,700" },
+          { label: "H", text: "3,000" },
+          { label: "J", text: "7,650" },
+          { label: "K", text: "9,350" }
+        ],
+        correct: "G",
+        explanation: "Winner received 55% and loser received 45%. Difference = (55% − 45%) of 17,000 = 10% of 17,000 = 1,700 votes."
+      },
+      {
+        num: 86,
+        svg: `
+          <svg viewBox="0 0 210 210" class="w-48 mx-auto my-2">
+            <circle cx="105" cy="105" r="78" fill="#f8fafc" stroke="#0f172a" stroke-width="1.8" />
+            <!-- Inscribed square vertices at 45 deg: 78 * 0.7071 = 55.15 -->
+            <rect x="49.8" y="49.8" width="110.3" height="110.3" fill="none" stroke="#0f172a" stroke-width="1.8" />
+            <text x="38" y="45" font-size="13" font-weight="bold">X</text>
+            <text x="164" y="45" font-size="13" font-weight="bold">Y</text>
+            <text x="36" y="174" font-size="13" font-weight="bold">W</text>
+            <text x="164" y="174" font-size="13" font-weight="bold">Z</text>
+          </svg>
+        `,
+        text: "In the figure above, W, X, Y, Z are points on a circle and WXYZ is a square. If the diagonal of the square is 16 centimeters long, what is the circumference of the circle?",
+        options: [
+          { label: "F", text: "8π cm" },
+          { label: "G", text: "16π cm" },
+          { label: "H", text: "32π cm" },
+          { label: "J", text: "64π² cm" },
+          { label: "K", text: "1,600 cm" }
+        ],
+        correct: "G",
+        explanation: "The diagonal of an inscribed square is the diameter of the circle (d = 16 cm). Circumference C = πd = 16π cm."
+      },
+      {
+        num: 87,
+        text: "Javial is packing boxes of candles for shipment. Each box can hold 15 candles. If Javial has 142 candles and fills all but the last box to capacity, how many candles will go into the last box?",
+        options: [
+          { label: "A", text: "7" },
+          { label: "B", text: "8" },
+          { label: "C", text: "10" },
+          { label: "D", text: "14" },
+          { label: "E", text: "22" }
+        ],
+        correct: "A",
+        explanation: "142 ÷ 15 = 9 full boxes (135 candles) with a remainder of 142 − 135 = 7 candles in the last box."
+      },
+      {
+        num: 88,
+        text: "Paula is now 4 times the age of Jae-Lynn. If Jae-Lynn will be 16 in 10 years, how old was Paula 4 years ago?",
+        options: [
+          { label: "F", text: "6" },
+          { label: "G", text: "10" },
+          { label: "H", text: "16" },
+          { label: "J", text: "20" },
+          { label: "K", text: "24" }
+        ],
+        correct: "J",
+        explanation: "Jae-Lynn's current age = 16 − 10 = 6. Paula's current age = 4 × 6 = 24. Four years ago, Paula was 24 − 4 = 20."
+      },
+      {
+        num: 89,
+        text: `There are 660 feet in one furlong, and <span class="fraction"><span>1</span><span>2</span></span> of a fathom in one yard. How many fathoms are there in one furlong?`,
+        options: [
+          { label: "A", text: "55" },
+          { label: "B", text: "110" },
+          { label: "C", text: "220" },
+          { label: "D", text: "330" },
+          { label: "E", text: "440" }
+        ],
+        correct: "B",
+        explanation: "660 feet ÷ 3 feet/yard = 220 yards. Since 1 yard = ½ fathom, 220 yards × ½ = 110 fathoms."
+      },
+      {
+        num: 90,
+        text: "If <em>x</em> = 3 and 6<em>x</em>(2<em>y</em> − 3<em>x</em>) = 18, what is the value of <em>y</em>?",
+        options: [
+          { label: "F", text: "2" },
+          { label: "G", text: "4" },
+          { label: "H", text: "5" },
+          { label: "J", text: "6" },
+          { label: "K", text: "9" }
+        ],
+        correct: "H",
+        explanation: "Substitute x = 3: 6(3)(2y − 9) = 18 → 18(2y − 9) = 18 → 2y − 9 = 1 → 2y = 10 → y = 5."
+      },
+      {
+        num: 91,
+        text: "There are <em>x</em> seats in the Ralston Theater and <em>y</em> seats in the Baker Theater. The Baker Theater has 3 more than twice as many seats as the Ralston Theater. What is the value of <em>y</em> in terms of <em>x</em>?",
+        options: [
+          { label: "A", text: "x + 3" },
+          { label: "B", text: "2x + 3" },
+          { label: "C", text: "2x − 3" },
+          { label: "D", text: "3x" },
+          { label: "E", text: "3x + 3" }
+        ],
+        correct: "B",
+        explanation: "Twice as many seats as Ralston is 2x; 3 more than that gives y = 2x + 3."
+      },
+      {
+        num: 92,
+        svg: `
+          <svg viewBox="0 0 360 85" class="w-full max-w-sm mx-auto my-2">
+            <!-- Line n with P(45), Q(150), R(195), S(240), T(300) -->
+            <line x1="20" y1="52" x2="340" y2="52" stroke="#0f172a" stroke-width="1.8" />
+            <polygon points="20,52 28,48 28,56" fill="#0f172a" />
+            <polygon points="340,52 332,48 332,56" fill="#0f172a" />
+            <text x="24" y="42" font-size="13" font-style="italic">n</text>
+
+            <!-- PR = 10 cm bracket above -->
+            <line x1="45" y1="22" x2="195" y2="22" stroke="#334155" stroke-width="1.3" />
+            <polyline points="50,18 45,22 50,26" fill="none" stroke="#334155" stroke-width="1.3" />
+            <polyline points="190,18 195,22 190,26" fill="none" stroke="#334155" stroke-width="1.3" />
+            <rect x="98" y="13" width="44" height="16" fill="white" />
+            <text x="120" y="25" text-anchor="middle" font-size="12" font-weight="bold">10 cm</text>
+
+            <!-- RT = 7 cm bracket above -->
+            <line x1="195" y1="32" x2="300" y2="32" stroke="#334155" stroke-width="1.3" />
+            <polyline points="200,28 195,32 200,36" fill="none" stroke="#334155" stroke-width="1.3" />
+            <polyline points="295,28 300,32 295,36" fill="none" stroke="#334155" stroke-width="1.3" />
+            <rect x="228" y="23" width="38" height="16" fill="white" />
+            <text x="247" y="35" text-anchor="middle" font-size="12" font-weight="bold">7 cm</text>
+
+            ${[
+              {x: 45, label: 'P'},
+              {x: 150, label: 'Q'},
+              {x: 195, label: 'R'},
+              {x: 240, label: 'S'},
+              {x: 300, label: 'T'}
+            ].map(pt => `
+              <circle cx="${pt.x}" cy="52" r="3.5" fill="#0f172a" />
+              <text x="${pt.x}" y="72" text-anchor="middle" font-size="13" font-weight="bold">${pt.label}</text>
+            `).join('')}
+          </svg>
+        `,
+        text: "On line <em>n</em>, if QS = 6 centimeters and QR = RS, what is the length of PT?",
+        options: [
+          { label: "F", text: "12 cm" },
+          { label: "G", text: "13 cm" },
+          { label: "H", text: "14 cm" },
+          { label: "J", text: "16 cm" },
+          { label: "K", text: "17 cm" }
+        ],
+        correct: "K",
+        explanation: "From the diagram, PR = 10 cm and RT = 7 cm. Since P, R, T lie in order on line n, PT = PR + RT = 10 + 7 = 17 cm."
+      },
+      {
+        num: 93,
+        text: `<span class="fraction"><span><em>n</em></span><span>20</span></span> = <span class="fraction"><span><em>k</em></span><span><em>x</em></span></span><br/>If <em>n</em> = 4 and <em>k</em> = 13, what is the value of <em>x</em>?`,
+        options: [
+          { label: "A", text: "12" },
+          { label: "B", text: "40" },
+          { label: "C", text: "52" },
+          { label: "D", text: "65" },
+          { label: "E", text: "80" }
+        ],
+        correct: "D",
+        explanation: "4/20 = 13/x → 1/5 = 13/x → x = 65."
+      },
+      {
+        num: 94,
+        svg: `
+          <svg viewBox="0 0 240 215" class="w-52 mx-auto my-2">
+            <!-- Circle center P(120, 95), radius 75 -->
+            <circle cx="120" cy="95" r="75" fill="#f8fafc" stroke="#0f172a" stroke-width="1.8" />
+            <!-- Rectangle ABCD: B(45,95), C(195,95), D(195,170), A(45,170) -->
+            <rect x="45" y="95" width="150" height="75" fill="none" stroke="#0f172a" stroke-width="1.8" />
+            <!-- Radius PQ from (120,95) to (120,170) -->
+            <line x1="120" y1="95" x2="120" y2="170" stroke="#0f172a" stroke-width="1.6" />
+            <polyline points="120,104 129,104 129,95" fill="none" stroke="#0f172a" stroke-width="1.4" />
+            <text x="32" y="98" font-size="13" font-weight="bold">B</text>
+            <text x="200" y="98" font-size="13" font-weight="bold">C</text>
+            <text x="32" y="175" font-size="13" font-weight="bold">A</text>
+            <text x="200" y="175" font-size="13" font-weight="bold">D</text>
+            <text x="107" y="112" font-size="13" font-weight="bold">P</text>
+            <text x="120" y="188" text-anchor="middle" font-size="13" font-weight="bold">Q</text>
+          </svg>
+        `,
+        text: "P is the center of the circle. BC is a diameter. The perimeter of rectangle ABCD is 48 centimeters. PQ is a radius and Q is on AD. What is the area of the circle?",
+        options: [
+          { label: "F", text: "8π sq cm" },
+          { label: "G", text: "16π sq cm" },
+          { label: "H", text: "32π sq cm" },
+          { label: "J", text: "64π sq cm" },
+          { label: "K", text: "128π sq cm" }
+        ],
+        correct: "J",
+        explanation: "Let radius = r. Then width AB = PQ = r and length BC = 2r. Perimeter = 2(r + 2r) = 6r = 48 → r = 8 cm. Area of circle = πr² = 64π sq cm."
+      },
+      {
+        num: 95,
+        text: `(<span class="fraction"><span>1</span><span>2</span></span> + <span class="fraction"><span>2</span><span>5</span></span>) ÷ <span class="fraction"><span>2</span><span>3</span></span> =`,
+        options: [
+          { label: "A", text: "2/5" },
+          { label: "B", text: "1/2" },
+          { label: "C", text: "3/5" },
+          { label: "D", text: "21/20" },
+          { label: "E", text: "27/20" }
+        ],
+        correct: "E",
+        explanation: "1/2 + 2/5 = 5/10 + 4/10 = 9/10. Dividing by 2/3 gives (9/10) × (3/2) = 27/20."
+      },
+      {
+        num: 96,
+        text: "A basketball team scored 60 points in the first game and 50 in the second game. How many points did the team score in the third game if their mean score for the 3 games was 51 points?",
+        options: [
+          { label: "F", text: "43" },
+          { label: "G", text: "45" },
+          { label: "H", text: "47" },
+          { label: "J", text: "49" },
+          { label: "K", text: "55" }
+        ],
+        correct: "F",
+        explanation: "Total points for 3 games = 3 × 51 = 153. Third game score = 153 − (60 + 50) = 153 − 110 = 43."
+      },
+      {
+        num: 97,
+        text: "One side of a square is 10 units long and lies on the <em>y</em>-axis of a coordinate system. Another side of the square lies on the <em>x</em>-axis of the coordinate system. What must be the coordinates of one corner of this square?",
+        options: [
+          { label: "A", text: "(0, 0)" },
+          { label: "B", text: "(0, 10)" },
+          { label: "C", text: "(10, 0)" },
+          { label: "D", text: "(10, 10)" },
+          { label: "E", text: "(−10, −10)" }
+        ],
+        correct: "A",
+        explanation: "Two perpendicular sides of a square lying on the x-axis and y-axis must intersect at the origin (0, 0)."
+      },
+      {
+        num: 98,
+        text: "Of 27 marbles in a can, 7 were black, 4 were yellow, and the rest were red. Jay removed 3 black marbles, then one more marble at random. What is the probability that it was red?",
+        options: [
+          { label: "F", text: "1/3" },
+          { label: "G", text: "5/9" },
+          { label: "H", text: "16/27" },
+          { label: "J", text: "5/8" },
+          { label: "K", text: "2/3" }
+        ],
+        correct: "K",
+        explanation: "Originally there were 27 − 7 − 4 = 16 red marbles. After removing 3 black marbles, 24 marbles remain (with 16 still red). Probability = 16/24 = 2/3."
+      },
+      {
+        num: 99,
+        text: `Zoe ate <span class="fraction"><span>1</span><span>8</span></span> of a pizza. Jasmine ate twice as much of the same pizza as Zoe. What is the ratio of the amount of pizza the two ate to the amount of pizza remaining?`,
+        options: [
+          { label: "A", text: "1:2" },
+          { label: "B", text: "1:4" },
+          { label: "C", text: "3:5" },
+          { label: "D", text: "3:8" },
+          { label: "E", text: "5:8" }
+        ],
+        correct: "C",
+        explanation: "Zoe ate 1/8 and Jasmine ate 2/8, so together they ate 3/8 of the pizza. The remaining amount is 5/8. Ratio = (3/8) : (5/8) = 3:5."
+      },
+      {
+        num: 100,
+        text: "If <em>x</em> is an even integer, which of the following <em>cannot</em> be an odd integer?",
+        options: [
+          { label: "F", text: "x + 1" },
+          { label: "G", text: "x / 2" },
+          { label: "H", text: "x / 3" },
+          { label: "J", text: "2x + 1" },
+          { label: "K", text: "2x − 1" }
+        ],
+        correct: "H",
+        explanation: "If x is even, x = 2k. For x/3 = 2k/3 to be an integer, k must be a multiple of 3 (k = 3m), making x/3 = 2m, which is always even and can never be an odd integer. (Meanwhile, x/2 can be odd when x = 6, and F, J, K are always odd.)"
+      }
+    ];
+
+    // =========================================================================
+    // STATE MANAGEMENT
+    // =========================================================================
+    const TOTAL_QUESTIONS = 80; // Q21 to Q100
+    const FLASH_INTERVAL_SECONDS = 240; // 4 minutes = 240 seconds
+
+    let userAnswers = {}; // { 21: 'D', ... }
+    let isSubmitted = false;
+    let elapsedSeconds = 0;
+    let flashCount = 0;
+    let timerInterval = null;
+    let currentFilter = 'all';
+
+    // Map question number -> question metadata for quick lookup
+    const questionLookup = {};
+    readingPassages.forEach(p => {
+      p.questions.forEach(q => {
+        questionLookup[q.num] = { ...q, section: 'Reading' };
+      });
+    });
+    mathQuestions.forEach(q => {
+      questionLookup[q.num] = { ...q, section: 'Mathematics' };
+    });
+
+    // =========================================================================
+    // RENDERING FUNCTIONS
+    // =========================================================================
+    function renderExam() {
+      renderReadingSection();
+      renderMathSection();
+      renderNavigatorGrids();
+      updateProgressUI();
+    }
+
+    function renderReadingSection() {
+      const container = document.getElementById('reading-container');
+      container.innerHTML = readingPassages.map(passage => {
+        const passageLinesHTML = passage.lines.map(line => `
+          <div class="flex gap-3 text-[15px] sm:text-base leading-relaxed text-slate-800">
+            <span class="w-6 shrink-0 text-right font-mono text-xs text-slate-400 select-none pt-1">${line.num}</span>
+            <p class="passage-font">${line.text}</p>
+          </div>
+        `).join('');
+
+        const questionsHTML = passage.questions.map(q => renderQuestionCard(q, 'indigo')).join('');
+
+        return `
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="bg-slate-900 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-bold text-base sm:text-lg">${passage.title}</h3>
+              <span class="text-xs font-semibold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 px-3 py-1 rounded-full">
+                ${passage.range}
+              </span>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12">
+              <!-- Sticky Reading Passage Pane on Desktop -->
+              <div class="lg:col-span-6 p-6 sm:p-7 bg-amber-50/35 border-b lg:border-b-0 lg:border-r border-slate-200">
+                <div class="lg:sticky lg:top-32 space-y-2.5 max-h-[72vh] overflow-y-auto pr-2">
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Reading Passage</div>
+                  ${passageLinesHTML}
+                </div>
+              </div>
+              <!-- Associated Questions -->
+              <div class="lg:col-span-6 p-5 sm:p-6 space-y-5 bg-white">
+                ${questionsHTML}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderMathSection() {
+      const container = document.getElementById('math-container');
+      container.innerHTML = mathQuestions.map(q => renderQuestionCard(q, 'sky')).join('');
+    }
+
+    function renderQuestionCard(q, accentColor) {
+      const choicesHTML = q.options.map(opt => `
+        <label id="label-${q.num}-${opt.label}"
+          class="choice-label flex items-start gap-3 p-3 rounded-xl border border-slate-200 hover:border-${accentColor}-400 hover:bg-${accentColor}-50/40 cursor-pointer transition select-none">
+          <input type="radio"
+            name="q-${q.num}"
+            value="${opt.label}"
+            onchange="selectAnswer(${q.num}, '${opt.label}')"
+            class="mt-1 h-4 w-4 text-${accentColor}-600 focus:ring-${accentColor}-500 border-slate-300 cursor-pointer" />
+          <span class="font-bold text-sm text-slate-700 w-5 shrink-0">${opt.label}.</span>
+          <span class="text-sm text-slate-800 leading-snug">${opt.text}</span>
+        </label>
+      `).join('');
+
+      return `
+        <div id="question-card-${q.num}" data-qnum="${q.num}"
+          class="question-card bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs transition-all scroll-mt-36">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-extrabold bg-slate-100 text-slate-800">
+              Question ${q.num}
+            </span>
+            <span id="status-badge-${q.num}" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              Unanswered
+            </span>
+          </div>
+
+          ${q.svg ? `<div class="mb-3 p-2 bg-slate-50/70 rounded-xl border border-slate-100">${q.svg}</div>` : ''}
+
+          <div class="text-sm sm:text-[15px] font-medium text-slate-900 leading-relaxed mb-4">
+            ${q.text}
+          </div>
+
+          <div class="space-y-2">
+            ${choicesHTML}
+          </div>
+
+          <!-- Explanation Box (Hidden until graded) -->
+          <div id="explanation-${q.num}" class="hidden mt-4 p-3.5 rounded-xl text-xs leading-relaxed border"></div>
+        </div>
+      `;
+    }
+
+    function renderNavigatorGrids() {
+      const readingGrid = document.getElementById('nav-grid-reading');
+      const mathGrid = document.getElementById('nav-grid-math');
+
+      let rHTML = '';
+      for (let i = 21; i <= 50; i++) {
+        rHTML += `<button type="button" id="nav-btn-${i}" onclick="jumpToQuestion(${i})"
+          class="h-9 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:border-indigo-500 transition">${i}</button>`;
+      }
+      readingGrid.innerHTML = rHTML;
+
+      let mHTML = '';
+      for (let i = 51; i <= 100; i++) {
+        mHTML += `<button type="button" id="nav-btn-${i}" onclick="jumpToQuestion(${i})"
+          class="h-9 rounded-lg text-xs font-bold border border-slate-300 bg-white text-slate-700 hover:border-sky-500 transition">${i}</button>`;
+      }
+      mathGrid.innerHTML = mHTML;
+    }
+
+    // =========================================================================
+    // INTERACTION & VALIDATION
+    // =========================================================================
+    function selectAnswer(qNum, choiceLabel) {
+      if (isSubmitted) return;
+      userAnswers[qNum] = choiceLabel;
+
+      // Update card status badge
+      const badge = document.getElementById(`status-badge-${qNum}`);
+      if (badge) {
+        badge.textContent = `Selected: ${choiceLabel}`;
+        badge.className = "text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200";
+      }
+
+      // Highlight selected option label
+      const card = document.getElementById(`question-card-${qNum}`);
+      if (card) {
+        card.classList.remove('ring-2', 'ring-rose-500', 'border-rose-400');
+        card.querySelectorAll('.choice-label').forEach(lbl => {
+          lbl.classList.remove('bg-indigo-50', 'border-indigo-500', 'ring-1', 'ring-indigo-500');
+        });
+        const selectedLbl = document.getElementById(`label-${qNum}-${choiceLabel}`);
+        if (selectedLbl) {
+          selectedLbl.classList.add('bg-indigo-50', 'border-indigo-500', 'ring-1', 'ring-indigo-500');
+        }
+      }
+
+      // Update navigator pill
+      const navBtn = document.getElementById(`nav-btn-${qNum}`);
+      if (navBtn) {
+        navBtn.className = "h-9 rounded-lg text-xs font-bold border border-indigo-600 bg-indigo-600 text-white shadow-2xs transition";
+      }
+
+      updateProgressUI();
+
+      // If validation banner is open, refresh remaining unanswered pills
+      if (!document.getElementById('validation-banner').classList.contains('hidden')) {
+        refreshValidationBanner();
+      }
+    }
+
+    function updateProgressUI() {
+      const answeredCount = Object.keys(userAnswers).length;
+      const pct = Math.round((answeredCount / TOTAL_QUESTIONS) * 100);
+
+      document.getElementById('progress-bar').style.width = `${pct}%`;
+      document.getElementById('progress-label').textContent = `${answeredCount} / ${TOTAL_QUESTIONS} Answered`;
+      document.getElementById('nav-badge').textContent = `${answeredCount}/${TOTAL_QUESTIONS}`;
+      document.getElementById('bottom-status-text').innerHTML =
+        `You must answer all 80 questions (Questions 21 through 100) before submitting. Currently answered: <strong class="text-indigo-600">${answeredCount} of ${TOTAL_QUESTIONS}</strong>.`;
+    }
+
+    function getUnansweredQuestions() {
+      const missing = [];
+      for (let q = 21; q <= 100; q++) {
+        if (!userAnswers[q]) {
+          missing.push(q);
+        }
+      }
+      return missing;
+    }
+
+    function handleSubmitTest() {
+      if (isSubmitted) return;
+
+      const missing = getUnansweredQuestions();
+      if (missing.length > 0) {
+        showValidationBanner(missing);
+        // Highlight all unanswered cards and scroll to the first missing question
+        missing.forEach(num => {
+          const card = document.getElementById(`question-card-${num}`);
+          if (card) {
+            card.classList.add('ring-2', 'ring-rose-500', 'border-rose-400');
+          }
+        });
+        jumpToQuestion(missing[0], false);
+        return;
+      }
+
+      // All 80 questions are answered -> Grade the test!
+      hideValidationBanner();
+      gradeTest();
+    }
+
+    function showValidationBanner(missing) {
+      const banner = document.getElementById('validation-banner');
+      const summary = document.getElementById('validation-summary');
+      const pills = document.getElementById('unanswered-pills');
+
+      summary.innerHTML = `You have <strong>${missing.length}</strong> unanswered question${missing.length === 1 ? '' : 's'}. You must answer every question before grading. Click any number below to jump directly to it:`;
+
+      pills.innerHTML = missing.map(num => `
+        <button type="button" onclick="jumpToQuestion(${num}, false)"
+          class="px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition">
+          Q${num}
+        </button>
+      `).join('');
+
+      banner.classList.remove('hidden');
+    }
+
+    function refreshValidationBanner() {
+      const missing = getUnansweredQuestions();
+      if (missing.length === 0) {
+        hideValidationBanner();
+      } else {
+        showValidationBanner(missing);
+      }
+    }
+
+    function hideValidationBanner() {
+      document.getElementById('validation-banner').classList.add('hidden');
+    }
+
+    function jumpToQuestion(qNum, closeNav = true) {
+      if (closeNav) {
+        document.getElementById('navigator-modal').classList.add('hidden');
+      }
+      const el = document.getElementById(`question-card-${qNum}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function toggleNavigatorModal() {
+      const modal = document.getElementById('navigator-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    // =========================================================================
+    // TIMER & 4-MINUTE VISUAL LIGHT FLASHER
+    // =========================================================================
+    function formatTime(totalSecs) {
+      const mins = Math.floor(totalSecs / 60);
+      const secs = totalSecs % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (isSubmitted) return;
+        elapsedSeconds++;
+
+        // Update elapsed clock
+        document.getElementById('elapsed-timer').textContent = formatTime(elapsedSeconds);
+
+        // Countdown to next 4-minute (240s) mark
+        const remainder = elapsedSeconds % FLASH_INTERVAL_SECONDS;
+        const secondsUntilNextFlash = remainder === 0 ? FLASH_INTERVAL_SECONDS : (FLASH_INTERVAL_SECONDS - remainder);
+        document.getElementById('next-flash-countdown').textContent = formatTime(secondsUntilNextFlash);
+
+        // Trigger light flash every 4 minutes (240, 480, 720, ...)
+        if (elapsedSeconds > 0 && elapsedSeconds % FLASH_INTERVAL_SECONDS === 0) {
+          flashCount++;
+          document.getElementById('flash-count').textContent = flashCount;
+          triggerLightFlash(false);
+        }
+      }, 1000);
+    }
+
+    function triggerLightFlash(isManualPreview = false) {
+      const overlay = document.getElementById('light-flash-overlay');
+      const beacon = document.getElementById('flash-beacon');
+      const toast = document.getElementById('flash-toast');
+      const toastText = document.getElementById('flash-toast-text');
+
+      // Reset animation classes to allow re-triggering
+      overlay.classList.remove('light-flash-active');
+      beacon.classList.remove('beacon-flashing', 'bg-amber-300');
+      void overlay.offsetWidth; // Force reflow
+
+      overlay.classList.add('light-flash-active');
+      beacon.classList.add('beacon-flashing', 'bg-amber-300');
+
+      const minsElapsed = Math.floor(elapsedSeconds / 60);
+      toastText.textContent = isManualPreview
+        ? "4-Minute Light Flash Preview Active!"
+        : `${minsElapsed}-Minute Checkpoint — 4-Minute Light Flash!`;
+
+      toast.classList.remove('hidden');
+
+      setTimeout(() => {
+        overlay.classList.remove('light-flash-active');
+        beacon.classList.remove('beacon-flashing', 'bg-amber-300');
+        toast.classList.add('hidden');
+      }, 2400);
+    }
+
+    // =========================================================================
+    // AUTO-GRADING & SCORE REPORT
+    // =========================================================================
+    function gradeTest() {
+      isSubmitted = true;
+      clearInterval(timerInterval);
+
+      let readingCorrect = 0;
+      let mathCorrect = 0;
+
+      for (let qNum = 21; qNum <= 100; qNum++) {
+        const meta = questionLookup[qNum];
+        const chosen = userAnswers[qNum];
+        const isRight = chosen === meta.correct;
+
+        if (isRight) {
+          if (qNum <= 50) readingCorrect++;
+          else mathCorrect++;
+        }
+
+        const card = document.getElementById(`question-card-${qNum}`);
+        const badge = document.getElementById(`status-badge-${qNum}`);
+        const expBox = document.getElementById(`explanation-${qNum}`);
+        const navBtn = document.getElementById(`nav-btn-${qNum}`);
+
+        card.dataset.correct = isRight ? 'true' : 'false';
+
+        // Disable all inputs
+        card.querySelectorAll('input[type="radio"]').forEach(inp => {
+          inp.disabled = true;
+        });
+
+        // Style chosen vs correct choice labels
+        card.querySelectorAll('.choice-label').forEach(lbl => {
+          lbl.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50/40', 'hover:border-sky-400', 'hover:bg-sky-50/40', 'cursor-pointer');
+        });
+
+        const correctLbl = document.getElementById(`label-${qNum}-${meta.correct}`);
+        if (correctLbl) {
+          correctLbl.classList.remove('bg-indigo-50', 'border-indigo-500');
+          correctLbl.classList.add('bg-emerald-50', 'border-emerald-500', 'ring-1', 'ring-emerald-500');
+        }
+
+        if (!isRight) {
+          const wrongLbl = document.getElementById(`label-${qNum}-${chosen}`);
+          if (wrongLbl) {
+            wrongLbl.classList.remove('bg-indigo-50', 'border-indigo-500');
+            wrongLbl.classList.add('bg-rose-50', 'border-rose-500', 'ring-1', 'ring-rose-500');
+          }
+          card.classList.add('border-rose-300');
+          badge.textContent = `Incorrect (You: ${chosen} • Key: ${meta.correct})`;
+          badge.className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300";
+
+          expBox.className = "mt-4 p-3.5 rounded-xl text-xs leading-relaxed border bg-rose-50/70 border-rose-200 text-slate-800";
+          if (navBtn) {
+            navBtn.className = "h-9 rounded-lg text-xs font-bold border border-rose-600 bg-rose-600 text-white";
+          }
+        } else {
+          card.classList.add('border-emerald-300');
+          badge.textContent = `Correct (${meta.correct})`;
+          badge.className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300";
+
+          expBox.className = "mt-4 p-3.5 rounded-xl text-xs leading-relaxed border bg-emerald-50/70 border-emerald-200 text-slate-800";
+          if (navBtn) {
+            navBtn.className = "h-9 rounded-lg text-xs font-bold border border-emerald-600 bg-emerald-600 text-white";
+          }
+        }
+
+        expBox.innerHTML = `<strong class="text-slate-900">Correct Answer: ${meta.correct}</strong> — ${meta.explanation}`;
+        expBox.classList.remove('hidden');
+      }
+
+      const totalCorrect = readingCorrect + mathCorrect;
+      const totalIncorrect = TOTAL_QUESTIONS - totalCorrect;
+      const totalPct = Math.round((totalCorrect / TOTAL_QUESTIONS) * 100);
+      const readingPct = Math.round((readingCorrect / 30) * 100);
+      const mathPct = Math.round((mathCorrect / 50) * 100);
+
+      document.getElementById('total-score-num').textContent = `${totalCorrect}/80`;
+      document.getElementById('total-score-pct').textContent = `(${totalPct}%)`;
+      document.getElementById('reading-score-num').textContent = `${readingCorrect}/30`;
+      document.getElementById('reading-score-pct').textContent = `(${readingPct}%)`;
+      document.getElementById('math-score-num').textContent = `${mathCorrect}/50`;
+      document.getElementById('math-score-pct').textContent = `(${mathPct}%)`;
+      document.getElementById('incorrect-count').textContent = totalIncorrect;
+
+      document.getElementById('final-time').textContent = formatTime(elapsedSeconds);
+      document.getElementById('final-flashes').textContent = flashCount;
+
+      // Update submit buttons
+      const topBtn = document.getElementById('top-submit-btn');
+      topBtn.textContent = `Graded: ${totalCorrect}/80 (${totalPct}%)`;
+      topBtn.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow-sm cursor-default";
+
+      document.getElementById('bottom-submit-card').classList.add('hidden');
+
+      const dashboard = document.getElementById('results-dashboard');
+      dashboard.classList.remove('hidden');
+      dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function filterReview(mode) {
+      currentFilter = mode;
+      const allBtn = document.getElementById('filter-all-btn');
+      const wrongBtn = document.getElementById('filter-wrong-btn');
+
+      if (mode === 'all') {
+        allBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition";
+        wrongBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      } else {
+        wrongBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-600 text-white transition";
+        allBtn.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+      }
+
+      document.querySelectorAll('.question-card').forEach(card => {
+        if (mode === 'incorrect' && card.dataset.correct === 'true') {
+          card.classList.add('hidden');
+        } else {
+          card.classList.remove('hidden');
+        }
+      });
+    }
+
+    function resetExam() {
+      userAnswers = {};
+      isSubmitted = false;
+      elapsedSeconds = 0;
+      flashCount = 0;
+      currentFilter = 'all';
+
+      document.getElementById('elapsed-timer').textContent = "00:00";
+      document.getElementById('next-flash-countdown').textContent = "04:00";
+      document.getElementById('flash-count').textContent = "0";
+      document.getElementById('results-dashboard').classList.add('hidden');
+      document.getElementById('bottom-submit-card').classList.remove('hidden');
+
+      const topBtn = document.getElementById('top-submit-btn');
+      topBtn.textContent = "Submit & Grade Test";
+      topBtn.className = "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition cursor-pointer";
+
+      renderExam();
+      startTimer();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      renderExam();
+      startTimer();
+    });
+  </script>
+</body>
+</html>
