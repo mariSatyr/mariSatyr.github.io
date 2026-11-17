@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Practice Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#fff;--fg:#1d2330;--mut:#667;--card:#f3f5fa;--ac:#2f5fd0;--ok:#1a8a3c;--bad:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14171f;--fg:#e8ebf2;--mut:#9aa3b5;--card:#1f2430;--ac:#7ea2ff;--ok:#5fd183;--bad:#ff7b7b}}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.4 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:24px;margin:8px 0}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:12px 18px;background:var(--ac);color:#fff;margin:4px 6px 4px 0}
+button.big{display:block;width:100%;padding:18px;font-size:18px;margin:10px 0}
+.q{background:var(--card);border-radius:10px;padding:10px 12px;margin:8px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.n{font-weight:700;min-width:44px}
+.b{width:40px;height:40px;border-radius:50%;border:2px solid var(--mut);background:transparent;color:var(--fg);padding:0;margin:0}
+.b.on{background:var(--ac);border-color:var(--ac);color:#fff}
+input.g{font:inherit;padding:8px;width:130px;border-radius:8px;border:2px solid var(--mut);background:var(--bg);color:var(--fg)}
+#bar{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:8px 0;display:flex;justify-content:space-between;font-weight:600;z-index:5}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.mut{color:var(--mut)}
+#pr{display:none}a{color:var(--ac)}details{margin-top:4px}
+@media print{main>*:not(#pr){display:none!important}#pr{display:block!important}#bar{display:none}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:99}
+#flash.on{opacity:1}
+</style></head><body>
+<div id="flash"></div>
+<main id="app"></main>
+<script>
+const ELA="EGCFAKDHBJBFCFCFBKDGEHEFEFBGCF";
+const MC="AGAEBFAEDHBGCEDHAGBGCFDFCFBFDGBHAGBGBHAHDGDGBECEDHCH";
+const GRID={58:"250",59:"13.5",60:"12",61:"8",62:"7"};
+const L=(n,odd,even)=>(n%2?odd:even).split("");
+const sec={
+ ela:{name:"English – Reading (Q21–50)",items:[...ELA].map((a,i)=>({n:21+i,t:"mc",opts:L(21+i,"ABCDE","FGHJK"),a}))},
+ math:{name:"Math (Q58–114)",items:[...Object.keys(GRID).map(n=>({n:+n,t:"gi",a:GRID[n]})),...[...MC].map((a,i)=>({n:63+i,t:"mc",opts:L(63+i,"ABCD","EFGH"),a}))]}
+};
+const ans={},app=document.getElementById("app");
+let order=[],cur=0,t0=0,timer;
+function home(){
+ app.innerHTML=`<h1>Practice Test</h1><p>Use your printed test booklet and record your answers here. Choose which section to start with:</p>
+ <button class="big" onclick="start(['math','ela'])">Math section first</button>
+ <button class="big" onclick="start(['ela','math'])">English section first</button>
+ <p class="mut">The screen flashes for 1 second every 4 minutes as a time check.</p>`;
+}
+function start(o){
+ order=o;cur=0;t0=Date.now();
+ setInterval(()=>{const f=document.getElementById("flash");f.classList.add("on");setTimeout(()=>f.classList.remove("on"),1000)},240000);
+ timer=setInterval(tick,1000);show();
+}
+function tick(){const e=document.getElementById("el");if(!e)return;const s=Math.floor((Date.now()-t0)/1000);e.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function show(){
+ const k=order[cur],S=sec[k];
+ let h=`<div id="bar"><span>${S.name}</span><span>⏱ <span id="el">0:00</span></span></div>`;
+ for(const q of S.items){
+  h+=`<div class="q"><span class="n">${q.n}.</span>`;
+  if(q.t=="mc")for(const o of q.opts)h+=`<button class="b ${ans[k+q.n]==o?"on":""}" onclick="pick('${k}',${q.n},'${o}',this)">${o}</button>`;
+  else h+=`<input class="g" inputmode="decimal" placeholder="Answer" value="${ans[k+q.n]||""}" oninput="ans['${k}${q.n}']=this.value">`;
+  h+=`</div>`;
+ }
+ h+=`<button class="big" onclick="finish()">${cur==0?"Finish this section → next":"Finish &amp; see my score"}</button>`;
+ app.innerHTML=h;scrollTo(0,0);tick();
+}
+function pick(k,n,o,el){
+ ans[k+n]=ans[k+n]==o?"":o;
+ el.parentNode.querySelectorAll(".b").forEach(b=>b.classList.toggle("on",ans[k+n]==b.textContent));
+}
+const M={
+"Ratios & proportions":[[58,59,64,67,72,85,92,76,90,111],"ratios and proportions","A map scale is 1 cm = 5 km. Two towns are 7.2 cm apart. How far apart are they?","36 km"],
+"Fractions & decimals":[[63,66,68,89,105,108,112],"adding fractions and repeating decimals","What is 1/4 + 2/3?","11/12"],
+"Percents":[[61,80,82,96,98,102],"percent problems","A $80 jacket is 25% off. What is the sale price?","$60"],
+"Algebra & equations":[[62,65,74,88,95,83,78,69],"solving equations","Solve for x in terms of y if 3x − 6 = y.","x = (y + 6)/3"],
+"Exponents & roots":[[79,99,103,100],"exponent rules","Simplify (3^5 × 3^2) ÷ 3^4.","3^3 = 27"],
+"Number sense & patterns":[[60,71,77,86,94],"greatest common factor and consecutive integers","Find the greatest number of groups you can make from 48 pens and 36 pencils with none left over.","12"],
+"Probability & counting":[[70,91,104,107,110,114],"probability without replacement","A bag has 3 red and 5 blue marbles. Two are drawn without replacement. P(both red)?","3/28"],
+"Geometry & measurement":[[73,75,81,93,97,106,109,113],"area volume angles geometry","Two angles are complementary and one is twice the other. What is the larger angle?","60°"],
+"Data & statistics":[[84,87,101],"median and mean","What is the median of 4, 9, 2, 7, 12, 5?","6"]};
+const E={
+"Main idea":[[21,27,33,39,45],"finding the main idea","Before reading the choices, summarize the whole passage in one sentence. The right answer covers every paragraph, not just one detail.",""],
+"Author’s purpose":[[34,36],"author's purpose reading","Ask: why did the author include this example? Look at the sentences before and after it for the point it supports.",""],
+"Words & references in context":[[29,43,47,50],"context clues and pronoun reference","Reread the line and swap each choice into the sentence. The one that keeps the meaning is correct.",""],
+"Inference":[[24,25,28,31,40,49],"making inferences reading","Pick the answer the passage supports with evidence. Underline the lines that back it up before choosing.",""],
+"Finding details":[[],"reading comprehension details","Return to the passage and find the exact lines. Eliminate choices the passage never says or contradicts (watch for “only” and “always”).",""]};
+function topic(k,n){const D=k=="ela"?E:M;for(const t in D)if(D[t][0].includes(n))return t;return k=="ela"?"Finding details":"Mixed math"}
+function num(s){s=(s||"").trim();if(s.includes("/")){const[a,b]=s.split("/");return a/b}return s===""?NaN:+s}
+function right(k,q){const u=ans[k+q.n]||"";return q.t=="mc"?u==q.a:Math.abs(num(u)-num(q.a))<1e-9}
+function finish(){
+ if(++cur<order.length){show();return}
+ clearInterval(timer);
+ let h=`<h1>Results</h1><p class="mut">Total time: ${document.getElementById("el")?.textContent||""}</p>`,tot=0,all=0,wrong=[];
+ for(const k of ["ela","math"]){
+  const S=sec[k],bad=S.items.filter(q=>!right(k,q)),c=S.items.length-bad.length;tot+=c;all+=S.items.length;bad.forEach(q=>wrong.push([k,q]));
+  h+=`<h2>${S.name}: ${c} / ${S.items.length} (${Math.round(100*c/S.items.length)}%)</h2>`;
+  if(!bad.length)h+=`<p class="ok">Perfect!</p>`;
+  for(const q of bad)h+=`<div class="q"><span class="n">${q.n}.</span><span class="bad">Your answer: ${ans[k+q.n]||"(blank)"}</span><span class="ok">Correct: ${q.a}</span></div>`;
+ }
+ h+=`<h2>Overall: ${tot} / ${all}</h2>`;
+ const g={};wrong.forEach(([k,q])=>{const t=topic(k,q.n);(g[t]=g[t]||{k,n:[]}).n.push(q.n)});
+ if(wrong.length){
+  h+=`<h2>Practice &amp; resources</h2>`+Object.keys(g).map(t=>{const d=(g[t].k=="ela"?E:M)[t]||[0,"math practice","",""];return `<div class="q" style="display:block"><b>${t}</b> — missed ${g[t].n.join(", ")}<br><a href="https://www.khanacademy.org/search?page_search_query=${encodeURIComponent(d[1])}" target="_blank" rel="noopener">Khan Academy: ${d[1]}</a><br>${d[3]?`<details><summary>Similar practice: ${d[2]}</summary>Answer: ${d[3]}</details>`:`<span class="mut">${d[2]}</span>`}</div>`}).join("");
+  h+=`<button onclick="window.print()">Export wrong answers as PDF</button><span class="mut"> (choose “Save as PDF” in the print window)</span><br>`;
+  h+=`<div id="pr"><h1>Wrong answers to review</h1>`+wrong.map(([k,q])=>`<p><b>${k=="ela"?"English":"Math"} #${q.n}</b> (${topic(k,q.n)}) — Your answer: ${ans[k+q.n]||"blank"} · Correct: ${q.a}</p>`).join("")+`<p><b>Topics to study:</b> ${Object.keys(g).join(", ")}</p></div>`;
+ }
+ h+=`<button onclick="location.reload()">Start over</button>`;
+ app.innerHTML=h;scrollTo(0,0);
+}
+home();
+</script></body></html>
