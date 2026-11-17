@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coin Flip Probability Lab</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#1d2433;--muted:#5b6578;--line:#dde2ee;--accent:#3b6df0;--head:#f2b82e;--tail:#8a94a8;--ok:#1f9d6b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151d;--card:#1b2030;--text:#e8ecf6;--muted:#9aa5bd;--line:#2c3348;--accent:#7b9bff;--head:#e0a91c;--tail:#6b758c;--ok:#4cc794}}
+:root[data-theme="dark"]{--bg:#12151d;--card:#1b2030;--text:#e8ecf6;--muted:#9aa5bd;--line:#2c3348;--accent:#7b9bff;--head:#e0a91c;--tail:#6b758c;--ok:#4cc794}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+main{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+label{display:flex;flex-direction:column;font-size:.85rem;color:var(--muted);gap:4px}
+input,select{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);width:130px}
+button{font:inherit;font-weight:600;padding:10px 20px;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}
+button:active{transform:scale(.97)}
+.coins{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.coin{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#1d2433;font-size:.9rem}
+.coin.H{background:var(--head)}.coin.T{background:var(--tail);color:#fff}
+.sc h3{margin:0 0 2px;font-size:1.05rem}
+.sc .q{color:var(--muted);font-size:.9rem;margin-bottom:8px}
+.calc{background:var(--bg);border-radius:10px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.88rem;overflow-x:auto;white-space:pre}
+.res{display:flex;flex-wrap:wrap;gap:18px;margin-top:10px}
+.res div{font-size:.85rem;color:var(--muted)}
+.res b{display:block;font-size:1.3rem;color:var(--text)}
+.res b.t{color:var(--ok)}
+.bars{display:flex;align-items:flex-end;gap:4px;height:150px;margin-top:8px;overflow-x:auto;padding-bottom:2px}
+.col{flex:1;min-width:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.pair{display:flex;align-items:flex-end;gap:2px;height:120px;width:100%}
+.pair i{flex:1;display:block;border-radius:3px 3px 0 0;min-height:1px}
+.pair .e{background:var(--accent)}.pair .th{background:var(--ok);opacity:.65}
+.col span{font-size:.72rem;color:var(--muted)}
+.legend{font-size:.8rem;color:var(--muted);margin-top:6px}
+.legend u{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;border-radius:2px;text-decoration:none}
+.note{color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+<h1>🪙 Coin Flip Probability Lab</h1>
+<p class="sub">Flip coins, then compare what happened with what the math predicts.</p>
+
+<div class="card">
+  <div class="controls">
+    <label>Coins per round (1–20)<input id="n" type="number" min="1" max="20" value="4"></label>
+    <label>Rounds to simulate<select id="rounds"><option>1</option><option>10</option><option>100</option><option selected>1000</option><option>10000</option></select></label>
+    <label>Custom: exactly k heads<input id="k" type="number" min="0" max="20" value="3"></label>
+    <button id="go">Flip!</button>
+  </div>
+  <div id="last" class="note" style="margin-top:12px">Press Flip! to start.</div>
+  <div id="coins" class="coins"></div>
+</div>
+
+<div id="out"></div>
+
+<div class="card" id="distcard" style="display:none">
+  <h3 style="margin:0">Distribution of heads</h3>
+  <div class="note">Each group shows the number of heads (bottom) with simulated and theoretical probability.</div>
+  <div id="bars" class="bars"></div>
+  <div class="legend"><u style="background:var(--accent)"></u>Simulated<u style="background:var(--ok);opacity:.65"></u>Theoretical</div>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const C=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r)};
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const pct=x=>(x*100).toFixed(2).replace(/\.?0+$/,'')+'%';
+const frac=(a,b)=>{const g=gcd(a,b);return g===b?String(a/g):(a/g)+'/'+(b/g)};
+function exact(n,k,title,q){
+  const top=C(n,k),bot=Math.pow(2,n),p=top/bot;
+  const calc=`Number of ways = C(${n},${k}) = ${n}! ÷ (${k}! × ${n-k}!) = ${top}\nTotal outcomes = 2^${n} = ${bot}\nP = ${top} ÷ ${bot} = ${frac(top,bot)} = ${p.toFixed(4)} = ${pct(p)}`;
+  return {title,q,calc,p};
+}
+function build(n,k){
+  const s=[];
+  s.push(exact(n,1,'Exactly 1 head','Ways to choose which one coin is heads, out of all possible outcomes.'));
+  if(n>=2)s.push(exact(n,2,'Exactly 2 heads','Ways to choose which two coins are heads.'));
+  else s.push({title:'Exactly 2 heads',q:'Needs at least 2 coins.',calc:'Only '+n+' coin, so 2 heads is impossible.\nP = 0',p:0});
+  if(n%2===0)s.push(exact(n,n/2,'Half heads ('+n/2+' of '+n+')','Exactly half of the coins land heads.'));
+  else s.push({title:'Half heads',q:'Half of an odd number is not a whole number.',calc:n+' ÷ 2 = '+n/2+' is not a whole number,\nso exactly half heads is impossible with '+n+' coins.\nP = 0 (try an even number of coins)',p:0});
+  const bot=Math.pow(2,n),p=1-1/bot;
+  s.push({title:'At least 1 head',q:'Easier to find the opposite: the chance of getting no heads at all (all tails).',calc:`P(no heads) = C(${n},0) ÷ 2^${n} = 1 ÷ ${bot}\nP(at least 1 head) = 1 − P(no heads)\n= 1 − 1/${bot} = ${bot-1}/${bot} = ${p.toFixed(4)} = ${pct(p)}`,p});
+  if(k>=0&&k<=n&&Number.isInteger(k)){const c=exact(n,k,'Custom: exactly '+k+' heads','Your own scenario.');s.push(c)}
+  else s.push({title:'Custom',q:'k must be a whole number from 0 to '+n+'.',calc:'Choose k between 0 and '+n+'.',p:0});
+  return s;
+}
+function test(i,h,n,k){
+  if(i===0)return h===1;
+  if(i===1)return h===2;
+  if(i===2)return n%2===0&&h===n/2;
+  if(i===3)return h>=1;
+  return h===k;
+}
+$('go').onclick=()=>{
+  let n=Math.max(1,Math.min(20,parseInt($('n').value)||1));$('n').value=n;
+  const R=parseInt($('rounds').value),k=parseInt($('k').value);
+  const counts=new Array(n+1).fill(0);let lastFlips=[];
+  for(let r=0;r<R;r++){let h=0,f=[];for(let i=0;i<n;i++){const x=Math.random()<.5;if(x)h++;f.push(x?'H':'T')}counts[h]++;lastFlips=f}
+  const lh=lastFlips.filter(x=>x==='H').length;
+  $('last').textContent=(R>1?'Last round: ':'This round: ')+lh+' heads, '+(n-lh)+' tails ('+R+' round'+(R>1?'s':'')+' simulated).';
+  $('coins').innerHTML=lastFlips.map(x=>`<div class="coin ${x}">${x}</div>`).join('');
+  const sc=build(n,k);
+  $('out').innerHTML=sc.map((s,i)=>{
+    let m=0;for(let h=0;h<=n;h++)if(test(i,h,n,k))m+=counts[h];
+    const e=m/R;
+    return `<div class="card sc"><h3>${s.title}</h3><div class="q">${s.q}</div><div class="calc">${s.calc}</div>
+    <div class="res"><div>Theoretical<b class="t">${pct(s.p)}</b></div><div>Simulated (${m} of ${R} rounds)<b>${pct(e)}</b></div><div>Difference<b>${Math.abs((e-s.p)*100).toFixed(2)} pts</b></div></div></div>`}).join('');
+  const mx=Math.max(...counts.map(c=>c/R),...[...Array(n+1).keys()].map(h=>C(n,h)/Math.pow(2,n)));
+  $('bars').innerHTML=[...Array(n+1).keys()].map(h=>{
+    const e=counts[h]/R,t=C(n,h)/Math.pow(2,n);
+    return `<div class="col"><div class="pair"><i class="e" style="height:${e/mx*100}%" title="Simulated ${pct(e)}"></i><i class="th" style="height:${t/mx*100}%" title="Theoretical ${pct(t)}"></i></div><span>${h}</span></div>`}).join('');
+  $('distcard').style.display='block';
+};
+</script>
+</body>
+</html>
